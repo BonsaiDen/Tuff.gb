@@ -130,8 +130,8 @@ var gb = {
                         [],
                         []
                     ],
-                    tileMap = gb.hashTile8(result.tiles, gb.palette.bg),
-                    blockMap = gb.hashTile8(result.blocks, gb.palette.bg),
+                    tileMap = gb.hashTile8(result.tiles, gb.palette.bg, true),
+                    blockMap = gb.hashTile8(result.blocks, gb.palette.bg, false),
                     blockIndex = 0;
 
                 for(var y = 0; y < blockMap.height; y += 2) {
@@ -277,7 +277,7 @@ var gb = {
     },
 
 
-    hashTile8: function(img, palette) {
+    hashTile8: function(img, palette, unique) {
 
         var wx = img.width / 8,
             wy = img.height / 8,
@@ -306,10 +306,13 @@ var gb = {
                         }
 
                     }
+
                 }
 
-                map.offset[key] = wx * y + x;
-                map.index.push(key);
+                if (!map.offset.hasOwnProperty(key) || !unique) {
+                    map.offset[key] = wx * y + x;
+                    map.index.push(key);
+                }
 
             }
         }
