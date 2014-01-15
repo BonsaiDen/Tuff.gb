@@ -1,3 +1,12 @@
+# Tuff
+
+Another port of a very old game of mine, this time for the original black and white gameboy.
+
+In case you're trying to get started with your own game, you might find some parts of the code very helpful (e.g. Mainloop, Vblank Code, DMA).
+
+
+# License
+
 Tuff, a Gameboy Game
 Copyright (C) 2014 Ivo Wetzel
 
