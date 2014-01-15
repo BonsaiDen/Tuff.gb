@@ -1,0 +1,24 @@
+; Sprite Animations -----------------------------------------------------------
+
+    ; Each Animation takes 32 bytes
+    ; The first 16 are the tile indexes (which are 16x16)
+    ; The other 16 bytes are frame lengths, each frame is 16ms long.
+    ; FF FD and FE are special values for frame lengths which are used to control
+    ; the animation behavior. FF means STOP, FE means loop, FD means bounce
+
+    ; Idle
+    DB $00, $00,$01,$00,$01, $00,$01,$00,$02, $00,$00, $ff,$ff,$ff,$ff,$ff
+    DB $ff, $68,$0C,$C3,$0A, $08,$0A,$C0,$2f, $38,$fe, $ff,$ff,$ff,$ff,$ff
+
+    ; Walking
+    DB $00, $04,$05,$06,$07, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $04,$05,$04,$06, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+    ; Sleeping
+    DB $00, $0c,$0d,$0e,$0f, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $ff, $20,$25,$20,$25, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+    ; Wall Pushing
+    DB $00, $10,$11,$12,$13, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $06,$08,$06,$09, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+

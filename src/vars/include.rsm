@@ -1,0 +1,9 @@
+; Variables -------------------------------------------------------------------
+
+    ; sprite data is at C000 for DMA copy
+    INCLUDE "src/vars/sprite.rsm"
+    INCLUDE "src/vars/map.rsm"; 
+    INCLUDE "src/vars/core.rsm"
+    INCLUDE "src/vars/input.rsm"
+    INCLUDE "src/vars/player.rsm"
+

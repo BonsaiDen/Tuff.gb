@@ -1,0 +1,5 @@
+    SECTION "Bank1",ROMX,BANK[1]
+
+DataMapMain:
+    INCBIN  "src/data/main.map.bin" ; 
+

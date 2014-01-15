@@ -1,0 +1,190 @@
+; Initialization --------------------------------------------------------------
+game_init:
+
+    ; setup background tile palette
+    ld      a,%11100100
+    ld      [rBGP],a; load a into the memory pointed to by rBGP
+
+    ; set object palette 0
+    ld      a,%11010000 
+    ld      [rOBP0],a 
+
+    ; load char data
+    ld      hl,DataCharImg
+    ld      de,$8000
+    ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
+    call    mem_Copy    ; Copy tile data to memory
+
+    ; load tile data
+    ld      hl,DataTileImg
+    ld      de,$8800
+    ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
+    call    mem_Copy    ; Copy tile data to memory
+
+
+    ; Setup test sprite ------------------
+    ld      a,0
+    call    sprite_enable
+
+    ld      a,0
+    call    sprite_set_mirror
+
+    ld      a,0
+    ld      b,0
+    call    sprite_set_tile_index
+
+    ; Animation
+    ld      a,0
+    ld      b,2
+    call    sprite_animation_set
+
+    ld      a,0
+    call    sprite_animation_start
+
+    ld      b,48
+    ld      c,48
+    ld      a,0
+    call    sprite_set_position
+
+
+    ; player pos
+    ;ld      a,16
+    ;ld      [playerX],a
+    ;ld      [playerY],a
+
+    ; Map
+    call    map_set_room
+    call    map_draw_room
+
+    ret
+
+
+; Main Loop -------------------------------------------------------------------
+game_loop:
+
+    call    sprite_animate_all
+
+    ld      a,[inputState]
+    and     %10000000
+    jp      z,.not_idle
+
+    ; idle
+    ld      a,0
+    ld      b,0
+    call    sprite_animation_set
+
+.not_idle:
+
+    ld      a,[inputState]
+    and     %01000000
+    jp      z,.not_walking
+
+    ; walking
+    ld      a,0
+    ld      b,1
+    call    sprite_animation_set
+
+.not_walking:
+
+    ld      a,[inputState]
+    and     %00100000
+    jp      z,.not_sleeping
+
+    ; walking
+    ld      a,0
+    ld      b,2
+    call    sprite_animation_set
+
+.not_sleeping:
+
+    ld      a,[inputState]
+    and     %00010000
+    jp      z,.not_pushing
+
+    ; sleeping
+    ld      a,0
+    ld      b,3
+    call    sprite_animation_set
+
+.not_pushing:
+
+    ld      a,[inputState]
+    and     %00001000
+    jp      z,.not_starting
+
+    ; start
+    ld      a,0
+    call    sprite_animation_start
+
+.not_starting:
+
+    ld      a,[inputState]
+    and     %00000100
+    jp      z,.not_stopping
+
+    ; start
+    ld      a,0
+    call    sprite_animation_stop
+
+.not_stopping:
+
+
+    ld      a,[inputState]
+    and     %00000010
+    jp      z,.not_pausing
+
+    ; pause
+    ld      a,0
+    call    sprite_animation_pause
+
+.not_pausing:
+
+    ld      a,[inputState]
+    and     %00000001
+    jp      z,.not_resuming
+
+    ; resume
+    ld      a,0
+    call    sprite_animation_resume
+
+.not_resuming:
+
+    ret
+
+
+; 1 Second Timer --------------------------------------------------------------
+game_timer_1000:
+    ret
+
+
+; 250ms Timer -----------------------------------------------------------------
+game_timer_250:
+    ret
+
+
+; Timer Handler ---------------------------------------------------------------
+game_timer:
+
+    ; 1 second timer
+    ld      a,[timer1000]
+    inc     a
+    ld      [timer1000],a
+    cp      16
+    jp      nz,.l1000
+    call    game_timer_1000
+    ld      a,0
+    ld      [timer1000],a
+.l1000:
+
+    ; 250ms timer
+    ld      a,[timer250]
+    inc     a
+    ld      [timer250],a
+    cp      4
+    jp      nz,.l250
+    call    game_timer_250
+    ld      a,0
+    ld      [timer250],a
+.l250:
+
+    ret

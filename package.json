@@ -1,0 +1,13 @@
+{
+  "name": "Tuff",
+  "version": "0.0.0",
+  "description": "",
+  "main": "",
+  "author": "",
+  "license": "GPL3",
+  "devDependencies": {
+    "pngjs": "~0.4.0",
+    "optimist": "~0.6.0",
+    "bluebird": "~0.11.6-0"
+  }
+}

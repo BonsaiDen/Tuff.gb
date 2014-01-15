@@ -1,0 +1,7 @@
+playerX:       DB ; x position on screen
+playerY:       DB ; y position on screen
+playergf:      DB ; player gravity
+playerjf:      DB ; player jump force
+playerSprite:  DB ; player sprite
+playerfl:      DB ; direction|falling|onground|wallleft|wallright|wallup|walldown
+

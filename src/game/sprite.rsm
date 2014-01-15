@@ -1,0 +1,506 @@
+; Sprite Animation Update -----------------------------------------------------
+sprite_animate_all:
+    ld      b,0 ; loop counter
+    
+.update_loop:
+
+    ; check if active and animating
+    ld      a,b
+    call    sprite_meta_offset
+    ld      a,[hl]
+    push    af ; store sprite animation flags
+    and     %00000101
+    cp      5
+    jp      nz,.skip_sprite
+
+    ; load animation frame number
+    inc     hl
+    ld      c,[hl] 
+
+    ; load animation id
+    inc     hl 
+    ld      e,[hl] 
+
+    ; multiply by 16 to get animation table offset
+    ld      h,32; e already has the id
+    call    math_mul8b ; h * e, offset is now in hl
+
+    ; add the animation table base address
+    ld      de,DataSpriteAnimation
+    add     hl,de
+
+    ; add the current frame index
+    ld      d,0
+    ld      e,c
+    add     hl,de ; hl is the data offset
+
+    ; get tile for animation index
+    ld      e,[hl]
+
+    ; now update the sprite to the tile index
+    ld      a,b ; sprite index (counter)
+    ld      b,e ; 16x16 sprite tile 
+    call    sprite_set_tile_index
+    ld      b,a ; restore sprite counter
+
+    ; Restore flags
+    pop     af
+    call    sprite_update_animation
+    jp      .next_sprite
+
+.skip_sprite:
+    pop    af
+
+.next_sprite:
+    inc    b
+    ld     a,b
+    cp     20
+    jp     nz,.update_loop
+    ret
+
+
+sprite_update_animation: ; a = sprite flags, hl = animation data base offset
+
+    ; load frame timing data
+    ld      d,0
+    ld      e,16
+    add     hl,de
+    ld      e,[hl]
+
+
+    ; update number of frames left for this animation index
+    ld      d,a
+    ld      a,b ; sprite index (counter)
+    call    sprite_animation_timer
+    cp      0 ;  cp 0, but faster
+    jp      nz,.done ; if there are still frames to play, dont advance index
+
+
+    ; advance frame index based on direction
+    ld      a,d ; store animation flags for bounce check
+    and     %00010000
+    cp      16
+    jp      nz,.forwards
+
+.backwards:
+    dec     c ; previous animation frame
+    dec     hl ; previous frame value
+    jp      .update_mode
+
+.forwards:
+    inc     c ; next animation frame
+    inc     hl ; next frame value
+    jp      .update_mode
+
+
+.update_mode:
+
+    ; load new frame timing data
+    ld      e,[hl]
+    ld      a,e
+
+    ; if it is a stop frame do nothing
+    cp      $ff
+    jp      z,.done
+
+    ; if it is a loop frame jump back to the first frame
+    cp      $fe
+    jp      z,.loop
+
+    ; if it is a bounce frame toggle the bounce direction 
+    cp      $fd
+    jp      z,.bounce
+    jp      .update
+
+
+    ; reset frame number for looping
+.loop:
+    ld      c,1
+    jp      .update
+
+
+    ; toggle bounce direction
+.bounce:
+    ld      a,d
+    and     %00010000 ; backwards flag
+    cp      16
+    jp      nz,.switch_to_backwards
+
+.switch_to_forwards:
+    ld      a,b
+    call    sprite_animation_forward
+    inc     c
+    jp      .update
+
+.switch_to_backwards:
+    ld      a,b
+    call    sprite_animation_backward
+    dec     c
+    jp      .update
+
+
+    ; store the new animation index
+.update:
+    ld      a,b ; sprite index (counter)
+    call    sprite_meta_offset
+    inc     hl
+    ld      [hl],c ; store new frame number
+    inc     hl ; skip animation id
+    inc     hl
+    ld      [hl],0 ; reset timing data
+
+.done:
+    ret
+
+
+sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
+
+    push    hl
+
+    call    sprite_meta_offset
+    inc     hl ; skip flags
+    inc     hl ; skip skip id
+    inc     hl ; go to frames left
+    ld      a,[hl] ; a now has the number of frames left
+
+    ; if zero frames are left, initialize them 
+    cp      0
+    jp      nz,.decrease
+    ld      a,e
+    dec     a; This is done since otherwise we'll get one extra frame all the time
+    ld      [hl],a
+    jp      .done
+
+    ; otherwise decrease it and put the value into a
+.decrease
+    dec     a
+    ld      [hl],a
+
+.done:
+    pop     hl
+    ret
+
+
+
+; Animation Controls ----------------------------------------------------------
+sprite_animation_set: ; a = sprite index, b = animation id
+
+    push    hl
+
+    call    sprite_meta_offset
+    inc     hl
+    ld      [hl],1 ; reset frame 0 and 15 are border frames
+    inc     hl
+    ld      [hl],b ; set id
+    inc     hl
+    ld      a,0 ; reset frame left count
+    ld      [hl],a
+
+    pop     hl
+    ret
+
+
+sprite_animation_start: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    or      %00000100 ; set animating
+    ld      [hl],a
+    inc     hl; frame
+    inc     hl; id
+    inc     hl; frames left
+    ld      a,0 ; reset frame left count
+    ld      [hl],a
+
+    pop     hl
+    ret
+
+
+sprite_animation_pause: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %11111011 ; unset animating
+    ld      [hl],a
+
+    pop hl
+    ret
+
+
+sprite_animation_resume: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    or      %00000100 ; set animating
+    ld      [hl],a
+
+    pop     hl
+    ret
+
+
+sprite_animation_stop: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %11111011 ; unset animating
+    ld      [hl],a
+
+    ; reset animation frame
+    inc     hl
+    ld      [hl],1 ; 0 and 15 are border frames
+
+    pop     hl
+    ret
+
+
+sprite_animation_forward: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %11101111 ; unset backward flag
+    ld      [hl],a
+
+    pop     hl
+    ret
+
+sprite_animation_backward: ; a = sprite index
+
+    push    hl
+
+    call    sprite_meta_offset
+    ld      a,[hl]
+    or      %00010000 ; set backward
+    ld      [hl],a
+
+    pop     hl
+    ret
+
+
+; Sprite Control --------------------------------------------------------------
+sprite_enable: ; a = sprite index
+    push    hl
+    call    sprite_meta_offset
+    ld      [hl],1
+    pop     hl
+    ret
+
+
+sprite_disable: ; a = sprite index
+    push    hl
+    call    sprite_meta_offset
+    ld      [hl],0
+    pop     hl
+    ret
+
+
+sprite_set_tile_index: ; a = sprite index, b = tile index
+
+    push    af
+    push    hl
+    push    de
+
+    ; multiple tile offset by 4
+    sla     b
+    sla     b
+
+    ld      e,a ; store index
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %00000010
+    jp      z,.not_mirrored
+
+.mirrored:
+
+    ld      d,2
+    call    sprite_get_left
+    ld      [hl],b
+    inc     hl
+    ld      [hl],%00100000
+
+    call    sprite_get_right
+    ld      a,b
+    add     a,2
+    ld      [hl],a
+    inc     hl
+    ld      [hl],%00100000
+
+    jp     .index_done
+
+.not_mirrored:
+    ld      d,2
+    call    sprite_get_left
+    ld      [hl],b
+
+    call    sprite_get_right
+    ld      a,b
+    add     a,2
+    ld      [hl],a
+
+.index_done:
+    pop     de
+    pop     hl
+    pop     af
+
+    ret
+
+
+sprite_set_position: ; a = sprite index, b = xpos, c = ypos
+
+    push    hl
+    push    de
+
+    ld      e,a ; store index
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %00000010
+    jp      z,.not_mirrored
+.mirrored:
+
+    ld      d,0
+    call    sprite_get_right
+    ld      [hl],c
+    inc     hl
+    ld      [hl],b
+
+    call    sprite_get_left
+    ld      [hl],c
+    ld      a,b
+    add     a,8
+    inc     hl
+    ld      [hl],a
+
+    jp     .pos_done
+.not_mirrored:
+    ld      d,0
+    call    sprite_get_left
+    ld      [hl],c
+    inc     hl
+    ld      [hl],b
+    
+    call    sprite_get_right
+    ld      [hl],c
+    ld      a,b
+    add     a,8
+    inc     hl
+    ld      [hl],a
+    
+
+.pos_done:
+    pop     de
+    pop     hl
+    ret
+
+
+sprite_set_mirror: ; a = sprite index
+
+    push    hl
+    call    sprite_meta_offset
+    ld      a,[hl]
+    or      %00000010 ; set enabled flag
+    ld      [hl],a
+    pop     hl
+
+    ret
+
+
+sprite_unset_mirror: ; a = sprite index
+
+    push    hl
+    call    sprite_meta_offset
+    ld      a,[hl]
+    and     %11111101 ; set mirror flag
+    ld      [hl],a
+    pop     hl
+
+    ret
+
+
+; Sprite Rendering ------------------------------------------------------------
+sprite_draw_all:
+
+    ; Update sprite memory
+    ld      hl,spriteData
+    ld      de,_OAMRAM
+    ld      bc,160     ; length (8 bytes per tile) x (256 tiles)
+    call    mem_Copy    ; Copy tile data to memory
+
+    ret
+
+
+; Helper ----------------------------------------------------------------------
+sprite_get_left: ; e = raw index, d = value byte offset
+    push    de
+    ld      hl,spriteData 
+    ld      a,e
+    add     a,a ; 2
+    add     a,a ; 4
+    add     a,a ; 8
+    add     a,d
+    ld      d,0
+    ld      e,a
+    add     hl,de
+    pop     de
+    ret
+
+
+sprite_get_right: ; e = raw index, d = value byte offset
+    push    de
+    ld      hl,spriteData 
+    ld      a,e
+    add     a,a ; 2
+    add     a,a ; 4
+    add     a,a ; 8
+    add     a,d
+    add     a,4; skipping one hardware sprite
+    ld      d,0
+    ld      e,a
+    add     hl,de
+    pop     de
+    ret
+
+
+sprite_meta_offset: ; a = sprite index -> hl = offset
+    push    de
+    ld      hl,spriteMeta
+    ld      d,0
+    add     a,a ; 2
+    add     a,a ; 4
+    ld      e,a
+    add     hl,de
+    pop     de
+    ret
+
+
+sprite_update: ; d = ypos, a c = xpos, b = tile
+
+    ; y position
+    ld      a,d
+    ld      [hl],a; 
+    inc     hl
+
+    ; x position
+    ld      a,c
+    ld      [hl],a; 
+    inc     hl
+
+    ; tile
+    ld      a,b
+    ld      [hl],a
+    inc     hl
+
+    ; flags [priority][yflip][xflip][palette]0000
+    ld      [hl],0
+    inc     hl
+
+    ret
+

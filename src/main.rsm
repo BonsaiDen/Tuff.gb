@@ -1,0 +1,45 @@
+; Hardware library ------------------------------------------------------------
+    INCLUDE "src/lib/gbhw.inc"
+    
+
+; ROM0 ------------------------------------------------------------------------
+    SECTION "Org $40",ROM0[$0040]
+    jp      core_vblank_handler ; Interrupt Handler
+
+    SECTION "Org $50",ROM0[$0050]
+    jp      core_timer_handler ; Interrupt Handler
+
+    SECTION "Org $100",ROM0[$100]
+    nop
+    call    core_loop
+
+
+; Header ----------------------------------------------------------------------
+    ROM_HEADER      ROM_NOMBC, ROM_SIZE_32KBYTE, RAM_SIZE_0KBYTE
+    INCLUDE "src/lib/memory.rsm"
+    INCLUDE "src/lib/math.rsm"
+
+
+; Program ---------------------------------------------------------------------
+    INCLUDE "src/game/core.rsm"
+    INCLUDE "src/game/input.rsm"
+    INCLUDE "src/game/game.rsm"
+    INCLUDE "src/game/map.rsm"
+    INCLUDE "src/game/sprite.rsm"
+    INCLUDE "src/game/player.rsm"
+
+
+; Bank 0 Data -----------------------------------------------------------------
+SECTION "Org $2000",ROM0[$2000]
+    INCLUDE "src/data/bank0.rsm" ; we use the last 8kb of ROM0 for generic data
+    
+
+; Bank 1 Data -----------------------------------------------------------------
+SECTION "Bank1",ROMX,BANK[1]
+    INCLUDE "src/data/bank1.rsm"
+
+
+; WRAM0 -----------------------------------------------------------------------
+SECTION "Variables",WRAM0
+    INCLUDE "src/vars/include.rsm"
+

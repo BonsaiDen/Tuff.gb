@@ -1,0 +1,155 @@
+; Core Game Code --------------------------------------------------------------
+core_loop:
+
+    ; Disable interrupts
+    di
+
+    ; init stack pointer
+    ld      sp,$ffff
+
+    ; Disable Screen
+    call    ScreenOff
+
+    ; Setup DMA transfer
+    ld      c,$80
+    ld      b,10
+    ld      hl,DMADataOAM
+    call    core_setup_dma
+
+    ; Clear RAM
+    ld      a,$00           
+    ld      hl,$c000
+    ld      bc,8192
+    call    mem_Set
+
+    ; Reset Scroll registers
+    ld      a,0
+    ld      [rSCX],a
+    ld      [rSCY],a
+
+    ; Reset vblank flag
+    ld      [coreVBlankDone],a
+
+    ; Reset timer
+    ld      [timer1000],a
+    ld      [timer250],a
+
+    ; Run init code
+    call    game_init
+
+    ; Draw the first frame
+    call    game_loop
+
+    ; Enable interrupts
+    ei
+    ld      a,IEF_VBLANK|IEF_TIMER
+    ld      [rIE],a
+    ld      a,TACF_START|TACF_4KHZ
+    ld      [rTAC],a
+
+    ; Turn on the screen
+    call    ScreenOn
+
+    jp      core_loop_main
+
+
+; Main Loop -------------------------------------------------------------------
+core_loop_main:
+
+    halt    ; stop system clock, return from halt when interrupted
+    nop     ; If interrupts are disabled halt jumps one instruction!
+
+    ld      a,[coreVBlankDone]
+    and     a                   ; V-Blank interrupt ?
+    jr      z,core_loop_main    ; No, some other interrupt
+    xor     a
+    ld      [coreVBlankDone],a  ; Clear V-Blank flag
+                                
+    call    input_read        
+    call    game_loop
+
+    jr      core_loop_main
+
+
+
+; DMA Setup Routine -----------------------------------------------------------
+core_setup_dma: ; c = target address, b = byte count, hl = data
+.loop:
+    ld      a,[hli]
+    ld      [c],a
+    inc     c
+    dec     b
+    jr      nz,.loop
+    ret
+
+; transfer 160 bytes in 40 cycles(32 bits per cycle) from C000-C09F to FE00-FE9F
+DMADataOAM: 
+    DB      $3E, $C0, $E0, $46, $3E
+    DB      $28, $3D, $20, $FD, $C9
+
+
+; Interrupt Handler -----------------------------------------------------------
+core_vblank_handler:
+
+    di
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    call    $ff80 ; oam
+
+    ld      a,1
+    ld      [coreVBlankDone],a
+
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+
+    reti
+
+
+core_timer_handler:
+
+    di
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    call    game_timer
+
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+
+    reti
+
+
+; Screen Handler --------------------------------------------------------------
+ScreenOff:
+    ld      hl,rLCDC
+    bit     7,[hl]          ; Is LCD already off?
+    ret     z               ; yes, exit
+
+    ld      a,[rIE]
+    push    af
+    res     0,a
+    ld      [rIE],a         ; Disable vblank interrupt if enabled
+
+.screen_off_loop:  
+    ld      a,[rLY]         ; Loop until in first part of vblank
+    cp      145
+    jr      nz,.screen_off_loop
+    res     7,[hl]          ; Turn the screen off
+    pop     af
+    ld      [rIE],a         ; Restore the state of vblank interrupt
+    ret
+
+ScreenOn:
+    ld      a,LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
+    ld      [rLCDC],a
+    ret
+
