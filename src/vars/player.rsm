@@ -1,13 +1,12 @@
 playerX:             DB ; x position on screen
 playerY:             DB ; y position on screen
-playerSpeedLeft:     DB 
 playerSpeedRight:    DB 
+playerSpeedLeft:     DB 
 
-playerTickSwitch     DB
 playerTick:          DB
+playerTickSwitch:    DB
 playerSleepTick:     DB
-playerMoveIncTick:   DB
-playerMoveDecTick:   DB
+playerDecTick:       DB
 
 playerAnimation:     DB
 playerAnimationLast: DB

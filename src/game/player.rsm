@@ -2,7 +2,6 @@
 PLAYER_GRAVITY_MAX         EQU 3
 PLAYER_GRAVITY_INTERVAL    EQU 10
 PLAYER_MOVE_INC_DELAY      EQU 4 ; delay until we start moving when standing still
-PLAYER_MOVE_INC_DELAY_MOVE EQU 10 ; delay until we start moving when already moving in another direction
 PLAYER_MOVE_DEC_DELAY      EQU 3 ; delay until we stop moving when already moving
 
 PLAYER_SPEED_MAX           EQU 1
@@ -53,15 +52,10 @@ player_init:
 
 
     ; Movement
-    ld      a,PLAYER_MOVE_INC_DELAY
-    ld      [playerMoveIncTick],a
-
-    ld      a,PLAYER_MOVE_DEC_DELAY
-    ld      [playerMoveDecTick],a
-
     ld      a,0
-    ld      [playerSpeedLeft],a
     ld      [playerSpeedRight],a
+    ld      [playerSpeedLeft],a
+    ld      [playerDecTick],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -77,10 +71,13 @@ player_init:
 ; Player Logic ----------------------------------------------------------------
 player_update:
 
+    ; only update player every 1.5 frames
     ld      a,[playerTick]
     cp      0
     jp      nz,.no_update
 
+    ; control / animation
+    call    player_control
     call    player_move
     call    player_sleep
     call    player_animate
@@ -98,6 +95,7 @@ player_update:
     ld      a,[playerTickSwitch]
     ld      [playerTick],a
 
+    ; switch between 0 and 1
     ld      a,[playerTickSwitch]
     xor     a
     ld      [playerTickSwitch],a
@@ -110,6 +108,152 @@ player_update:
 
 .updated:
     ret
+
+
+; Movement Updates ------------------------------------------------------------
+player_control:
+    call    player_accelerate
+    call    player_decelerate
+    ret
+
+
+player_accelerate:
+
+    ; check which direction is pressed
+    ld      a,[inputState]
+    cp      %00100000
+    jp      z,.left
+    cp      %00010000
+    jp      z,.right
+
+    ; not moving
+    jp      .done
+
+.right:
+    ld      hl,playerSpeedRight
+    ld      b,PLAYER_DIRECTION_RIGHT
+    jp      .accelerate
+
+.left:
+    ld      hl,playerSpeedLeft
+    ld      b,PLAYER_DIRECTION_LEFT
+
+.accelerate:
+
+    ; set player direction
+    ld      a,b
+    ld      [playerDirection],a
+
+    ; load speed variable
+    ld      a,[hl]
+
+    ; check if max speed
+    cp      PLAYER_SPEED_MAX
+    jp      z,.done
+
+    ; if not increase
+    inc     a
+    ld      [hl],a
+
+.done:
+    ret
+
+
+player_decelerate:
+
+    ; only decelerate on every 10th frame
+    ld      a,[playerDecTick]
+    inc     a
+    cp      10
+    jp      nz,.no_tick
+
+.decrease_right:
+
+    ; check if right direction is still pressed
+    ld      a,[inputState]
+    and     %00010000
+    jp      nz,.decrease_left
+
+    ; right
+    ld      a,[playerSpeedRight]
+    cp      0
+    jp      z,.decrease_left
+    dec     a
+    ld      [playerSpeedRight],a
+
+.decrease_left:
+
+    ; check if left direction is still pressed
+    ld      a,[inputState]
+    and     %00100000
+    jp      nz,.done
+
+    ; left
+    ld      a,[playerSpeedLeft]
+    cp      0
+    jp      z,.done
+    dec     a
+    ld      [playerSpeedLeft],a
+
+    jp      .done
+
+.done:
+    ld      a,0
+
+.no_tick:
+    ld      [playerDecTick],a
+    ret
+
+
+; Movement Logic --------------------------------------------------------------
+player_move:
+
+    ; are we moving at all?
+    ld     a,[playerSpeedLeft]
+    ld     b,a
+    ld     a,[playerSpeedRight]
+    add    a,b
+    cp     0
+    jp     z,.stopped
+
+    ld     a,PLAYER_ANIMATION_WALKING
+    ld     [playerAnimation],a
+    
+    ; load x position
+    ld     a,[playerX]
+    ld     b,a
+
+    ; move right
+    ld     a,[playerSpeedRight]
+
+.loop_right:
+    inc    b
+    dec    a
+    cp     0
+    jp     nz,.loop_right
+
+    ; move left
+    ld     a,[playerSpeedLeft]
+
+.loop_left:
+    dec    b
+    dec    a
+    cp     0
+    jp     nz,.loop_left
+
+    ; store new x position
+    ld     a,b
+    ld     [playerX],a
+    jp     .done
+
+.stopped: ; reset to idle animation
+    ld     a,PLAYER_ANIMATION_IDLE
+    ld     [playerAnimation],a
+    jp     .done
+
+.done:
+    ret
+
 
 
 ; Animation Updates -----------------------------------------------------------
@@ -195,156 +339,5 @@ player_sleep:
     jp      .done
 
 .done:
-    ret
-
-
-; Movement Updates ------------------------------------------------------------
-player_move:
-    
-    ; Add a delay until we start moving when a direction is pressed
-    ld      a,[inputState]
-    and     %00110000
-    jp      nz,.direction_pressed 
-    
-    ; nothing was pressed, reset increase delay
-    ld      a,PLAYER_MOVE_INC_DELAY
-    ld      [playerMoveIncTick],a 
-
-    ; check whether we should decrease the player speed
-    ld      a,[playerMoveDecTick]
-    cp      0
-    jp      nz,.delay_decrease
-
-    ; set idle animation (when speed is zero)
-    ld      a,[playerSpeedRight]
-    ld      b,a
-    ld      a,[playerSpeedRight]
-    add     b
-    cp      0
-
-    jp      nz,.not_stopped
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-
-.not_stopped:
-    call    player_decrease_speed ; delay is over, change the speed
-    jp      .done
-
-.delay_decrease: ; dec the delay 
-    dec     a
-    ld      [playerMoveDecTick],a
-    jp      .done
-
-.direction_pressed:
-
-    ; something was pressed, reset decrease delay
-    ld      a,PLAYER_MOVE_DEC_DELAY
-    ld      [playerMoveDecTick],a 
-
-    ; check whether we should increase the player speed
-    ld      a,[playerMoveIncTick]
-    cp      0
-    jp      nz,.delay_increase
-
-    ; set walking animation
-    ld      a,PLAYER_ANIMATION_WALKING
-    ld      [playerAnimation],a
-
-    call    player_increase_speed ; delay is over, change the speed
-    jp      .done
-
-.delay_increase: ; dec the delay
-    dec     a 
-    ld      [playerMoveIncTick],a
-
-.done:
-    call    player_move_right
-    call    player_move_left
-    ret
-
-
-
-; Speed Handling Updates ------------------------------------------------------
-player_increase_speed:
-    
-    ; check if right is pressed
-    ld      a,[inputState]
-    cp      %00010000
-    jp      nz,.no_right
-
-    ; right is pressed
-    ld      a,PLAYER_DIRECTION_RIGHT
-    ld      [playerDirection],a
-
-    ; increase right speed until maximum is reached
-    ld      a,[playerSpeedRight]
-    cp      PLAYER_SPEED_MAX
-    jp      z,.no_left
-
-    inc     a
-    ld      [playerSpeedRight],a
-
-.no_right:
-
-    ; check if left is pressed
-    ld      a,[inputState]
-    cp      %00100000
-    jp      nz,.no_left
-
-    ; left is pressed
-    ld      a,PLAYER_DIRECTION_LEFT
-    ld      [playerDirection],a
-
-    ; increase left speed until maximum is reached
-    ld      a,[playerSpeedLeft]
-    cp      PLAYER_SPEED_MAX
-    jp      z,.no_left
-
-    inc     a
-    ld      [playerSpeedLeft],a
-
-.no_left:
-    ret
-
-
-player_decrease_speed:
-    
-    ; decrease right speed
-    ld      a,[playerSpeedRight]
-    cp      0
-    jp      z,.right_zero
-
-    dec     a
-    ld      [playerSpeedRight],a
-
-.right_zero:
-
-    ; decrease left speed
-    ld      a,[playerSpeedLeft]
-    cp      0
-    jp      z,.left_zero
-
-    dec     a
-    ld      [playerSpeedLeft],a
-
-.left_zero:
-    ret
-
-
-; Movement Logic --------------------------------------------------------------
-player_move_right:
-    ld      a,[playerSpeedRight]
-    ld      b,a
-    ld      a,[playerX]
-    add     b
-    ld      [playerX],a
-    ret
-
-player_move_left:
-    ld      a,[playerSpeedLeft]
-    ld      b,a
-    ld      a,[playerX]
-    sub     b
-    ld      [playerX],a
     ret
 
