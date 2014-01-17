@@ -11,12 +11,10 @@ core_loop:
     call    ScreenOff
 
     ; Setup DMA transfer
-    ld      c,$80
-    ld      b,10
-    ld      hl,DMADataOAM
     call    core_setup_dma
 
-    ; Clear RAM
+    ; Clear RAM, otherwise we will run into problems on real hardware
+    ; where it is not going to get initialized
     ld      a,$00           
     ld      hl,$c000
     ld      bc,8192
@@ -34,10 +32,8 @@ core_loop:
     ld      [timer1000],a
     ld      [timer250],a
 
-    ; Run init code
+    ; Run init code and the loop once so we don't have a blank frame on powerup
     call    game_init
-
-    ; Draw the first frame
     call    game_loop
 
     ; Enable interrupts
@@ -65,7 +61,10 @@ core_loop_main:
     xor     a
     ld      [coreVBlankDone],a  ; Clear V-Blank flag
                                 
+    ; fetch joypad state
     call    input_read        
+
+    ; run the main game code
     call    game_loop
 
     jr      core_loop_main
@@ -74,6 +73,12 @@ core_loop_main:
 
 ; DMA Setup Routine -----------------------------------------------------------
 core_setup_dma: ; c = target address, b = byte count, hl = data
+
+    ; copy the DMA transfer code into highram so we can execute it from
+    ; the interrupt handler
+    ld      c,$80
+    ld      b,10
+    ld      hl,DMADataOAM
 .loop:
     ld      a,[hli]
     ld      [c],a
@@ -97,7 +102,7 @@ core_vblank_handler:
     push    de
     push    hl
 
-    call    $ff80 ; oam
+    call    $ff80 ; call the DMA code for transfering data to OAM
 
     ld      a,1
     ld      [coreVBlankDone],a

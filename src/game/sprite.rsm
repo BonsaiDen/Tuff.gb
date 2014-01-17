@@ -19,11 +19,15 @@ sprite_animate_all:
 
     ; load animation id
     inc     hl 
-    ld      e,[hl] 
+    ld      l,[hl] 
+    ld      h,0
 
-    ; multiply by 16 to get animation table offset
-    ld      h,32; e already has the id
-    call    math_mul8b ; h * e, offset is now in hl
+    ; multiply by 32 to get into the animation table offset
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
 
     ; add the animation table base address
     ld      de,DataSpriteAnimation
@@ -340,11 +344,15 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     ld      d,2
     call    sprite_get_left
     ld      [hl],b
+    inc     hl
+    ld      [hl],%00000000
 
     call    sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
+    inc     hl
+    ld      [hl],%00000000
 
 .index_done:
     pop     de
@@ -374,12 +382,13 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 
     call    sprite_get_left
     ld      [hl],c
+    inc     hl
     ld      a,b
     add     a,8
-    inc     hl
     ld      [hl],a
 
     jp     .pos_done
+
 .not_mirrored:
     ld      d,0
     call    sprite_get_left
@@ -418,7 +427,7 @@ sprite_unset_mirror: ; a = sprite index
     push    hl
     call    sprite_meta_offset
     ld      a,[hl]
-    and     %11111101 ; set mirror flag
+    and     %11111101 ; unset mirror flag
     ld      [hl],a
     pop     hl
 

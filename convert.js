@@ -26,6 +26,14 @@ var gb = {
             '255,255,255': 1,
             '163,163,163': 2,
             '0,0,0': 3
+        },
+
+        col: {
+            '255,0,255': 0,
+            '255,255,255': 0,
+            '163,163,163': 1,
+            '82,82,82': 2,
+            '0,0,0': 3
         }
 
     },
@@ -187,7 +195,35 @@ var gb = {
 
         },
 
-        Collision: function() {
+        Collision: function(file) {
+
+            console.log('[col] Parsing collision data "%s" using tileset "%s"...', file);
+
+            gb.loadFile(file).then(function(img) {
+
+                var colMap = gb.hashTile8(img, gb.palette.col),
+                    blocked = new Array(33).join('3');
+
+                if (colMap instanceof Promise ) {
+                    return colMap;
+
+                } else {
+                    return Promise.fulfilled(colMap.index.map(function(tile) {
+                        return tile === blocked ? 1 : 0;
+                    }));
+                }
+
+            }).then(function(data) {
+                file = file.replace(/\.png$/, '.bin');
+                console.log('[col] Saving collision data "%s"...', file);
+                return gb.saveFile(file ,data);
+
+            }).then(function() {
+                console.log('[col] Done!');
+
+            }, function(err) {
+                console.error('[col] Error:', err);
+            });
 
         },
 
@@ -302,7 +338,7 @@ var gb = {
                             key += palette[c];
 
                         } else {
-                            return Promise.rejected('Color %s at %sx%s was not found in pallete:', c, x, y);
+                            return Promise.rejected('Color ' + c + ' at ' + x + 'x' + y + ' was not found in palette.');
                         }
 
                     }
@@ -389,6 +425,7 @@ var gb = {
 gb.convert.Tileset('tiles.bg.png').then(function() {
     gb.convert.Tileset('tiles.ch.png', true).then(function() {
         gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
+            gb.convert.Collision('tiles.col.png');
             gb.convert.Map('main.map.json');
         });
     });

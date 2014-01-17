@@ -6,7 +6,7 @@ map_set_room: ; a = x, b = y
 
     push    hl
 
-    ld      hl,DataMapMain
+    ld      hl,DataMapMain + 80
     ld      a,h
     ld      [mapRoomDataOffsetTopD],a
     ld      a,l
@@ -135,6 +135,48 @@ get_tile_value: ; a = block value -> a tile value
     add     a,$20
     ld      h,a
     ld      a,[hl] ; load the actual tile value
+
+    pop     hl
+
+    ret
+
+
+get_col_at_screen: ; b = x coordinate, c = ycoordinate (both without scroll offsets) -> b collision value
+
+    push    hl
+
+    ; divide x by 8
+    srl     b
+    srl     b
+    srl     b
+
+    ; divide y by 8
+    srl     c 
+    srl     c
+    srl     c
+
+    ; index into screen data at b * 32 + a
+    ld      h,0 
+    ld      l,c 
+
+    ; multiply by 32 
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+
+    ld      b,$98
+    ld      c,b
+    add     hl,bc
+
+    ; load tile value from background buffer
+    ld      a,[hl]
+
+    ; load collision value from table
+    ld      h,$24
+    ld      l,a
+    ld      a,[hl]
 
     pop     hl
 

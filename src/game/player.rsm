@@ -1,4 +1,350 @@
+; Constants -------------------------------------------------------------------
+PLAYER_GRAVITY_MAX         EQU 3
+PLAYER_GRAVITY_INTERVAL    EQU 10
+PLAYER_MOVE_INC_DELAY      EQU 4 ; delay until we start moving when standing still
+PLAYER_MOVE_INC_DELAY_MOVE EQU 10 ; delay until we start moving when already moving in another direction
+PLAYER_MOVE_DEC_DELAY      EQU 3 ; delay until we stop moving when already moving
+
+PLAYER_SPEED_MAX           EQU 1
+PLAYER_JUMP_MAX            EQU 2
+PLAYER_FALL_MAX            EQU 4
+
+PLAYER_SLEEP_WAIT          EQU 180
+PLAYER_SPRITE_INDEX        EQU 0
+
+PLAYER_ANIMATION_IDLE      EQU 0
+PLAYER_ANIMATION_WALKING   EQU 1
+PLAYER_ANIMATION_SLEEP     EQU 2
+PLAYER_ANIMATION_PUSHING   EQU 3
+
+PLAYER_DIRECTION_LEFT      EQU 1
+PLAYER_DIRECTION_RIGHT     EQU 2
+
+
 ; Player ----------------------------------------------------------------------
+player_init:
+
+    ; Position 
+    ld      a,32
+    ld      [playerX],a
+    ld      [playerY],a
+
+    ; Direction
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirection],a
+    ld      a,255
+    ld      [playerDirectionLast],a
+
+    ; Animation
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ld      a,255
+    ld      [playerAnimationLast],a
+
+
+    ; Jumping / Falling
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+
+    ld      a,0
+    ld      [playerJumpForce],a
+    ld      [playerJumpPressed],a
+    ld      [playerFallSpeed],a
+
+
+    ; Movement
+    ld      a,PLAYER_MOVE_INC_DELAY
+    ld      [playerMoveIncTick],a
+
+    ld      a,PLAYER_MOVE_DEC_DELAY
+    ld      [playerMoveDecTick],a
+
+    ld      a,0
+    ld      [playerSpeedLeft],a
+    ld      [playerSpeedRight],a
+
+    ; Other
+    ld      a,PLAYER_SLEEP_WAIT
+    ld      [playerSleepTick],a
+
+    ; Sprite
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_enable
+
+    ret
+
+
+; Player Logic ----------------------------------------------------------------
 player_update:
+
+    ld      a,[playerTick]
+    cp      0
+    jp      nz,.no_update
+
+    call    player_move
+    call    player_sleep
+    call    player_animate
+
+    ; update sprite position
+    ld      a,[playerX]
+    ld      b,a
+    ld      a,[playerY]
+    ld      c,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_position
+
+    ; every other tick we switch the delay between 0 or 1 to 
+    ; emulate moving by 1.5 pixels every frame
+    ld      a,[playerTickSwitch]
+    ld      [playerTick],a
+
+    ld      a,[playerTickSwitch]
+    xor     a
+    ld      [playerTickSwitch],a
+
+    jp      .updated
+
+.no_update:
+    dec     a
+    ld      [playerTick],a
+
+.updated:
+    ret
+
+
+; Animation Updates -----------------------------------------------------------
+player_animate:
+
+    ; check for animation changes
+    ld      a,[playerAnimationLast]
+    ld      b,a
+    ld      a,[playerAnimation]
+    cp      b
+    jp      z,.no_animation_change
+    
+    ; switch to new animation
+    ld      b,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_set
+    call    sprite_animation_start
+    ld      a,b
+    ld      [playerAnimationLast],a
+
+.no_animation_change:
+
+    ; check for direction changes
+    ld      a,[playerDirectionLast]
+    ld      b,a
+    ld      a,[playerDirection]
+    cp      b
+    jp      z,.no_direction_change
+
+    ; switch to new direction
+    cp      PLAYER_DIRECTION_RIGHT
+    jp      z,.direction_right
+
+.direction_left:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_unset_mirror
+    jp      .direction_changed
+
+.direction_right:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_mirror
+    jp      .direction_changed
+
+.direction_changed:
+
+    ; reset animation frame
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_start
+
+    ld      a,[playerDirection]
+    ld      [playerDirectionLast],a
+
+.no_direction_change:
+    ret
+
+
+; Sleep Timer -----------------------------------------------------------------
+player_sleep:
+
+    ; in case no button is pressed decrease the sleep ticker 
+    ld      a,[inputState]
+    and     %00110001
+    jp      nz,.active
+
+    ; check sleep ticker
+    ld      a,[playerSleepTick]
+    cp      0
+    jp      nz,.waiting ; already sleeping
+
+    ; set sleeping
+    ld      a,PLAYER_ANIMATION_SLEEP
+    ld      [playerAnimation],a
+    jp      .done
+
+.waiting:
+    dec     a
+    ld      [playerSleepTick],a
+    jp      .done
+
+.active:
+    ld      a,PLAYER_SLEEP_WAIT
+    ld      [playerSleepTick],a
+    jp      .done
+
+.done:
+    ret
+
+
+; Movement Updates ------------------------------------------------------------
+player_move:
+    
+    ; Add a delay until we start moving when a direction is pressed
+    ld      a,[inputState]
+    and     %00110000
+    jp      nz,.direction_pressed 
+    
+    ; nothing was pressed, reset increase delay
+    ld      a,PLAYER_MOVE_INC_DELAY
+    ld      [playerMoveIncTick],a 
+
+    ; check whether we should decrease the player speed
+    ld      a,[playerMoveDecTick]
+    cp      0
+    jp      nz,.delay_decrease
+
+    ; set idle animation (when speed is zero)
+    ld      a,[playerSpeedRight]
+    ld      b,a
+    ld      a,[playerSpeedRight]
+    add     b
+    cp      0
+
+    jp      nz,.not_stopped
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+
+.not_stopped:
+    call    player_decrease_speed ; delay is over, change the speed
+    jp      .done
+
+.delay_decrease: ; dec the delay 
+    dec     a
+    ld      [playerMoveDecTick],a
+    jp      .done
+
+.direction_pressed:
+
+    ; something was pressed, reset decrease delay
+    ld      a,PLAYER_MOVE_DEC_DELAY
+    ld      [playerMoveDecTick],a 
+
+    ; check whether we should increase the player speed
+    ld      a,[playerMoveIncTick]
+    cp      0
+    jp      nz,.delay_increase
+
+    ; set walking animation
+    ld      a,PLAYER_ANIMATION_WALKING
+    ld      [playerAnimation],a
+
+    call    player_increase_speed ; delay is over, change the speed
+    jp      .done
+
+.delay_increase: ; dec the delay
+    dec     a 
+    ld      [playerMoveIncTick],a
+
+.done:
+    call    player_move_right
+    call    player_move_left
+    ret
+
+
+
+; Speed Handling Updates ------------------------------------------------------
+player_increase_speed:
+    
+    ; check if right is pressed
+    ld      a,[inputState]
+    cp      %00010000
+    jp      nz,.no_right
+
+    ; right is pressed
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirection],a
+
+    ; increase right speed until maximum is reached
+    ld      a,[playerSpeedRight]
+    cp      PLAYER_SPEED_MAX
+    jp      z,.no_left
+
+    inc     a
+    ld      [playerSpeedRight],a
+
+.no_right:
+
+    ; check if left is pressed
+    ld      a,[inputState]
+    cp      %00100000
+    jp      nz,.no_left
+
+    ; left is pressed
+    ld      a,PLAYER_DIRECTION_LEFT
+    ld      [playerDirection],a
+
+    ; increase left speed until maximum is reached
+    ld      a,[playerSpeedLeft]
+    cp      PLAYER_SPEED_MAX
+    jp      z,.no_left
+
+    inc     a
+    ld      [playerSpeedLeft],a
+
+.no_left:
+    ret
+
+
+player_decrease_speed:
+    
+    ; decrease right speed
+    ld      a,[playerSpeedRight]
+    cp      0
+    jp      z,.right_zero
+
+    dec     a
+    ld      [playerSpeedRight],a
+
+.right_zero:
+
+    ; decrease left speed
+    ld      a,[playerSpeedLeft]
+    cp      0
+    jp      z,.left_zero
+
+    dec     a
+    ld      [playerSpeedLeft],a
+
+.left_zero:
+    ret
+
+
+; Movement Logic --------------------------------------------------------------
+player_move_right:
+    ld      a,[playerSpeedRight]
+    ld      b,a
+    ld      a,[playerX]
+    add     b
+    ld      [playerX],a
+    ret
+
+player_move_left:
+    ld      a,[playerSpeedLeft]
+    ld      b,a
+    ld      a,[playerX]
+    sub     b
+    ld      [playerX],a
     ret
 

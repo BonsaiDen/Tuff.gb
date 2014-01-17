@@ -1,6 +1,9 @@
 ; We us the last 8kb of ROM0 for generic game data ----------------------------
-DataBlockDef:
+DataBlockDef: ; @2000
     INCBIN  "src/data/blocks.def.bin" ;  ; 1KB
+
+DataTileCol: ; @2400
+    INCBIN  "src/data/tiles.col.bin" ;  ; 128byte
 
 DataSpriteAnimation:
     include  "src/data/animation.rsm" ; ; 
@@ -10,5 +13,4 @@ DataTileImg:
 
 DataCharImg:
     INCBIN  "src/data/tiles.ch.bin" ; 2 KB
-
 

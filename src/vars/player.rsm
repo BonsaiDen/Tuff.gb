@@ -1,7 +1,24 @@
-playerX:       DB ; x position on screen
-playerY:       DB ; y position on screen
-playergf:      DB ; player gravity
-playerjf:      DB ; player jump force
-playerSprite:  DB ; player sprite
-playerfl:      DB ; direction|falling|onground|wallleft|wallright|wallup|walldown
+playerX:             DB ; x position on screen
+playerY:             DB ; y position on screen
+playerSpeedLeft:     DB 
+playerSpeedRight:    DB 
+
+playerTickSwitch     DB
+playerTick:          DB
+playerSleepTick:     DB
+playerMoveIncTick:   DB
+playerMoveDecTick:   DB
+
+playerAnimation:     DB
+playerAnimationLast: DB
+
+playerDirection:     DB
+playerDirectionLast: DB
+
+; Gravity and Jumping
+playerGravity:       DB 
+playerGravityTick:   DB
+playerJumpForce:     DB
+playerFallSpeed:     DB
+playerJumpPressed:   DB
 
