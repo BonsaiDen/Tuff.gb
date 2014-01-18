@@ -1,3 +1,5 @@
 coreVBlankDone:     DB
+coreHalfTick:       DB
+coreHalfTickSwitch: DB
 timer1000:          DB
 timer250:           DB

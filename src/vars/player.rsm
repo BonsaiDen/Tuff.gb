@@ -3,8 +3,6 @@ playerY:             DB ; y position on screen
 playerSpeedRight:    DB 
 playerSpeedLeft:     DB 
 
-playerTick:          DB
-playerTickSwitch:    DB
 playerSleepTick:     DB
 playerDecTick:       DB
 

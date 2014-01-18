@@ -33,8 +33,11 @@ game_init:
 
 
 ; Main Loop -------------------------------------------------------------------
-game_loop:
+game_loop_half:
     call    player_update
+    ret
+
+game_loop:
     call    sprite_animate_all
     ret
 
@@ -46,7 +49,7 @@ game_timer_1000:
 
 ; 250ms Timer -----------------------------------------------------------------
 game_timer_250:
-    call    player_timer
+    call    player_timer_250
     ret
 
 

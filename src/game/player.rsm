@@ -78,11 +78,6 @@ player_init:
 ; Player Logic ----------------------------------------------------------------
 player_update:
 
-    ; only update player every 1.5 frames
-    ld      a,[playerTick]
-    cp      0
-    jp      nz,.no_update
-
     ; control / animation
     call    player_accelerate
     call    player_decelerate
@@ -100,27 +95,10 @@ player_update:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_set_position
 
-    ; every other tick we switch the delay between 0 or 1 to 
-    ; emulate moving by 1.5 pixels every frame
-    ld      a,[playerTickSwitch]
-    ld      [playerTick],a
-
-    ; switch between 0 and 1
-    ld      a,[playerTickSwitch]
-    xor     a
-    ld      [playerTickSwitch],a
-
-    jp      .updated
-
-.no_update:
-    dec     a
-    ld      [playerTick],a
-
-.updated:
     ret
 
 
-player_timer:
+player_timer_250:
     call    player_sleep_timer
     ret
 
@@ -283,7 +261,6 @@ player_scroll_map:
 
     ld      a,2
     ld      [playerY],a
-    jp      .done
 
 .done:
     ret
@@ -334,7 +311,6 @@ player_gravity:
     ; set fall animation
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
-    jp     .done
 
 .done:
     ret
@@ -600,8 +576,6 @@ player_decelerate:
     dec     a
     ld      [playerSpeedLeft],a
 
-    jp      .done
-
 .done:
     ld      a,0
 
@@ -697,7 +671,6 @@ player_move:
 
     ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
-    jp     .done
 
 .done:
     ret
@@ -779,9 +752,6 @@ player_sleep:
     ; set sleeping
     ld      a,PLAYER_ANIMATION_SLEEP
     ld      [playerAnimation],a
-    jp      .done
-
-.waiting:
     jp      .done
 
 .active:
