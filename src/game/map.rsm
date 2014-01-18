@@ -263,44 +263,61 @@ map_draw_room:
     ret
 
 
-get_col_at_screen: ; b = x coordinate, c = ycoordinate (both without scroll offsets) -> b collision value
+map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if no collision, nz if collision
 
     push    hl
+
+    ; no col here
+    ;ld      a,16
+    ;ld      b,a
+
+    ;ld      a,47 ; 47 = no col ; 48 = col
+    ;ld      c,a
 
     ; divide x by 8
     srl     b
     srl     b
     srl     b
+    ld      a,b ; store x
 
     ; divide y by 8
-    srl     c 
+    srl     c
     srl     c
     srl     c
 
-    ; index into screen data at b * 32 + a
+    ; y * 32
     ld      h,0 
-    ld      l,c 
+    ld      l,c
 
-    ; multiply by 32 
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
+    add     hl,hl ; 2
+    add     hl,hl ; 4
+    add     hl,hl ; 8
+    add     hl,hl ; 16
+    add     hl,hl ; 32
 
+    ; + $9800 + x
     ld      b,$98
-    ld      c,b
+    ld      c,a ; restore x
     add     hl,bc
 
     ; load tile value from background buffer
     ld      a,[hl]
-
-    ; load collision value from table
-    ld      h,$24
-    ld      l,a
-    ld      a,[hl]
-
     pop     hl
 
+    ; ingore offscreen areas with unset tiles
+    cp      255
+    jp      z,.no_collision
+
+    ; get the actual tile value and check if it is smalle than 64
+    sub     128
+    cp      64 ; tile value < 64 (the first 64 tiles are blocking) (c is set when value is greater a)
+    jp      nc,.no_collision ; if not, there is no collision
+
+.collision:
+    or      1 ; set nz
+    ret
+
+.no_collision:
+    cp      a ; set z
     ret
 

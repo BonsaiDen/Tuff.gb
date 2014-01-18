@@ -3,11 +3,11 @@ PLAYER_DIRECTION_LEFT      EQU 1
 PLAYER_DIRECTION_RIGHT     EQU 2
 
 PLAYER_JUMP_MAX            EQU 2
-PLAYER_FALL_MAX            EQU 4
+PLAYER_FALL_MAX            EQU 3
 PLAYER_SPEED_MAX           EQU 1
 PLAYER_GRAVITY_MAX         EQU 3
 
-PLAYER_GRAVITY_INTERVAL    EQU 9
+PLAYER_GRAVITY_INTERVAL    EQU 10
 
 PLAYER_SLEEP_WAIT          EQU 180
 PLAYER_SPRITE_INDEX        EQU 0
@@ -19,14 +19,18 @@ PLAYER_ANIMATION_PUSHING   EQU 3
 PLAYER_ANIMATION_JUMP      EQU 4
 PLAYER_ANIMATION_FALL      EQU 5
 
+PLAYER_HALF_WIDTH          EQU 7
+PLAYER_HEIGHT              EQU 13
+
 
 
 ; Player ----------------------------------------------------------------------
 player_init:
 
     ; Position 
-    ld      a,32
+    ld      a,20
     ld      [playerX],a
+    ld      a,32
     ld      [playerY],a
 
     ; Direction
@@ -43,7 +47,7 @@ player_init:
 
 
     ; Jumping / Falling
-    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      a,1
     ld      [playerGravityTick],a
 
     ld      a,0
@@ -117,30 +121,109 @@ player_update:
 
 
 ; Player Collisions -----------------------------------------------------------
-player_collision_up:
+
+; if a collision is detected these will unset the zero flag  (nz = col, z = nocol)
+; call     player_collision_up
+; jp       nz, .collided 
+player_collision_up: 
+
+    ; right half 
     ld      a,[playerY]
-    cp      27
+    sub     PLAYER_HEIGHT
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 3
+    ld      b,a
+    call    map_get_collision
+    ret     nz
+
+    ; left half 
+    ld      a,[playerY]
+    sub     PLAYER_HEIGHT
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+
+
     ret
 
-player_collision_down:
+
+player_collision_down: 
+
+    ; right half 
     ld      a,[playerY]
-    cp      48
-    ;ld       a,0
-    ;cp       1
-    ret
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 3
+    ld      b,a
+    call    map_get_collision
+    ret     nz
+
+    ; left half 
+    ld      a,[playerY]
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+
+    ret     
+
 
 player_collision_left:
-    ;ld      a,[playerX]
-    ;cp      5
-    ld       a,0
-    cp       1
-    ret
+
+    ; upper half 
+    ld      a,[playerY]
+    sub     a,PLAYER_HEIGHT - 1
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    ret     nz
+
+    ; lower half 
+    ld      a,[playerY]
+    sub     1
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    ret     
+
 
 player_collision_right:
-    ;ld      a,[playerX]
-    ;cp      155
-    ld       a,0
-    cp       1
+
+    ; upper half 
+    ld      a,[playerY]
+    sub     a,PLAYER_HEIGHT - 1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    ret     nz
+
+    ; lower half 
+    ld      a,[playerY]
+    sub     1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+
     ret
 
 
@@ -177,7 +260,11 @@ player_scroll_map:
     jp      nc,.check_down
     call    map_scroll_up
 
-    ld      a,142
+    ; add a boost to the jump to we can reach a platform or something
+    ld      a,PLAYER_JUMP_MAX
+    ld      [playerJumpForce],a
+
+    ld      a,126
     ld      [playerY],a
     jp      .done
 
@@ -185,7 +272,7 @@ player_scroll_map:
     ; down ------------------------------
 .check_down:
     ld      a,[playerY]
-    cp      143 ; > 140
+    cp      129 ; > 140
     jp      c,.done
     call    map_scroll_down
 
@@ -290,7 +377,7 @@ player_jump:
 
     ; check if we need to move upwards
     ld      a,[playerJumpForce]
-    ld      b,a
+    ld      d,a
     cp      0
     jp      z,.done
 
@@ -311,21 +398,30 @@ player_jump:
 
     ; move player upwards
     ld      a,[playerY]
+    
+    ; check collision at current top pixel
+    call    player_collision_up
+    jp      nz,.collision
+
+    ld      a,[playerY]
+    dec     a
+
+    ; check again with new top pixel
+    call    player_collision_up
+    jp      nz,.collision
+
+    ; finally set new top pixel
+    ld      a,[playerY]
     dec     a
     ld      [playerY],a
-    
-    ; check collision
-    call    player_collision_up
-    jp      z,.collision
 
     ; loop until stored jump force reaches 0
-    dec     b
-    ld      a,b
-    cp      0
+    dec     d
     jp      nz,.apply_force
     jp      .done
 
 .collision:
+
     ld      a,0
     ld      [playerJumpPressed],a
 
@@ -367,14 +463,14 @@ player_decrease_jump:
 player_fall:
 
     ld      a,[playerFallSpeed]
-    ld      b,a ; load the current fall speed as the loop counter
+    ld      d,a ; load the current fall speed as the loop counter
     cp      0
     jp      z,.done ; if the fall speed is zero do nothing
 
 .fall:
 
     call    player_collision_down
-    jp      z,.collision
+    jp      nz,.collision
 
     ; reset ground state
     ld      a,0
@@ -386,9 +482,7 @@ player_fall:
     ld      [playerY],a
         
     ; loop until stored fall speed reaches 0
-    dec     b
-    ld      a,b
-    cp      0
+    dec     d
     jp      nz,.fall
     jp      .done
 
@@ -522,66 +616,80 @@ player_move:
     cp     0
     jp     z,.stopped
 
+    ; set walking animation when on ground
+    ld     a,[playerOnGround]
+    cp     1
+    jp     nz,.not_on_ground
+
     ld     a,PLAYER_ANIMATION_WALKING
     ld     [playerAnimation],a
     
     ; load x position
+.not_on_ground:
     ld     a,[playerX]
-    ld     b,a
-    ld     d,a ; store old x position
+    ld     d,a
+
+
 
     ; move right -----------------------------------
+.move_right:
     ld     a,[playerSpeedRight]
-    ld     c,a
+    cp     0
+    jp     z,.move_left
+    ld     e,a
 
 .loop_right:
 
     call   player_collision_right
-    jp     nz,.not_blocked_right
+    jp     z,.not_blocked_right
 
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .move_left
 
 .not_blocked_right:
-
-    ; TODO check X collision
-    inc    b
-    dec    c
-    ld     a,c
-    cp     0
+    inc    d
+    dec    e
     jp     nz,.loop_right
-
 
 
     ; move left ------------------------------------
 .move_left:
     ld     a,[playerSpeedLeft]
-    ld     c,a
+    cp     0
+    jp     z,.moved
+    ld     e,a
 
 .loop_left:
 
     call   player_collision_left
-    jp     nz,.not_blocked_left
+    jp     z,.not_blocked_left
 
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .moved
 
 .not_blocked_left:
-    dec    b
-    dec    c
-    ld     a,c
-    cp     0
+    dec    d
+    dec    e
     jp     nz,.loop_left
 
+
+
+    ; moved ----------------------------------------
 .moved:
     ; store new x position
-    ld     a,b
+    ld     a,d
     ld     [playerX],a
     jp     .done
 
-.stopped: ; reset to idle animation
+.stopped: 
+
+    ; reset to idle animation if on ground
+    ld     a,[playerOnGround]
+    cp     0
+    jp     z,.done
+
     ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
     jp     .done
