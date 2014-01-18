@@ -15,9 +15,12 @@ playerDirection:     DB
 playerDirectionLast: DB
 
 ; Gravity and Jumping
-playerGravity:       DB 
-playerGravityTick:   DB
-playerJumpForce:     DB
 playerFallSpeed:     DB
+
+
+playerGravityTick:   DB
 playerJumpPressed:   DB
+playerOnGround:      DB
+playerJumpForce:     DB
+playerJumpFrames:    DB
 

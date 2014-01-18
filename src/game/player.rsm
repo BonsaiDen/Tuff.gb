@@ -1,12 +1,13 @@
 ; Constants -------------------------------------------------------------------
-PLAYER_GRAVITY_MAX         EQU 3
-PLAYER_GRAVITY_INTERVAL    EQU 10
-PLAYER_MOVE_INC_DELAY      EQU 4 ; delay until we start moving when standing still
-PLAYER_MOVE_DEC_DELAY      EQU 3 ; delay until we stop moving when already moving
+PLAYER_DIRECTION_LEFT      EQU 1
+PLAYER_DIRECTION_RIGHT     EQU 2
 
-PLAYER_SPEED_MAX           EQU 1
 PLAYER_JUMP_MAX            EQU 2
 PLAYER_FALL_MAX            EQU 4
+PLAYER_SPEED_MAX           EQU 1
+PLAYER_GRAVITY_MAX         EQU 3
+
+PLAYER_GRAVITY_INTERVAL    EQU 9
 
 PLAYER_SLEEP_WAIT          EQU 180
 PLAYER_SPRITE_INDEX        EQU 0
@@ -15,9 +16,9 @@ PLAYER_ANIMATION_IDLE      EQU 0
 PLAYER_ANIMATION_WALKING   EQU 1
 PLAYER_ANIMATION_SLEEP     EQU 2
 PLAYER_ANIMATION_PUSHING   EQU 3
+PLAYER_ANIMATION_JUMP      EQU 4
+PLAYER_ANIMATION_FALL      EQU 5
 
-PLAYER_DIRECTION_LEFT      EQU 1
-PLAYER_DIRECTION_RIGHT     EQU 2
 
 
 ; Player ----------------------------------------------------------------------
@@ -50,6 +51,8 @@ player_init:
     ld      [playerJumpPressed],a
     ld      [playerFallSpeed],a
 
+    ld      a,1
+    ld      [playerOnGround],a
 
     ; Movement
     ld      a,0
@@ -77,8 +80,10 @@ player_update:
     jp      nz,.no_update
 
     ; control / animation
-    call    player_control
+    call    player_accelerate
+    call    player_decelerate
     call    player_move
+    call    player_gravity
     call    player_sleep
     call    player_animate
 
@@ -110,13 +115,255 @@ player_update:
     ret
 
 
-; Movement Updates ------------------------------------------------------------
-player_control:
-    call    player_accelerate
-    call    player_decelerate
+; Player Collisions -----------------------------------------------------------
+player_collision_up:
+    ld      a,[playerY]
+    cp      27
+    ret
+
+player_collision_down:
+    ld      a,[playerY]
+    cp      48
+    ret
+
+player_collision_left:
+    ld      a,[playerX]
+    cp      5
+    ret
+
+player_collision_right:
+    ld      a,[playerX]
+    cp      155
     ret
 
 
+
+; Gravity ---------------------------------------------------------------------
+player_gravity:
+
+    ; only increase / decrease gravity every PLAYER_GRAVITY_INTERVAL ticks
+    ld      a,[playerGravityTick]
+    dec     a
+    ld      [playerGravityTick],a
+
+    ; check if the ticker reached 0
+    cp      0
+    jp      nz,.no_tick
+
+    ; update gravity
+    call    player_decrease_jump
+    call    player_increase_fall
+
+    ; reset ticker
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+
+.no_tick:
+
+    call   player_fall
+    call   player_jump
+
+    ; if jump force > 0 set jump animation
+    ld     a,[playerJumpForce]
+    cp     0
+    jp     z,.no_jump
+
+    ; set jump animation
+    ld      a,PLAYER_ANIMATION_JUMP
+    ld      [playerAnimation],a
+    jp     .done
+
+.no_jump:
+
+    ; if fall speed > 0 set fall animation
+    ld     a,[playerFallSpeed]
+    cp     0
+    jp     z,.done
+
+    ; set fall animation
+    ld      a,PLAYER_ANIMATION_FALL
+    ld      [playerAnimation],a
+    jp     .done
+
+.done:
+    ret
+
+
+player_jump:
+
+    ; see if the jump button has been pressed
+    ld      a,[inputState]
+    and     %00000001
+    jp      z,.not_pressed
+
+    ; check if the player is continuosly pressing the button
+    ld      a,[playerJumpPressed]
+    cp      1
+    jp      z,.still_pressed
+
+    ; otherwrise set the button pressed on first press
+    ld      a,1
+    ld      [playerJumpPressed],a
+
+    ; and check if we're on the ground
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.no_ground
+
+    ; if we are, set the initial jump force and reset the gravity ticker
+    ld      a,PLAYER_JUMP_MAX
+    ld      [playerJumpForce],a
+
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+    jp      .still_pressed
+
+
+    ; reset the jump state
+.not_pressed:
+    ld      a,0
+    ld      [playerJumpPressed],a
+
+
+    ; if we're still pressing the button or are in the air update the jump value
+.still_pressed:
+.no_ground:
+
+    ; check if we need to move upwards
+    ld      a,[playerJumpForce]
+    ld      b,a
+    cp      0
+    jp      z,.done
+
+    ; check if we're the button was released
+    ld      a,[playerJumpPressed]
+    cp      0
+    jp      nz,.apply_force
+
+    ; if so quickly reduce the jump force
+    jp      .done
+
+    ; move player upwards
+.apply_force:
+    
+    ; reset on ground flag
+    ld      a,0
+    ld      [playerOnGround],a
+
+    ; move player upwards
+    ld      a,[playerY]
+    dec     a
+    ld      [playerY],a
+    
+    ; check collision
+    call    player_collision_up
+    jp      z,.collision
+
+    ; loop until stored jump force reaches 0
+    dec     b
+    ld      a,b
+    cp      0
+    jp      nz,.apply_force
+    jp      .done
+
+.collision:
+    ld      a,0
+    ld      [playerJumpPressed],a
+
+    ld      a,[playerJumpForce]
+    srl     a
+    srl     a
+    ld      [playerJumpForce],a
+
+.done:
+    ret
+
+
+player_decrease_jump:
+
+    ; check whether the jump button is still pressed;
+    ; if not we decrease the jump force more quickly
+    ld      a,[playerJumpPressed]
+    cp      0
+    jp      nz,.fast
+
+    ; normal decrease -1
+    ld      a,[playerJumpForce]
+    cp      0
+    jp      z,.done
+
+    dec     a
+    ld      [playerJumpForce],a
+
+    ; fast decrease /= 2
+.fast:
+    ld      a,[playerJumpForce]
+    srl     a; TODO update
+    ld      [playerJumpForce],a
+
+.done:
+    ret
+
+
+player_fall:
+
+    ld      a,[playerFallSpeed]
+    ld      b,a ; load the current fall speed as the loop counter
+    cp      0
+    jp      z,.done ; if the fall speed is zero do nothing
+
+.fall:
+
+    call    player_collision_down
+    jp      z,.collision
+
+    ; reset ground state
+    ld      a,0
+    ld      [playerOnGround],a
+    
+    ; increase player position
+    ld      a,[playerY]
+    inc     a
+    ld      [playerY],a
+        
+    ; loop until stored fall speed reaches 0
+    dec     b
+    ld      a,b
+    cp      0
+    jp      nz,.fall
+    jp      .done
+
+.collision:
+    ld      a,0
+    ld      [playerFallSpeed],a
+    ld      a,1
+    ld      [playerOnGround],a
+
+.done:
+    ret
+
+
+player_increase_fall:
+
+    ; if we're still jumping do not increase the fall speed
+    ld      a,[playerJumpForce]
+    cp      0
+    jp      nz,.no_increase
+
+    ; otherwise increase it untiul we reach the maximum
+    ld      a,[playerFallSpeed]
+    cp      PLAYER_GRAVITY_MAX
+    jp      z,.no_increase
+
+    inc     a
+    ld      [playerFallSpeed],a
+
+.no_increase:
+    ret
+
+
+
+; Movement --------------------------------------------------------------------
 player_accelerate:
 
     ; check which direction is pressed
@@ -222,34 +469,58 @@ player_move:
     ; load x position
     ld     a,[playerX]
     ld     b,a
+    ld     d,a ; store old x position
 
     ; move right
     ld     a,[playerSpeedRight]
+    ld     c,a
 
 .loop_right:
+
+    call   player_collision_right
+    jp     z,.move_left
+
+    ; TODO check X collision
     inc    b
-    dec    a
+    dec    c
+    ld     a,c
     cp     0
     jp     nz,.loop_right
 
+.move_left:
     ; move left
     ld     a,[playerSpeedLeft]
+    ld     c,a
 
 .loop_left:
+
+    call   player_collision_left
+    jp     z,.store
+
     dec    b
-    dec    a
+    dec    c
+    ld     a,c
     cp     0
     jp     nz,.loop_left
 
+.store:
     ; store new x position
     ld     a,b
     ld     [playerX],a
+
+    ; if the x position did not change we are blocked
+    cp     d
+    jp     z,.pushing
     jp     .done
 
 .stopped: ; reset to idle animation
     ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
     jp     .done
+
+.pushing:
+    ld     a,PLAYER_ANIMATION_PUSHING
+    ld     [playerAnimation],a
 
 .done:
     ret

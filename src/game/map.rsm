@@ -6,6 +6,8 @@ map_set_room: ; a = x, b = y
 
     push    hl
 
+    ; offset = (y * width + x) * 80
+
     ld      hl,DataMapMain + 80
     ld      a,h
     ld      [mapRoomDataOffsetTopD],a
