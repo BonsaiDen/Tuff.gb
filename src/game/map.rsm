@@ -8,7 +8,7 @@ map_set_room: ; a = x, b = y
 
     ; offset = (y * width + x) * 80
 
-    ld      hl,DataMapMain + 80
+    ld      hl,DataMapMain 
     ld      a,h
     ld      [mapRoomDataOffsetTopD],a
     ld      a,l
@@ -21,6 +21,155 @@ map_set_room: ; a = x, b = y
 
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
+
+    ; row counter
+    ld      b,8
+    
+    ; col counter
+    ld      c,0
+
+    ; screen pointer base offset
+    ld      hl,$9800
+
+    ; map room pointer
+    ld      a,[mapRoomDataOffsetTopD]
+    ld      d,a
+    ld      a,[mapRoomDataOffsetTopE]
+    ld      e,a
+
+    ; reset RLE
+    ld      a,0
+    ld      [mapRLERepeat],a
+
+.loop_y:
+
+    ; y loop header
+    ld      a,b
+    cp      0
+    jp      z,.done
+    dec     b
+
+    ; y loop body
+    ld      c,10
+
+.loop_x:
+
+    dec     c
+
+    ; check if we need to repeat any more blocks
+    ld      a,[mapRLERepeat]
+    cp      0
+    jp      nz,.draw_rle ; if so, just draw another block
+
+    ; otherwise fetch the next block
+    ld      a,[de] ; 
+    cp      250 ; check for rle length indicator (blockValue > 249)
+    jp      c,.no_rle ; 
+
+    ; yes we got RLE data, store the number of repeats
+    sub     246
+    ld      [mapRLERepeat],a;
+
+    ; load the real block value
+    inc     de
+    ld      a,[de]
+    ld      [mapRLEValue],a
+    ; fall through
+
+    ; no, just a normal block
+.no_rle:
+    inc     de; next block 
+    jp      .draw_block
+
+.draw_rle:
+    dec     a; a is still mapRLERepeat
+    ld      [mapRLEValue],a
+    ld      a,[mapRLEValue]
+
+.draw_block:
+
+    ; TODO get the actual tile value
+    ;call    get_tile_value
+
+    ; draw 4 tiles
+    push    hl
+    push    de
+    push    bc
+
+    ; drawing ------------------------------------------
+
+    ld      d,a ; save block data
+
+    ; upper left
+    ld      b,$20 ; block def row 0 offset
+    ld      c,d
+    ld      a,[bc] ; tile value
+    sub     a,128 ; tile data offset
+    ld      [hl],a ;  draw + 0
+
+
+    ; upper right
+    ld      b,$21 ; block def row 0 offset
+    ld      c,d
+    ld      a,[bc] ; tile value
+    sub     a,128 ; tile data offset
+    inc     hl
+    ld      [hl],a ; draw +1
+
+
+    ; skip one rwo
+    ld      a,d ; save block
+    ld      d,0
+    ld      e,31
+    add     hl,de
+    ld      d,a ; restore block
+
+    ; lower left
+    ld      b,$22 ; block def row 0 offset
+    ld      c,d
+    ld      a,[bc] ; tile value
+    sub     a,128 ; tile data offset
+    ld      [hl],a ; draw + 32
+
+    ; lower right
+    ld      b,$23 ; block def row 0 offset
+    ld      c,d
+    ld      a,[bc] ; tile value
+    sub     a,128 ; tile data offset
+    inc     hl
+    ld      [hl],a ; draw + 33
+
+    ; drawing ------------------------------------------
+    pop     bc
+    pop     de
+    pop     hl
+
+    ; next x block
+    inc     hl
+    inc     hl
+
+    ; x loop end
+    ld      a,c
+    cp      0
+    jp      nz,.loop_x
+
+    ; y loop end (skip one 16x16 screen data row)
+    push    de
+    ld      d,0
+    ld      e,44 ; 12 left + one full row of 32
+    add     hl,de
+    pop     de
+
+    jp      .loop_y
+
+
+.done:
+    ret
+
+
+
+
+map_draw_old:
 
     ; row counter
     ld      b,0

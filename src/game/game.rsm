@@ -38,7 +38,6 @@ game_init:
 
 ; Main Loop -------------------------------------------------------------------
 game_loop:
-
     call    player_update
     call    sprite_animate_all
     ret

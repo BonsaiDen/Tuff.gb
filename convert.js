@@ -230,12 +230,17 @@ var gb = {
         Map: function(file) {
 
             console.log('[map] Converting tiles JSON Map "%s"...', file);
-            return gb.loadFile(file).then(function(data) {
+            return gb.loadFile(file).then(function(map) {
 
-                var map = data.layers[0],
+                // tiled index starts at i
+                var data = map.layers[0].data.map(function(i) {
+                        return i - 1;
+                    }),
                     bytes = [],
-                    w = data.width,
-                    h = data.height,
+                    rleBytes = [],
+                    rleOffsets = [],
+                    w = map.width,
+                    h = map.height,
                     rx = w / 10,
                     ry = h / 8;
 
@@ -243,17 +248,27 @@ var gb = {
                 for(var y = 0; y < ry; y++) {
                     for(var x = 0; x < rx; x++) {
 
+                        var roomBytes = [];
                         for(var i = 0; i < 8; i++) {
-                            var offset = ((y * 8 + i) * w) + x * 10;
-                            bytes.push.apply(bytes, map.data.slice(offset, offset + 10));
+
+                            var offset = ((y * 8 + i) * w) + x * 10,
+                                rowBytes = data.slice(offset, offset + 10);
+
+                            roomBytes.push.apply(roomBytes, rowBytes);
+
                         }
+
+                        bytes.push.apply(bytes, roomBytes);
+
+                        // RLE encoded
+                        rleOffsets.push((rleBytes.length >> 8), rleBytes.length & 0xff);
+                        rleBytes.push.apply(rleBytes, gb.rleRoom(roomBytes));
 
                     }
                 }
 
-                return Promise.fulfilled(bytes.map(function(i) {
-                    return i - 1;
-                }));
+                console.log(rleOffsets.length, rleBytes.length);
+                return Promise.fulfilled(rleOffsets.concat(rleBytes));
 
             }).then(function(data) {
                 file = file.replace(/\.json$/, '.bin');
@@ -268,6 +283,36 @@ var gb = {
             });
 
         }
+
+    },
+
+    rleRoom: function(bytes) {
+
+        var compressed = [];
+        for(var i = 0; i < bytes.length; i++) {
+
+            var matching = 0;
+            for(var e = i; e < bytes.length; e++) {
+                if (bytes[e] === bytes[i] && matching < 9) {
+                    matching++;
+
+                } else {
+                    break;
+                }
+            }
+
+            if (matching > 2) {
+                i += matching;
+                compressed.push(249 + (matching - 3), bytes[i]); // 249 = 2 repeats etc.
+
+            } else {
+                compressed.push(bytes[i]);
+            }
+
+        }
+
+        //console.log('= ' + compressed.length + ' / 80, ', 100 / 80 * compressed.length);
+        return compressed;
 
     },
 

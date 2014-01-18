@@ -1,3 +1,6 @@
 mapRoomDataOffsetTopD:      DB
 mapRoomDataOffsetTopE:      DB
 
+mapRLERepeat:               DB
+mapRLEValue:                DB
+
