@@ -1,8 +1,8 @@
+mapRoomBuffer:              DS 512 ; must be at the top for faster collision checks
 mapRoomDataOffsetTopD:      DB
 mapRoomDataOffsetTopE:      DB
 mapRoomX:                   DB
 mapRoomY:                   DB
-
 mapRLERepeat:               DB
 mapRLEValue:                DB
 

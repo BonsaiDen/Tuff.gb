@@ -124,7 +124,7 @@ map_draw_room:
     ld      c,0
 
     ; screen pointer base offset
-    ld      hl,$9800
+    ld      hl,mapRoomBuffer
 
     ; map room pointer
     ld      a,[mapRoomDataOffsetTopD]
@@ -260,19 +260,18 @@ map_draw_room:
 
 
 .done:
+
+    ; Copy to VRAM
+    ld       hl,mapRoomBuffer
+    ld       de,$9800
+    ld       bc,512
+    call     mem_CopyVRAM
     ret
 
 
 map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if no collision, nz if collision
 
     push    hl
-
-    ; no col here
-    ;ld      a,16
-    ;ld      b,a
-
-    ;ld      a,47 ; 47 = no col ; 48 = col
-    ;ld      c,a
 
     ; divide x by 8
     srl     b
@@ -295,8 +294,8 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     add     hl,hl ; 16
     add     hl,hl ; 32
 
-    ; + $9800 + x
-    ld      b,$98
+    ; + mapRoomBuffer + x
+    ld      b,$C3
     ld      c,a ; restore x
     add     hl,bc
 
