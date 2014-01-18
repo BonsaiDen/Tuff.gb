@@ -1,21 +1,116 @@
+; Constants -------------------------------------------------------------------
+MAP_INDEX_SIZE      EQU     512
+MAP_RLE_VALUE       EQU     249
+                            
+
+
 ; Map -------------------------------------------------------------------------
 ; The map is always 25x32 rooms
 ; each room has 10x8 (16x16px) tiles for a total of 80 tiles per room
 ; map data is aligned in room offsets
-map_set_room: ; a = x, b = y
+map_set_room: ; b = x, c = y
 
     push    hl
+    push    de
 
-    ; offset = (y * width + x) * 80
+    ; store new room coordinates
+    ld      a,b
+    ld      [mapRoomX],a
+    ld      a,c
+    ld      [mapRoomY],a
 
-    ld      hl,DataMapMain 
+    ; RoomId = y * MAP_WIDTH + x
+    ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
+    ; MapData = (MapOffset + MapIndexSize + RoomOffset) - 1
+
+    ; Offset into Index ------------------------
+
+    ; y * MAP_WIDTH
+    ld      h,16
+    ld      e,c
+    call    math_mul8b ; hl = offset into index
+
+    ; + x
+    ld      c,b
+    ld      b,0
+    add     hl,bc
+
+    ; * 2
+    add     hl,hl
+
+    ; + MapOffset
+    ld      bc,DataMapMain
+    add     hl,bc
+
+    ; Room Offset Value ------------------------
+    ld      a,[hli]
+    ld      b,a
+
+    ld      a,[hl]
+    ld      c,a
+
+    ; MapOffset Room Offset 
+    ld      hl,DataMapMain
+    add     hl,bc
+
+    ; + MapIndexSize - 1
+    ld      bc,MAP_INDEX_SIZE - 1
+    add     hl,bc
+
+
+    ; store it
     ld      a,h
     ld      [mapRoomDataOffsetTopD],a
     ld      a,l
     ld      [mapRoomDataOffsetTopE],a
 
+    pop     de
     pop     hl
 
+    ; draw the room
+    call    map_draw_room
+
+    ret
+
+
+; Scrolling -------------------------------------------------------------------
+map_scroll_left:
+    ld      a,[mapRoomX]
+    dec     a
+    ld      b,a
+    ld      a,[mapRoomY]
+    ld      c,a
+    call    map_set_room
+    ret
+
+
+map_scroll_right:
+    ld      a,[mapRoomX]
+    inc     a
+    ld      b,a
+    ld      a,[mapRoomY]
+    ld      c,a
+    call    map_set_room
+    ret
+
+
+map_scroll_down:
+    ld      a,[mapRoomX]
+    ld      b,a
+    ld      a,[mapRoomY]
+    inc     a
+    ld      c,a
+    call    map_set_room
+    ret
+
+
+map_scroll_up:
+    ld      a,[mapRoomX]
+    ld      b,a
+    ld      a,[mapRoomY]
+    dec     a
+    ld      c,a
+    call    map_set_room
     ret
 
 
@@ -54,44 +149,48 @@ map_draw_room:
 
 .loop_x:
 
-    dec     c
+    dec     c ; reduce column counter
 
+    ; RLE ----------------------------------------
+    
     ; check if we need to repeat any more blocks
     ld      a,[mapRLERepeat]
     cp      0
     jp      nz,.draw_rle ; if so, just draw another block
 
     ; otherwise fetch the next block
-    ld      a,[de] ; 
-    cp      250 ; check for rle length indicator (blockValue > 249)
-    jp      c,.no_rle ; 
+    inc     de; 
+    ld      a,[de]
 
-    ; yes we got RLE data, store the number of repeats
-    sub     246
+    ; check if it is RLE data
+    cp      MAP_RLE_VALUE
+    jp      z,.rle
+    cp      MAP_RLE_VALUE + 1 ; check for rle length indicator (blockValue > 249)
+    jp      c,.draw_block
+
+.rle:
+
+    ; yes we got RLE data, store the number of repeats;
+    ; 249 means draw the following tile value 3 times
+    sub     MAP_RLE_VALUE - 2
     ld      [mapRLERepeat],a;
 
     ; load the real block value
     inc     de
     ld      a,[de]
     ld      [mapRLEValue],a
-    ; fall through
-
-    ; no, just a normal block
-.no_rle:
-    inc     de; next block 
     jp      .draw_block
 
 .draw_rle:
-    dec     a; a is still mapRLERepeat
-    ld      [mapRLEValue],a
+    dec     a
+    ld      [mapRLERepeat],a
     ld      a,[mapRLEValue]
+
+    ; RLE ----------------------------------------
 
 .draw_block:
 
-    ; TODO get the actual tile value
-    ;call    get_tile_value
-
-    ; draw 4 tiles
+    ; draw 4 8x8 tiles
     push    hl
     push    de
     push    bc
@@ -105,7 +204,7 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-    ld      [hl],a ;  draw + 0
+    ld      [hli],a ;  draw + 0
 
 
     ; upper right
@@ -113,11 +212,9 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-    inc     hl
     ld      [hl],a ; draw +1
 
-
-    ; skip one rwo
+    ; skip one screen buffer row
     ld      a,d ; save block
     ld      d,0
     ld      e,31
@@ -129,14 +226,13 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-    ld      [hl],a ; draw + 32
+    ld      [hli],a ; draw + 32
 
     ; lower right
     ld      b,$23 ; block def row 0 offset
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-    inc     hl
     ld      [hl],a ; draw + 33
 
     ; drawing ------------------------------------------
@@ -164,131 +260,6 @@ map_draw_room:
 
 
 .done:
-    ret
-
-
-
-
-map_draw_old:
-
-    ; row counter
-    ld      b,0
-    
-    ; col counter
-    ld      c,0
-
-    ; screen pointer base offset
-    ld      hl,$9800
-
-    ; map room pointer
-    ld      a,[mapRoomDataOffsetTopD]
-    ld      d,a
-    ld      a,[mapRoomDataOffsetTopE]
-    ld      e,a
-
-    ; inc     de only increase on every second row and every second tile
-
-.loopy:
-
-    ; < 16
-    ld      a,b
-    cp      16 ; 16 / 2 = 8 tiles
-    jp      z,.done
-    ld      c,0
-
-    ; store map data pointer for the start of the row
-    push    de
-
-.loopx:
-    
-    ld      a,[de]
-
-    ; set tile
-    call    get_tile_value
-    sub     a,128
-    ld      [hl],a
-
-    ; on every uneven column move the map pointer offset forward by 1
-    ld      a,c
-    and     $01
-    jp      z,.skip
-    inc     de
-
-.skip:
-
-    ; x++
-    inc     c 
-
-    ; next screen offset
-    inc     hl
-
-    ; x < 20
-    ld      a,20
-    cp      c
-    jp      nz,.loopx
-    inc     b; y++
-
-    ; skip the rest of the screen buffer
-    ld      d,0
-    ld      e,12
-    add     hl,de
-
-    ; restore map pointer offset
-    pop     de 
-
-    ; on uneven row move the map block pointer offset forward by 10
-    ld      a,b
-    and     $01
-    jp      nz,.loopy
-
-    ; increase pointer by 10
-    push    hl
-
-    ld      h,d
-    ld      l,e
-
-    ld      d,0 
-    ld      e,10
-
-    add     hl,de
-
-    ld      d,h
-    ld      e,l
-
-    pop     hl
-
-    jp      .loopy
-
-.done:
-    ret
-
-
-get_tile_value: ; a = block value -> a tile value
-
-    push    hl
-
-    ld      l,a; store block value
-
-    ; calculate the sub tile index into the block def data
-    ; this is done via even/ueven rows and tiles
-    ; and is later be used as the highbyte of the index into the blockdef
-    ; data table (very clever indeed)
-    ld      a,b ; y
-    and     $01; is now 1 or 0
-    add     a,a; 2 or 0
-    ld      h,a; h now has the y offset
-
-    ld      a,c
-    and     $01 ; 1 or 2
-    add     a,h
-    
-    ; BlockDef data is specifically offset at $2000 in ROM0
-    add     a,$20
-    ld      h,a
-    ld      a,[hl] ; load the actual tile value
-
-    pop     hl
-
     ret
 
 

@@ -9,6 +9,8 @@ var path = require('path'),
 // ----------------------------------------------------------------------------
 var gb = {
 
+    rleValue: 249,
+
     base: path.join(process.cwd(), process.argv[2]),
 
     palette: {
@@ -267,8 +269,10 @@ var gb = {
                     }
                 }
 
-                console.log(rleOffsets.length, rleBytes.length);
-                return Promise.fulfilled(rleOffsets.concat(rleBytes));
+                var compressed = rleOffsets.concat(rleBytes);
+                console.log('= ' + compressed.length + ' / ' + bytes.length, 100 / bytes.length * compressed.length);
+
+                return Promise.fulfilled(compressed);
 
             }).then(function(data) {
                 file = file.replace(/\.json$/, '.bin');
@@ -293,7 +297,7 @@ var gb = {
 
             var matching = 0;
             for(var e = i; e < bytes.length; e++) {
-                if (bytes[e] === bytes[i] && matching < 9) {
+                if (bytes[e] === bytes[i] && matching < (255 - gb.rleValue + 3)) {
                     matching++;
 
                 } else {
@@ -302,16 +306,18 @@ var gb = {
             }
 
             if (matching > 2) {
-                i += matching;
-                compressed.push(249 + (matching - 3), bytes[i]); // 249 = 2 repeats etc.
 
-            } else {
-                compressed.push(bytes[i]);
+                // at least draw 3 tiles
+                compressed.push(gb.rleValue + (matching - 3), bytes[i]);
+                i += matching;
+
             }
+
+            // don't forget the tile which didn't match!
+            compressed.push(bytes[i]);
 
         }
 
-        //console.log('= ' + compressed.length + ' / 80, ', 100 / 80 * compressed.length);
         return compressed;
 
     },

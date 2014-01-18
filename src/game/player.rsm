@@ -86,6 +86,7 @@ player_update:
     call    player_gravity
     call    player_sleep
     call    player_animate
+    call    player_scroll_map
 
     ; update sprite position
     ld      a,[playerX]
@@ -124,18 +125,75 @@ player_collision_up:
 player_collision_down:
     ld      a,[playerY]
     cp      48
+    ;ld       a,0
+    ;cp       1
     ret
 
 player_collision_left:
-    ld      a,[playerX]
-    cp      5
+    ;ld      a,[playerX]
+    ;cp      5
+    ld       a,0
+    cp       1
     ret
 
 player_collision_right:
-    ld      a,[playerX]
-    cp      155
+    ;ld      a,[playerX]
+    ;cp      155
+    ld       a,0
+    cp       1
     ret
 
+
+; Handle Map Scrolling --------------------------------------------------------
+player_scroll_map:
+
+    ; left ------------------------------
+    ld      a,[playerX]
+    cp      1 ; < 1
+    jp      nc,.check_right
+    call    map_scroll_left
+
+    ld      a,159
+    ld      [playerX],a
+    jp      .done
+
+    ; right -----------------------------
+.check_right:
+    ld      a,[playerX]
+    cp      159 ; > 159
+    jp      c,.check_up
+    call    map_scroll_right
+
+    ld      a,2
+    ld      [playerX],a
+    jp      .done
+
+
+    ; up --------------------------------
+.check_up:
+    ld      a,[playerY]
+    cp      1 ; < 1
+    jp      nc,.check_down
+    call    map_scroll_up
+
+    ld      a,142
+    ld      [playerY],a
+    jp      .done
+
+
+    ; down ------------------------------
+.check_down:
+    ld      a,[playerY]
+    cp      143 ; > 140
+    jp      c,.done
+    call    map_scroll_down
+
+    ld      a,2
+    ld      [playerY],a
+    jp      .done
+
+.done:
+    ret
 
 
 ; Gravity ---------------------------------------------------------------------
@@ -471,14 +529,20 @@ player_move:
     ld     b,a
     ld     d,a ; store old x position
 
-    ; move right
+    ; move right -----------------------------------
     ld     a,[playerSpeedRight]
     ld     c,a
 
 .loop_right:
 
     call   player_collision_right
-    jp     z,.move_left
+    jp     nz,.not_blocked_right
+
+    ld     a,PLAYER_ANIMATION_PUSHING
+    ld     [playerAnimation],a
+    jp     .move_left
+
+.not_blocked_right:
 
     ; TODO check X collision
     inc    b
@@ -487,40 +551,39 @@ player_move:
     cp     0
     jp     nz,.loop_right
 
+
+
+    ; move left ------------------------------------
 .move_left:
-    ; move left
     ld     a,[playerSpeedLeft]
     ld     c,a
 
 .loop_left:
 
     call   player_collision_left
-    jp     z,.store
+    jp     nz,.not_blocked_left
 
+    ld     a,PLAYER_ANIMATION_PUSHING
+    ld     [playerAnimation],a
+    jp     .moved
+
+.not_blocked_left:
     dec    b
     dec    c
     ld     a,c
     cp     0
     jp     nz,.loop_left
 
-.store:
+.moved:
     ; store new x position
     ld     a,b
     ld     [playerX],a
-
-    ; if the x position did not change we are blocked
-    cp     d
-    jp     z,.pushing
     jp     .done
 
 .stopped: ; reset to idle animation
     ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
     jp     .done
-
-.pushing:
-    ld     a,PLAYER_ANIMATION_PUSHING
-    ld     [playerAnimation],a
 
 .done:
     ret

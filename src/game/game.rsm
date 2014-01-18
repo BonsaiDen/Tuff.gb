@@ -24,14 +24,10 @@ game_init:
     ; Player
     call    player_init
 
-    ; player pos
-    ;ld      a,16
-    ;ld      [playerX],a
-    ;ld      [playerY],a
-
     ; Map
+    ld      b,1
+    ld      c,0
     call    map_set_room
-    call    map_draw_room
 
     ret
 

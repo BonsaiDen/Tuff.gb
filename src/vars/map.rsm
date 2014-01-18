@@ -1,5 +1,7 @@
 mapRoomDataOffsetTopD:      DB
 mapRoomDataOffsetTopE:      DB
+mapRoomX:                   DB
+mapRoomY:                   DB
 
 mapRLERepeat:               DB
 mapRLEValue:                DB
