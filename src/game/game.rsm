@@ -38,94 +38,6 @@ game_loop:
     call    sprite_animate_all
     ret
 
-game_animation_test:
-    ld      a,[inputState]
-    and     %10000000
-    jp      z,.not_idle
-
-    ; idle
-    ld      a,0
-    ld      b,0
-    call    sprite_animation_set
-
-.not_idle:
-
-    ld      a,[inputState]
-    and     %01000000
-    jp      z,.not_walking
-
-    ; walking
-    ld      a,0
-    ld      b,1
-    call    sprite_animation_set
-
-.not_walking:
-
-    ld      a,[inputState]
-    and     %00100000
-    jp      z,.not_sleeping
-
-    ; walking
-    ld      a,0
-    ld      b,2
-    call    sprite_animation_set
-
-.not_sleeping:
-
-    ld      a,[inputState]
-    and     %00010000
-    jp      z,.not_pushing
-
-    ; sleeping
-    ld      a,0
-    ld      b,3
-    call    sprite_animation_set
-
-.not_pushing:
-
-    ld      a,[inputState]
-    and     %00001000
-    jp      z,.not_starting
-
-    ; start
-    ld      a,0
-    call    sprite_animation_start
-
-.not_starting:
-
-    ld      a,[inputState]
-    and     %00000100
-    jp      z,.not_stopping
-
-    ; start
-    ld      a,0
-    call    sprite_animation_stop
-
-.not_stopping:
-
-
-    ld      a,[inputState]
-    and     %00000010
-    jp      z,.not_pausing
-
-    ; pause
-    ld      a,0
-    call    sprite_animation_pause
-
-.not_pausing:
-
-    ld      a,[inputState]
-    and     %00000001
-    jp      z,.not_resuming
-
-    ; resume
-    ld      a,0
-    call    sprite_animation_resume
-
-.not_resuming:
-
-    ret
-
 
 ; 1 Second Timer --------------------------------------------------------------
 game_timer_1000:
@@ -134,6 +46,7 @@ game_timer_1000:
 
 ; 250ms Timer -----------------------------------------------------------------
 game_timer_250:
+    call    player_timer
     ret
 
 

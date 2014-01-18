@@ -9,7 +9,7 @@ PLAYER_GRAVITY_MAX         EQU 3
 
 PLAYER_GRAVITY_INTERVAL    EQU 10
 
-PLAYER_SLEEP_WAIT          EQU 180
+PLAYER_SLEEP_WAIT          EQU 120
 PLAYER_SPRITE_INDEX        EQU 0
 
 PLAYER_ANIMATION_IDLE      EQU 0
@@ -117,6 +117,11 @@ player_update:
     ld      [playerTick],a
 
 .updated:
+    ret
+
+
+player_timer:
+    call    player_sleep_timer
     ret
 
 
@@ -761,10 +766,15 @@ player_sleep:
     and     %00110001
     jp      nz,.active
 
+    ; also check whether we're on the ground
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.active
+
     ; check sleep ticker
     ld      a,[playerSleepTick]
     cp      0
-    jp      nz,.waiting ; already sleeping
+    ret     nz
 
     ; set sleeping
     ld      a,PLAYER_ANIMATION_SLEEP
@@ -772,8 +782,6 @@ player_sleep:
     jp      .done
 
 .waiting:
-    dec     a
-    ld      [playerSleepTick],a
     jp      .done
 
 .active:
@@ -782,5 +790,13 @@ player_sleep:
     jp      .done
 
 .done:
+    ret
+
+player_sleep_timer:
+    ld      a,[playerSleepTick]
+    cp      0
+    ret     z
+    dec     a
+    ld      [playerSleepTick],a
     ret
 
