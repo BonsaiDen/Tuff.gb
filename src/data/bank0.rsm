@@ -6,7 +6,7 @@ DataTileCol: ; @2400
     INCBIN  "src/data/tiles.col.bin" ;  ; 128byte
 
 DataSpriteAnimation:
-    include  "src/data/animation.rsm" ; ; 
+    include  "src/data/animation.rsm" ; 896 byte (max)
 
 DataTileImg:
     INCBIN  "src/data/tiles.bg.bin" ; 4 KB

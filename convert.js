@@ -9,14 +9,14 @@ var path = require('path'),
 // ----------------------------------------------------------------------------
 var gb = {
 
-    rleValue: 249,
+    rleMapValue: 249,
 
     base: path.join(process.cwd(), process.argv[2]),
 
     palette: {
 
         bg: {
-            '255,0,255': 0,
+            '255,0,255': 4,
             '255,255,255': 0,
             '163,163,163': 1,
             '82,82,82': 2,
@@ -31,7 +31,7 @@ var gb = {
         },
 
         col: {
-            '255,0,255': 0,
+            '255,0,255': 4,
             '255,255,255': 0,
             '163,163,163': 1,
             '82,82,82': 2,
@@ -108,6 +108,53 @@ var gb = {
                     bytes = gb.rearrangeTiles16(bytes, img.width / 8, img.height / 8);
                 }
 
+                /*
+                var counts = {};
+                bytes.forEach(function(b) {
+                    if (!counts.hasOwnProperty(b)) {
+                        counts[b] = 0;
+                    }
+                    counts[b]++;
+                });
+
+                var missing = [];
+                for(var i = 0; i < 255; i++) {
+                    if (!counts.hasOwnProperty(i)) {
+                        missing.push(i);
+                    }
+                }
+
+
+                var maxRun = 0,
+                    maxByte = 0;
+
+                for(var e = 0; e < missing.length; e++) {
+
+                    var v = missing[e], run = 0;
+                    for(var o = e +1; o < missing.length; o++) {
+
+                        v++;
+
+                        if (missing[o] !== v) {
+                            break;
+
+                        } else {
+                            run++;
+                        }
+                    }
+
+                    if (run) {
+                        if (run > maxRun) {
+                            maxByte = missing[e];
+                            maxRun = run;
+                        }
+                    }
+
+                }
+
+                console.log(maxByte, maxRun);
+                console.log('rled:', bytes.length, gb.rleEncode(maxByte, bytes, 3, maxRun).length);
+                */
                 return Promise.fulfilled(bytes);
 
             }).then(function(data) {
@@ -238,7 +285,6 @@ var gb = {
                 var data = map.layers[0].data.map(function(i) {
                         return i - 1;
                     }),
-                    bytes = [],
                     rleBytes = [],
                     rleOffsets = [],
                     w = map.width,
@@ -260,23 +306,25 @@ var gb = {
 
                         }
 
-                        bytes.push.apply(bytes, roomBytes);
-
-                        // RLE encoded
+                        // Push the data offset into the room index
                         rleOffsets.push((rleBytes.length >> 8), rleBytes.length & 0xff);
-                        rleBytes.push.apply(rleBytes, gb.rleRoom(roomBytes));
+
+                        // RLE encode the room data
+                        rleBytes.push.apply(
+                            rleBytes,
+                            gb.rleEncode(gb.rleMapValue, roomBytes, 3, (255 - gb.rleMapValue + 3))
+                        );
 
                     }
                 }
 
                 var compressed = rleOffsets.concat(rleBytes);
-                console.log('= ' + compressed.length + ' / ' + bytes.length, 100 / bytes.length * compressed.length);
-
+                //console.log('= ' + compressed.length + ' / ' + bytes.length, 100 / bytes.length * compressed.length);
                 return Promise.fulfilled(compressed);
 
             }).then(function(data) {
                 file = file.replace(/\.json$/, '.bin');
-                console.log('[map] Saving map data "%s" (%s bytes)...', file, data.length);
+                console.log('[map] Saving rle encoded map data "%s" (%s bytes)...', file, data.length);
                 return gb.saveFile(file ,data);
 
             }).then(function() {
@@ -290,14 +338,15 @@ var gb = {
 
     },
 
-    rleRoom: function(bytes) {
+    rleEncode: function(magicByte, data, minLength, maxLength) {
 
         var compressed = [];
-        for(var i = 0; i < bytes.length; i++) {
+
+        for(var i = 0; i < data.length; i++) {
 
             var matching = 0;
-            for(var e = i; e < bytes.length; e++) {
-                if (bytes[e] === bytes[i] && matching < (255 - gb.rleValue + 3)) {
+            for(var e = i; e < data.length; e++) {
+                if (data[e] === data[i] && matching < maxLength) {
                     matching++;
 
                 } else {
@@ -305,16 +354,15 @@ var gb = {
                 }
             }
 
-            if (matching > 2) {
+            if (matching >= minLength) {
 
-                // at least draw 3 tiles
-                compressed.push(gb.rleValue + (matching - 3), bytes[i]);
+                compressed.push(magicByte + (matching - minLength), data[i]);
                 i += matching;
 
             }
 
             // don't forget the tile which didn't match!
-            compressed.push(bytes[i]);
+            compressed.push(data[i]);
 
         }
 
@@ -378,7 +426,7 @@ var gb = {
         for(var y = 0; y < wy; y++) {
             for(var x = 0; x < wx; x++) {
 
-                var key = '';
+                var key = '', indexKey = '';
                 for(var py = 0; py < 8; py++) {
                     for(var px = 0; px < 8; px++) {
 
@@ -387,6 +435,7 @@ var gb = {
 
                         if (palette.hasOwnProperty(c)) {
                             key += palette[c];
+                            indexKey += palette[c] === 4 ? 0 : palette[c];
 
                         } else {
                             return Promise.rejected('Color ' + c + ' at ' + x + 'x' + y + ' was not found in palette.');
@@ -398,7 +447,7 @@ var gb = {
 
                 if (!map.offset.hasOwnProperty(key) || !unique) {
                     map.offset[key] = wx * y + x;
-                    map.index.push(key);
+                    map.index.push(indexKey);
                 }
 
             }
