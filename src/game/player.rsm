@@ -9,7 +9,7 @@ PLAYER_GRAVITY_MAX         EQU 3
 
 PLAYER_GRAVITY_INTERVAL    EQU 10
 
-PLAYER_SLEEP_WAIT          EQU 120
+PLAYER_SLEEP_WAIT          EQU 240
 PLAYER_SPRITE_INDEX        EQU 0
 
 PLAYER_ANIMATION_IDLE      EQU 0
@@ -98,7 +98,7 @@ player_update:
     ret
 
 
-player_timer_250:
+player_timer_125:
     call    player_sleep_timer
     ret
 
@@ -109,6 +109,16 @@ player_timer_250:
 ; call     player_collision_up
 ; jp       nz, .collided 
 player_collision_up: 
+
+    ; middle
+    ld      a,[playerY]
+    sub     PLAYER_HEIGHT
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    ret     nz
 
     ; right half 
     ld      a,[playerY]
@@ -137,6 +147,15 @@ player_collision_up:
 
 player_collision_down: 
 
+    ; middle
+    ld      a,[playerY]
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    ret     nz
+
     ; right half 
     ld      a,[playerY]
     ld      c,a
@@ -160,6 +179,17 @@ player_collision_down:
 
 
 player_collision_left:
+
+    ; middle
+    ld      a,[playerY]
+    sub     a,7
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    ret     nz
 
     ; upper half 
     ld      a,[playerY]
@@ -185,6 +215,17 @@ player_collision_left:
 
 
 player_collision_right:
+
+    ; middle
+    ld      a,[playerY]
+    sub     a,7
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    ret     nz
 
     ; upper half 
     ld      a,[playerY]
@@ -502,10 +543,12 @@ player_accelerate:
 
     ; check which direction is pressed
     ld      a,[inputState]
-    cp      %00100000
-    jp      z,.left
-    cp      %00010000
-    jp      z,.right
+    and     %00100000
+    jp      nz,.left
+
+    ld      a,[inputState]
+    and     %00010000
+    jp      nz,.right
 
     ; not moving
     jp      .done

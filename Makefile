@@ -15,5 +15,5 @@ clean:
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 
 run: rom
-	gngb --no-sound --fps -a build/main.gb
+	gngb --fps -a build/main.gb
 

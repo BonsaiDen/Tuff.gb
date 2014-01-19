@@ -191,6 +191,13 @@ var gb = {
                     blockMap = gb.hashTile8(result.blocks, gb.palette.bg, false),
                     blockIndex = 0;
 
+                if (blockMap instanceof Promise) {
+                    return blockMap;
+
+                } else if (tileMap instanceof Promise) {
+                    return tileMap;
+                }
+
                 for(var y = 0; y < blockMap.height; y += 2) {
                     for(var x = 0; x < blockMap.width; x += 2) {
 
@@ -202,21 +209,29 @@ var gb = {
                                 i + blockMap.width + 1
                             ];
 
-                        bytes = bytes.map(function(i) {
+                        try {
+                            bytes = bytes.map(function(i) {
 
-                            var t = tileMap.offset[blockMap.index[i]];
-                            if (t === undefined) {
-                                var y = ~~(i / blockMap.width);
-                                return Promise.rejected(
-                                    'Invalid tile data in block image %sx%s (%sx%spx) was not found in source tiles!',
-                                    i - y * blockMap.width, y, (i - y * blockMap.width) * 8, y * 8
-                                );
+                                var t = tileMap.offset[blockMap.index[i]];
+                                if (t === undefined) {
 
-                            } else {
-                                return t;
-                            }
+                                    var y = ~~(i / blockMap.width),
+                                        bx = i - y * blockMap.width,
+                                        px = (i - y * blockMap.width) * 8;
 
-                        });
+                                    throw Promise.rejected(
+                                        'Invalid tile data in block image ' + bx + 'x' + y + ' (' + px + 'px, ' + y * 8 + 'px) was not found in source tiles!'
+                                    );
+
+                                } else {
+                                    return t;
+                                }
+
+                            });
+
+                        } catch(e) {
+                            return e;
+                        }
 
                         offsets[0].push(bytes[0]);
                         offsets[1].push(bytes[1]);
@@ -240,38 +255,6 @@ var gb = {
 
             }, function(err) {
                 console.error('[blocks] Error:', err);
-            });
-
-        },
-
-        Collision: function(file) {
-
-            console.log('[col] Parsing collision data "%s" using tileset "%s"...', file);
-
-            gb.loadFile(file).then(function(img) {
-
-                var colMap = gb.hashTile8(img, gb.palette.col),
-                    blocked = new Array(33).join('3');
-
-                if (colMap instanceof Promise ) {
-                    return colMap;
-
-                } else {
-                    return Promise.fulfilled(colMap.index.map(function(tile) {
-                        return tile === blocked ? 1 : 0;
-                    }));
-                }
-
-            }).then(function(data) {
-                file = file.replace(/\.png$/, '.bin');
-                console.log('[col] Saving collision data "%s"...', file);
-                return gb.saveFile(file ,data);
-
-            }).then(function() {
-                console.log('[col] Done!');
-
-            }, function(err) {
-                console.error('[col] Error:', err);
             });
 
         },
@@ -438,7 +421,7 @@ var gb = {
                             indexKey += palette[c] === 4 ? 0 : palette[c];
 
                         } else {
-                            return Promise.rejected('Color ' + c + ' at ' + x + 'x' + y + ' was not found in palette.');
+                            return Promise.rejected('Color ' + c + ' at ' + x + 'x' + y + ' (' + x * 8 + 'px, ' + y * 8 + 'px) was not found in palette.');
                         }
 
                     }
@@ -524,10 +507,21 @@ var gb = {
 
 gb.convert.Tileset('tiles.bg.png').then(function() {
     gb.convert.Tileset('tiles.ch.png', true).then(function() {
+
         gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
-            gb.convert.Collision('tiles.col.png');
-            gb.convert.Map('main.map.json');
+            gb.convert.Map('main.map.json', function() {
+                process.exit(1);
+            });
+
+        }, function() {
+            process.exit(1);
         });
+
+    }, function() {
+        process.exit(1);
     });
+
+}, function() {
+    process.exit(1);
 });
 

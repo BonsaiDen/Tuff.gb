@@ -20,6 +20,12 @@ core_loop:
     ld      bc,8192
     call    mem_Set
 
+    ; Clear Bcakground Screen Buffer
+    ld      a,$7f
+    ld      hl,$9800
+    ld      bc,1024
+    call    mem_Set
+
     ; Reset Scroll registers
     ld      a,0
     ld      [rSCX],a
@@ -31,6 +37,8 @@ core_loop:
     ; Reset timer
     ld      [timer1000],a
     ld      [timer250],a
+    ld      [coreHalfTickSwitch],a
+    ld      [coreHalfTick],a
 
     ; Run init code and the loop once so we don't have a blank frame on powerup
     call    game_init
