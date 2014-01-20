@@ -35,8 +35,8 @@ core_loop:
     ld      [coreVBlankDone],a
 
     ; Reset timer
-    ld      [timer1000],a
-    ld      [timer250],a
+    ld      [coreTimer200],a
+    ld      [coreTimer125],a
     ld      [coreHalfTickSwitch],a
     ld      [coreHalfTick],a
 
@@ -149,6 +149,7 @@ core_vblank_handler:
     reti
 
 
+; Timer Handler ---------------------------------------------------------------
 core_timer_handler:
 
     di
@@ -157,7 +158,27 @@ core_timer_handler:
     push    de
     push    hl
 
-    call    game_timer
+    ; 200ms second timer
+    ld      a,[coreTimer200]
+    inc     a
+    ld      [coreTimer200],a
+    cp      3
+    jp      nz,.l200
+    call    game_timer_200
+    ld      a,0
+    ld      [coreTimer200],a
+.l200:
+
+    ; 125ms timer
+    ld      a,[coreTimer125]
+    inc     a
+    ld      [coreTimer125],a
+    cp      2
+    jp      nz,.l125
+    call    game_timer_125
+    ld      a,0
+    ld      [coreTimer125],a
+.l125:
 
     pop     hl
     pop     de

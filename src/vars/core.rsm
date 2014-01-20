@@ -1,8 +1,8 @@
 coreVBlankDone:     DB
 coreHalfTick:       DB
 coreHalfTickSwitch: DB
-timer1000:          DB
-timer250:           DB
+coreTimer200:       DB
+coreTimer125:       DB
 
 gameFadeMode:       DB
 gameFadeIndex:      DB

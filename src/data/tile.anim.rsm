@@ -1,0 +1,12 @@
+; Tile Animations -------------------------------------------------------------
+
+    ; Water Top
+    DB $a0,$a1,$a2,$a3
+
+    ; Water
+    DB $b0,$b1,$b2,$b3
+
+    ; Waterfall
+    DB $c0,$c1,$c2,$c3
+    
+

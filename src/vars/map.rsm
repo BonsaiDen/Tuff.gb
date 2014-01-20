@@ -1,3 +1,4 @@
+; room drawing ----------------------------------------------------------------
 mapRoomBuffer:              DS 512 ; must be at the top for faster collision checks
 mapRoomDataOffsetTopD:      DB
 mapRoomDataOffsetTopE:      DB
@@ -5,4 +6,9 @@ mapRoomX:                   DB
 mapRoomY:                   DB
 mapRLERepeat:               DB
 mapRLEValue:                DB
+
+
+; tile animations -------------------------------------------------------------
+TILE_ANIMATION_COUNT        EQU     3
+tileAnimationIndexes        DS TILE_ANIMATION_COUNT
 
