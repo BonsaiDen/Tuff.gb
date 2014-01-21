@@ -65,15 +65,15 @@ game_init:
 
     ; noise
     ;ld      hl,$FF20
-    ;ld      [hl],%00000001
+    ;ld      [hl],%00001111
     ;inc     hl
 
     ;;             VVVVESSS
-    ;ld      [hl],%01000001 ; fade out
+    ;ld      [hl],%00010000 ; fade out
     ;inc     hl
 
     ;;             FFFFSDDD
-    ;ld      [hl],%01101011 ; polynomial counter, higher value > lower noise (darker), noise freq, 1 = 7 steps, sounds glichted, 0 = 15 = normal noise
+    ;ld      [hl],%01110101 ; polynomial counter, higher value > lower noise (darker), noise freq, 1 = 7 steps, sounds glichted, 0 = 15 = normal noise
     ;inc     hl
     ;;             IE
     ;ld      [hl],%10000000 ; start intiially, play it endlessly
@@ -187,107 +187,9 @@ game_fade_timer:
     ret
 
 
-animate_tiles:
-
-
-    ; check if there are any tile animations
-    ld      a,TILE_ANIMATION_COUNT
-    cp      0
-    ret     z
-
-    ; store state
-    push    hl
-    push    de
-    push    bc
-
-    ; loop and animate tiles
-    ld      d,0
-    ld      hl,tileAnimationIndexes
-.animate:
-
-    ; update current tile animation index
-    ld      a,[hl]
-    inc     a
-    and     %00000011 ; modulo 4
-    ld      [hl],a
-
-    ; update vram  (hl = source, de = dest, bc = size (16))
-    push    hl
-    push    de
-
-    ; store animation index
-    ld      e,a 
-
-    ; get base tile value of the animation (base + d * 4)
-    ld      hl,DataTileAnimation
-    ld      b,0
-    ld      c,d
-    sla     c
-    sla     c
-    add     hl,bc
-    ld      a,[hl] 
-    ld      d,a ; base tile value $00 - $ff
-
-    ; get the current tile value of the animation (base + d * 4 + a)
-    ld      c,e 
-    add     hl,bc
-    ld      a,[hl] ; current tile value $00 - $ff
-
-    ; get the target address in vram (multiply the base tile by 16 + $8800)
-    ld      h,0
-    ld      l,d
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    ld      bc,$8800
-    add     hl,bc
-    ld      d,h
-    ld      e,l
-
-    ; get the current animation address (multiply the current tile by 16 + DataTileImg)
-    ld      h,0
-    ld      l,a
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    ld      bc,DataTileImg
-    add     hl,bc
-
-    ; set the length
-    ld      b,0
-    ld      c,16
-    call    mem_CopyVRAM
-
-    pop     de
-    pop     hl
-    ; end of vram update
-
-    ; next animation
-    inc     hl
-    inc     d
-    ld      a,d
-    cp      TILE_ANIMATION_COUNT
-    jp      nz,.animate
-    ; end of loop
-
-    ; restore state
-    pop     bc
-    pop     de
-    pop     hl
-
-    ret
-
-
-; 200ms Timer -----------------------------------------------------------------
-game_timer_200:
-    call    animate_tiles
-    ret
-
-
 ; 125ms Timer -----------------------------------------------------------------
 game_timer_125
+    call    map_animate_tiles
     call    player_timer_125
     call    game_fade_timer
     ret

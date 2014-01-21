@@ -9,6 +9,7 @@ mapRLEValue:                DB
 
 
 ; tile animations -------------------------------------------------------------
-TILE_ANIMATION_COUNT        EQU     3
-tileAnimationIndexes        DS TILE_ANIMATION_COUNT
+TILE_ANIMATION_COUNT        EQU     9
+mapAnimationTick            DB
+mapAnimationIndexes         DS TILE_ANIMATION_COUNT
 

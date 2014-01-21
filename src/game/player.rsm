@@ -1,29 +1,3 @@
-; Constants -------------------------------------------------------------------
-PLAYER_DIRECTION_LEFT      EQU 1
-PLAYER_DIRECTION_RIGHT     EQU 2
-
-PLAYER_JUMP_MAX            EQU 2
-PLAYER_FALL_MAX            EQU 3
-PLAYER_SPEED_MAX           EQU 1
-PLAYER_GRAVITY_MAX         EQU 3
-
-PLAYER_GRAVITY_INTERVAL    EQU 10
-
-PLAYER_SLEEP_WAIT          EQU 240
-PLAYER_SPRITE_INDEX        EQU 0
-
-PLAYER_ANIMATION_IDLE      EQU 0
-PLAYER_ANIMATION_WALKING   EQU 1
-PLAYER_ANIMATION_SLEEP     EQU 2
-PLAYER_ANIMATION_PUSHING   EQU 3
-PLAYER_ANIMATION_JUMP      EQU 4
-PLAYER_ANIMATION_FALL      EQU 5
-
-PLAYER_HALF_WIDTH          EQU 7
-PLAYER_HEIGHT              EQU 13
-
-
-
 ; Player ----------------------------------------------------------------------
 player_init:
 

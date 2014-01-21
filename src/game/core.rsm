@@ -35,7 +35,6 @@ core_loop:
     ld      [coreVBlankDone],a
 
     ; Reset timer
-    ld      [coreTimer200],a
     ld      [coreTimer125],a
     ld      [coreHalfTickSwitch],a
     ld      [coreHalfTick],a
@@ -157,17 +156,6 @@ core_timer_handler:
     push    bc
     push    de
     push    hl
-
-    ; 200ms second timer
-    ld      a,[coreTimer200]
-    inc     a
-    ld      [coreTimer200],a
-    cp      3
-    jp      nz,.l200
-    call    game_timer_200
-    ld      a,0
-    ld      [coreTimer200],a
-.l200:
 
     ; 125ms timer
     ld      a,[coreTimer125]

@@ -4,9 +4,18 @@
     DB $a0,$a1,$a2,$a3
 
     ; Water
-    DB $b0,$b1,$b2,$b3
+    DB $a4,$a5,$a6,$a7
 
     ; Waterfall
+    DB $a8,$a9,$aa,$ab
+    DB $ac,$ad,$ae,$af
+
+    ; Lava
+    DB $b0,$b1,$b2,$b3
+    DB $b4,$b5,$b6,$b7
     DB $c0,$c1,$c2,$c3
-    
+    DB $c4,$c5,$c6,$c7
+
+    ; Torch
+    DB $b8,$b9,$ba,$bb
 
