@@ -5,7 +5,7 @@ PLAYER_DIRECTION_RIGHT     EQU 2
 PLAYER_JUMP_MAX            EQU 2
 PLAYER_FALL_MAX            EQU 3
 PLAYER_SPEED_MAX           EQU 1
-PLAYER_GRAVITY_MAX         EQU 3
+PLAYER_GRAVITY_MAX         EQU 2
 
 PLAYER_GRAVITY_INTERVAL    EQU 10
 
@@ -40,7 +40,6 @@ playerDirectionLast: DB
 
 ; Gravity and Jumping
 playerFallSpeed:     DB
-
 
 playerGravityTick:   DB
 playerJumpPressed:   DB

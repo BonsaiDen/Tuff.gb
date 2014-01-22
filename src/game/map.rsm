@@ -312,40 +312,17 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     pop     hl
 
     ; check type of collision
-    cp      0
-    jp      z,.no_collision
-
     cp      1
     jp      z,.collision
 
-    cp      2
-    jp      z,.swimming
-
-    cp      3
-    jp      z,.diving
-
-    cp      4
-    jp      z,.danger
+.no_collision:
+    ld      [mapCollisionFlag],a
+    cp      a ; set z
+    ret
 
     ; everything falls back to blocking collision
 .collision:
     or      1 ; set nz
-    ret
-
-.no_collision:
-    cp      a ; set z
-    ret
-
-.swimming:
-    cp      a ; set z
-    ret
-
-.diving:
-    cp      a ; set z
-    ret
-
-.danger:
-    cp      a ; set z
     ret
 
 

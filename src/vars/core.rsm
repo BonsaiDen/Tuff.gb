@@ -3,5 +3,3 @@ coreHalfTick:       DB
 coreHalfTickSwitch: DB
 coreTimer125:       DB
 
-gameFadeMode:       DB
-gameFadeIndex:      DB

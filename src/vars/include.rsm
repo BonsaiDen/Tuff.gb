@@ -5,9 +5,12 @@
 
     INCLUDE "src/vars/core.rsm"
     INCLUDE "src/vars/input.rsm"
+    INCLUDE "src/vars/game.rsm"
     INCLUDE "src/vars/player.rsm"
+    INCLUDE "src/vars/save.rsm"
 
 
     ; map data is at C300 for room buffer
 SECTION "MapBuffer",WRAM0[$C300]
     INCLUDE "src/vars/map.rsm"; 
+

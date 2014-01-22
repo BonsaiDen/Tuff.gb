@@ -256,7 +256,6 @@ var gb = {
                 }
 
                 var compressed = rleOffsets.concat(rleBytes);
-                //console.log('= ' + compressed.length + ' / ' + bytes.length, 100 / bytes.length * compressed.length);
                 return Promise.fulfilled(compressed);
 
             }).then(function(data) {

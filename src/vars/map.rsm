@@ -6,6 +6,7 @@ mapRoomX:                   DB
 mapRoomY:                   DB
 mapRLERepeat:               DB
 mapRLEValue:                DB
+mapCollisionFlag:           DB
 
 
 ; tile animations -------------------------------------------------------------

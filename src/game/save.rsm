@@ -1,0 +1,34 @@
+; Saving / Loading ------------------------------------------------------------
+save_store_player:
+
+    ; Room
+    ld      a,[mapRoomX]
+    ld      [saveRoomX],a
+    ld      a,[mapRoomY]
+    ld      [saveRoomY],a
+
+    ; Player
+    ld      a,[playerX]
+    ld      [savePlayerX],a
+    ld      a,[playerY]
+    ld      [savePlayerY],a
+
+    ret
+            
+
+save_reset_player:
+
+    ld      a,[saveRoomX]
+    ld      b,a
+    ld      a,[saveRoomY]
+    ld      c,a
+
+    call    map_set_room
+
+    ld      a,[savePlayerX]
+    ld      [playerX],a
+    ld      a,[savePlayerY]
+    ld      [playerY],a
+
+    ret
+

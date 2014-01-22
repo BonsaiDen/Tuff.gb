@@ -19,8 +19,18 @@ player_init:
     ld      a,255
     ld      [playerAnimationLast],a
 
-
     ; Jumping / Falling
+    call    player_reset
+
+    ; Sprite
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_enable
+
+    ret
+
+player_reset:
+
+    ; Gravity
     ld      a,1
     ld      [playerGravityTick],a
 
@@ -42,11 +52,8 @@ player_init:
     ld      a,PLAYER_SLEEP_WAIT
     ld      [playerSleepTick],a
 
-    ; Sprite
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_enable
-
     ret
+
 
 
 ; Player Logic ----------------------------------------------------------------
@@ -69,6 +76,17 @@ player_update:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_set_position
 
+    
+    ; TODO handle swimming
+    ; TODO handle saving?
+    ld      a,[mapCollisionFlag]
+    cp      4
+    jp      z,.danger
+    ret
+
+.danger:
+    call    game_flash_screen
+    call    save_reset_player
     ret
 
 

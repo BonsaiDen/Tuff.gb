@@ -1,0 +1,6 @@
+gameFadeMode:       DB
+gameFadeIndex:      DB
+
+gameFlashMode:      DB
+gameFlashIndex:     DB
+

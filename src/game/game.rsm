@@ -33,6 +33,9 @@ game_init:
     ld      c,0
     call    map_set_room
 
+    ; Initial Spawn Location
+    call    save_store_player
+
     ; Sound
     ld      hl,$FF25
     ld      [hl],%11111111 ; output all channels to both speakers
@@ -94,7 +97,7 @@ game_loop:
     ld      a,[inputState]
     and     %00000010
     jp      z,.not_fade_out
-    call    game_fade_out
+    call    game_flash_screen
 
 .not_fade_out:
     ld      a,[inputState]
@@ -112,7 +115,6 @@ gameBGFadeMask:
     DB      %11100101
     DB      %11101010
     DB      %11111111
-
 
 gameSpriteFadeMask:
     DB      %11010000 
@@ -169,21 +171,89 @@ game_fade_timer:
     ; fade out
     ld      a,[gameFadeIndex]
     cp      3
-    jp      z,.done
+    jp      z,.complete
     inc     a
     ld      [gameFadeIndex],a
-    jp      .done
+    ret
 
     ; fade in
 .fade_in:
     ld      a,[gameFadeIndex]
     cp      0
-    jp      z,.done
+    jp      z,.complete
     dec     a
     ld      [gameFadeIndex],a
-
-.done:
     ret
+
+.complete:
+    ld      a,0
+    ld      [gameFadeMode],a
+    ret
+
+
+; Screen Flashing -------------------------------------------------------------
+gameBGFlashMask:
+    DB      %00000000
+    DB      %00000000
+    DB      %01010100
+    DB      %10100100
+    DB      %11100100
+
+
+gameSpriteFlashMask:
+    DB      %00000000
+    DB      %00000000
+    DB      %01010000 
+    DB      %10010000 
+    DB      %11010000 
+
+
+game_flash_screen:
+    ld      a,1
+    ld      [gameFlashMode],a
+    ld      a,0
+    ld      [gameFlashIndex],a
+    call    game_flash_timer
+    ret
+
+
+game_flash_timer:
+
+    ; check if fading
+    ld      a,[gameFlashMode]
+    cp      0
+    ret     z
+
+    ; flash index
+    ld      a,[gameFlashIndex]
+    ld      b,0
+    ld      c,a
+    
+    ; bg mask
+    ld      hl,gameBGFlashMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rBGP],a
+
+    ; sprite mask
+    ld      hl,gameSpriteFlashMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP0],a
+
+    ; update
+    ld      a,[gameFlashIndex]
+    cp      4
+    jp      z,.complete
+    inc     a
+    ld      [gameFlashIndex],a
+    ret
+
+.complete:
+    ld      a,0
+    ld      [gameFlashMode],a
+    ret
+
 
 
 ; 125ms Timer -----------------------------------------------------------------
@@ -191,5 +261,6 @@ game_timer_125
     call    map_animate_tiles
     call    player_timer_125
     call    game_fade_timer
+    call    game_flash_timer
     ret
 

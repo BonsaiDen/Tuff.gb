@@ -1,0 +1,5 @@
+saveRoomX:           DB
+saveRoomY:           DB
+savePlayerX:         DB
+savePlayerY:         DB
+
