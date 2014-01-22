@@ -33,8 +33,7 @@ game_init:
     ld      c,0
     call    map_set_room
 
-
-
+    ; Sound
     ld      hl,$FF25
     ld      [hl],%11111111 ; output all channels to both speakers
     inc     hl
@@ -87,23 +86,23 @@ game_loop_half:
     call    player_update
     ret
 
+
 game_loop:
     call    sprite_animate_all
 
+    ; Fading test
     ld      a,[inputState]
     and     %00000010
     jp      z,.not_fade_out
     call    game_fade_out
 
 .not_fade_out:
-
     ld      a,[inputState]
     and     %00000100
     jp      z,.not_fade_in
     call    game_fade_in
 
 .not_fade_in:
-
     ret
 
 

@@ -302,23 +302,49 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
 
     ; load tile value from background buffer
     ld      a,[hl]
+    sub     128 ; convert into 0-255 range
+
+    ; get offset into collision table
+    ld      h,$24 ; $2400 + a
+    ld      l,a
+    ld      a,[hl]
+
     pop     hl
 
-    ; ingore offscreen areas with unset tiles
-    cp      255
+    ; check type of collision
+    cp      0
     jp      z,.no_collision
 
-    ; get the actual tile value and check if it is smalle than 64
-    sub     128
-    cp      64 ; tile value < 64 (the first 64 tiles are blocking) (c is set when value is greater a)
-    jp      nc,.no_collision ; if not, there is no collision
+    cp      1
+    jp      z,.collision
 
+    cp      2
+    jp      z,.swimming
+
+    cp      3
+    jp      z,.diving
+
+    cp      4
+    jp      z,.danger
+
+    ; everything falls back to blocking collision
 .collision:
     or      1 ; set nz
     ret
 
 .no_collision:
-    ; TODO check for instant kill tiles and water
+    cp      a ; set z
+    ret
+
+.swimming:
+    cp      a ; set z
+    ret
+
+.diving:
+    cp      a ; set z
+    ret
+
+.danger:
     cp      a ; set z
     ret
 

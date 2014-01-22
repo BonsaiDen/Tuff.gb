@@ -1,12 +1,15 @@
 ; We us the last 8kb of ROM0 for generic game data ----------------------------
 DataBlockDef: ; @2000
-    INCBIN  "src/data/blocks.def.bin" ;  ; 1KB
+    INCBIN "src/data/blocks.def.bin" ;  ; 1KB
+
+DataTileCol: ; @2400 for collision checks
+    INCBIN  "src/data/tiles.col.bin"; 256 byte
 
 DataSpriteAnimation:
-    include  "src/data/sprite.anim.rsm" ; 896 byte (max)
+    include "src/data/sprite.anim.rsm" ; 896 byte (max)
 
 DataTileAnimation:
-    include  "src/data/tile.anim.rsm";
+    include "src/data/tile.anim.rsm";
 
 DataTileImg:
     INCBIN  "src/data/tiles.bg.bin" ; 4 KB

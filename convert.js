@@ -16,7 +16,7 @@ var gb = {
     palette: {
 
         bg: {
-            '255,0,255': 4,
+            '255,0,255': 255,
             '255,255,255': 0,
             '163,163,163': 1,
             '82,82,82': 2,
@@ -31,11 +31,12 @@ var gb = {
         },
 
         col: {
-            '255,0,255': 4,
-            '255,255,255': 0,
-            '163,163,163': 1,
-            '82,82,82': 2,
-            '0,0,0': 3
+            '255,0,255': 0, // no collision
+            '0,0,0': 1, // blocking
+            '0,255,255': 2, // water top (swimming)
+            '0,0,255': 3,  // water full (diving)
+            '255,0,0': 4,  // danger (killing)
+            '255,255,255': 5 // saving?
         }
 
     },
@@ -108,53 +109,6 @@ var gb = {
                     bytes = gb.rearrangeTiles16(bytes, img.width / 8, img.height / 8);
                 }
 
-                /*
-                var counts = {};
-                bytes.forEach(function(b) {
-                    if (!counts.hasOwnProperty(b)) {
-                        counts[b] = 0;
-                    }
-                    counts[b]++;
-                });
-
-                var missing = [];
-                for(var i = 0; i < 255; i++) {
-                    if (!counts.hasOwnProperty(i)) {
-                        missing.push(i);
-                    }
-                }
-
-
-                var maxRun = 0,
-                    maxByte = 0;
-
-                for(var e = 0; e < missing.length; e++) {
-
-                    var v = missing[e], run = 0;
-                    for(var o = e +1; o < missing.length; o++) {
-
-                        v++;
-
-                        if (missing[o] !== v) {
-                            break;
-
-                        } else {
-                            run++;
-                        }
-                    }
-
-                    if (run) {
-                        if (run > maxRun) {
-                            maxByte = missing[e];
-                            maxRun = run;
-                        }
-                    }
-
-                }
-
-                console.log(maxByte, maxRun);
-                console.log('rled:', bytes.length, gb.rleEncode(maxByte, bytes, 3, maxRun).length);
-                */
                 return Promise.fulfilled(bytes);
 
             }).then(function(data) {
@@ -317,10 +271,38 @@ var gb = {
                 console.error('[map] Error:', err);
             });
 
+        },
+
+        Collision: function(file) {
+
+            console.log('[col] Converting tile collision data "%s"...', file);
+            return gb.loadFile(file).then(function(tiles) {
+
+                var colMap = gb.hashTile8(tiles, gb.palette.col);
+                var data = colMap.index.map(function(key) {
+                    return +key.substring(0, 1);
+                });
+
+                return Promise.fulfilled(data);
+
+            }).then(function(data) {
+                file = file.replace(/\.png$/, '.bin');
+                console.log('[col] Saving tile collision data "%s" (%s bytes)...', file, data.length);
+                return gb.saveFile(file ,data);
+
+            }).then(function() {
+                console.log('[col] Done!');
+
+            }, function(err) {
+                console.error('[col] Error:', err);
+            });
+
         }
 
     },
 
+
+    // Helpers ----------------------------------------------------------------
     rleEncode: function(magicByte, data, minLength, maxLength) {
 
         var compressed = [];
@@ -418,7 +400,7 @@ var gb = {
 
                         if (palette.hasOwnProperty(c)) {
                             key += palette[c];
-                            indexKey += palette[c] === 4 ? 0 : palette[c];
+                            indexKey += palette[c] === 255 ? 0 : palette[c];
 
                         } else {
                             return Promise.rejected('Color ' + c + ' at ' + x + 'x' + y + ' (' + x * 8 + 'px, ' + y * 8 + 'px) was not found in palette.');
@@ -509,7 +491,11 @@ gb.convert.Tileset('tiles.bg.png').then(function() {
     gb.convert.Tileset('tiles.ch.png', true).then(function() {
 
         gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
-            gb.convert.Map('main.map.json', function() {
+
+            gb.convert.Map('main.map.json').then(function() {
+                gb.convert.Collision('tiles.col.png');
+
+            }, function() {
                 process.exit(1);
             });
 
