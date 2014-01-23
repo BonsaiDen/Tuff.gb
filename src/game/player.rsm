@@ -68,6 +68,7 @@ player_update:
     call    player_animate
     call    player_scroll_map
 
+
     ; update sprite position
     ld      a,[playerX]
     ld      b,a
@@ -77,11 +78,53 @@ player_update:
     call    sprite_set_position
 
     
-    ; TODO handle swimming
-    ; TODO handle saving?
+    ; Special Collision Flags
     ld      a,[mapCollisionFlag]
+    ;cp      2
+    ;jp      z,.swimming
+    ;cp      3 ; TODO handle diving later on
+    ;jp      z,.swimming 
     cp      4
     jp      z,.danger
+
+    ret
+
+
+.swimming:
+
+    ; check for the water line
+    ld      a,[playerY]
+    sub     6
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+
+    call    map_get_collision
+
+    ; check if the pixel still lies in water
+    ld      a,[mapCollisionFlag]
+    cp      0
+    ret     z ; if not, return and do nothing
+
+    ; otherwise half the fall speed
+    ld      a,[playerFallSpeed]
+    cp      0
+    jp      z,.not_falling
+    ;dec     a
+    ld      [playerFallSpeed],a
+
+.not_falling:
+
+    ; and move the player up one pixel (or two?)
+    ld      a,[playerY]
+    dec     a
+    dec     a
+    ld      [playerY],a
+
+    ld      a,1
+    ld      [playerOnGround],a
+
     ret
 
 .danger:
@@ -248,7 +291,7 @@ player_scroll_map:
 
     ; left ------------------------------
     ld      a,[playerX]
-    cp      1 ; < 1
+    cp      2 ; < 1
     jp      nc,.check_right
     call    map_scroll_left
 
@@ -663,6 +706,8 @@ player_move:
 
 .not_blocked_right:
     inc    d
+    ld     a,d
+    ld     [playerX],a
     dec    e
     jp     nz,.loop_right
 
@@ -685,14 +730,14 @@ player_move:
 
 .not_blocked_left:
     dec    d
+    ld     a,d
+    ld     [playerX],a
     dec    e
     jp     nz,.loop_left
 
 
-
     ; moved ----------------------------------------
 .moved:
-    ; store new x position
     ld     a,d
     ld     [playerX],a
     jp     .done
