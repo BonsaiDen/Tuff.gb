@@ -58,7 +58,7 @@ for(var i = 0, l = lines.length; i < l; i++) {
 
     } else {
 
-        var sectionName = line.split('(')[0].trim().slice(0, -1);
+        var sectionName = line.split('(')[0].replace(':', '').trim();
         if (sectionName) {
 
             bank = {
