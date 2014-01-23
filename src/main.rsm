@@ -43,4 +43,3 @@ SECTION "Org $2000",ROM0[$2000]
 SECTION "Bank1",ROMX,BANK[1]
     INCLUDE "src/data/bank1.rsm"
 
-
