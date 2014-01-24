@@ -1,7 +1,27 @@
-; Constants -------------------------------------------------------------------
-MAP_INDEX_SIZE      EQU     512
-MAP_RLE_VALUE       EQU     249
-                            
+; Tileset ---------------------------------------------------------------------
+map_load_spritesheet: ; hl = source
+
+    ; copy tiles to character data
+    ld      de,$8000
+    ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
+    call    mem_Copy    ; Copy tile data to memory
+
+    ret
+
+map_load_tileset: ; hl = offset
+
+    ; copy tiles to character data
+    ld      de,$8800
+    ld      bc,4096     ; length (8 bytes per tile) x (256 tiles)
+    call    mem_Copy    
+
+    ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
+    ld      hl,$9400
+    ld      de,TILE_ANIMATION_BUFFER
+    ld      bc,1024
+    call    mem_Copy    
+
+    ret
 
 
 ; Map -------------------------------------------------------------------------
@@ -388,14 +408,15 @@ map_animate_tiles:
     ld      d,h
     ld      e,l
 
-    ; get the current animation address (multiply the current tile by 16 + DataTileImg)
+    ; get the current animation address (multiply the current (tile - $c0) by 16 + DataTileImg)
+    sub     $c0 ; correct offset into ram buffer
     ld      h,0
     ld      l,a
     add     hl,hl
     add     hl,hl
     add     hl,hl
     add     hl,hl
-    ld      bc,DataTileImg
+    ld      bc,TILE_ANIMATION_BUFFER
     add     hl,bc
 
     ; set the length

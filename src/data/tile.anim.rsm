@@ -1,21 +1,25 @@
 ; Tile Animations -------------------------------------------------------------
 
+    ; b0 - ff
+
     ; Water Top
-    DB $a0,$a1,$a2,$a3
+    DB $c0,$c1,$c2,$c3
 
     ; Water
-    DB $a4,$a5,$a6,$a7
-
-    ; Waterfall
-    DB $a8,$a9,$aa,$ab
-    DB $ac,$ad,$ae,$af
-
-    ; Lava
-    DB $b0,$b1,$b2,$b3
-    DB $b4,$b5,$b6,$b7
-    DB $c0,$c1,$c2,$c3
     DB $c4,$c5,$c6,$c7
 
+    ; Waterfall
+    DB $c8,$c9,$ca,$cb
+    DB $cc,$cd,$ce,$cf
+
+    ; Lava Top
+    DB $d0,$d1,$d2,$d3
+    DB $d4,$d5,$d6,$d7
+
     ; Torch
-    DB $b8,$b9,$ba,$bb
+    DB $d8,$d9,$da,$db
+
+    ; Lava Bottom
+    DB $e0,$e1,$e2,$e3
+    DB $e4,$e5,$e6,$e7
 

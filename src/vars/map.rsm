@@ -1,3 +1,7 @@
+; Constants -------------------------------------------------------------------
+MAP_INDEX_SIZE      EQU     512
+MAP_RLE_VALUE       EQU     249
+
 ; room drawing ----------------------------------------------------------------
 mapRoomBuffer:              DS 512 ; must be at the top for faster collision checks
 mapRoomDataOffsetTopD:      DB
@@ -10,7 +14,11 @@ mapCollisionFlag:           DB
 
 
 ; tile animations -------------------------------------------------------------
-TILE_ANIMATION_COUNT        EQU     9
+TILE_ANIMATION_COUNT        EQU 9
 mapAnimationTick            DB
 mapAnimationIndexes         DS TILE_ANIMATION_COUNT
+
+
+; tile animation tile buffer --------------------------------------------------
+TILE_ANIMATION_BUFFER       DS 1024
 

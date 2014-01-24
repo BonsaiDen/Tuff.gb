@@ -13,17 +13,13 @@ game_init:
     ld      a,0
     ld      [gameFadeMode],a
 
-    ; load char data
+    ; sprite sheet
     ld      hl,DataCharImg
-    ld      de,$8000
-    ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
-    call    mem_Copy    ; Copy tile data to memory
+    call    map_load_spritesheet
 
     ; load tile data
     ld      hl,DataTileImg
-    ld      de,$8800
-    ld      bc,4096     ; length (8 bytes per tile) x (256 tiles)
-    call    mem_Copy    ; Copy tile data to memory
+    call    map_load_tileset
 
     ; Player
     call    player_init
@@ -33,7 +29,7 @@ game_init:
     ld      c,0
     call    map_set_room
 
-    ; Initial Spawn Location
+    ; Setup Initial Spawn Location
     call    save_store_player
 
     ; Sound
