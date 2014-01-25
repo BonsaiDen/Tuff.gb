@@ -201,3 +201,98 @@ ScreenOn:
     ld      [rLCDC],a
     ret
 
+
+; Data Unpacking --------------------------------------------------------------
+core_unpack: ; HL = source, DE = target
+
+    ; load uncompressed size from packed data
+    push    hl
+
+    ld      a,[hl]
+    inc     hl
+    ld      b,a
+
+    ld      a,[hl]
+    ld      c,a
+
+    ; bc = de + size
+    ld      h,d
+    ld      l,e
+    add     hl,bc
+    ld      b,h
+    ld      c,l
+
+    pop     hl
+
+    ; skip size word again
+    inc     hl
+    inc     hl
+
+.loop:
+    ; check if we reached the end of the data uncompressed data (de == bc)
+    ld      a,e
+    cp      c ; c == e
+    jp      nz,.next
+
+    ld      a,d
+    cp      b ; b == d
+    ret     z
+
+.next:
+
+    ; fetch next instruction byte
+    ld      a,[hl]
+    inc     hl
+    cp      127 ; a > 127
+    jp      z,.copy
+    jp      c,.copy
+
+
+    ; repeat X bytes
+.repeat:
+    
+    push    bc ; store end of data
+
+    ; 255 - (count - minRun - 1) (minRun = 2)
+    sub     3 ; count - 3
+    ld      b,a ; save count
+    ld      a,255
+    sub     b ; 255 - count, a is now the number of bytes to repeat
+    ld      b,a ; set up loop counter
+
+    ; load byte to repeat
+    ld      a,[hl]
+    inc     hl
+    
+.repeat_loop:
+
+    ; while count > 0 inc de
+    ld      [de],a
+    inc     de
+    dec     b
+    jp      nz,.repeat_loop
+
+    ; next instruction
+    pop     bc ; restore end of data
+    jp      .loop
+
+
+    ; copy X bytes
+.copy:
+    push    bc ; store end of data
+
+    inc     a ; count++
+    ld      b,a ; set up loop counter
+    
+.copy_loop:
+    ld      a,[hl] ; load byte to copy
+    inc     hl
+    ld      [de],a
+    inc     de
+    dec     b
+    jp      nz,.copy_loop
+
+    ; next instruction
+    pop     bc ; restore end of data
+    jp      .loop
+

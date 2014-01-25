@@ -3,8 +3,9 @@ map_load_spritesheet: ; hl = source
 
     ; copy tiles to character data
     ld      de,$8000
-    ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
-    call    mem_Copy    ; Copy tile data to memory
+    call    core_unpack
+    ;ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
+    ;call    mem_Copy    ; Copy tile data to memory
 
     ret
 
@@ -12,8 +13,9 @@ map_load_tileset: ; hl = offset
 
     ; copy tiles to character data
     ld      de,$8800
-    ld      bc,4096     ; length (8 bytes per tile) x (256 tiles)
-    call    mem_Copy    
+    call    core_unpack
+    ;ld      bc,4096     ; length (8 bytes per tile) x (256 tiles)
+    ;call    mem_Copy    
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
     ld      hl,$9400
