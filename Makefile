@@ -9,7 +9,7 @@ rom: convert
 	node stat build/main.map
 
 convert:
-	node convert src/data
+	node convert src/data/ext src/data/bin
 
 clean:
 	rm -rf build

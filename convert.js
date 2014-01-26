@@ -7,11 +7,13 @@ var path = require('path'),
 
 // Gameboy Data Conversion ----------------------------------------------------
 // ----------------------------------------------------------------------------
+console.log(process.argv);
 var gb = {
 
     rleMapValue: 249,
 
     base: path.join(process.cwd(), process.argv[2]),
+    bin: path.join(process.cwd(), process.argv[3]),
 
     palette: {
 
@@ -110,13 +112,11 @@ var gb = {
                     bytes = gb.rearrangeTiles16(bytes, img.width / 8, img.height / 8);
                 }
 
-                //gb.pack(bytes);
-
                 return Promise.fulfilled(gb.pack(bytes));
 
             }).then(function(data) {
                 file = file.replace(/\.png$/, '.bin');
-                console.log('[tileset] Saving tileset "%s"...', file);
+                console.log('[tileset] Saving tileset "%s" (%s bytes RLE packed)...', file, data.length);
                 return gb.saveFile(file, data);
 
             }).then(function() {
@@ -223,7 +223,7 @@ var gb = {
 
                 // tiled index starts at i
                 var data = map.layers[0].data.map(function(i) {
-                        return i - 1;
+                        return ((i - 1) + 256) % 256;
                     }),
                     rleBytes = [],
                     rleOffsets = [],
@@ -231,6 +231,8 @@ var gb = {
                     h = map.height,
                     rx = w / 10,
                     ry = h / 8;
+
+                //var ll = 0;
 
                 // Generate rooms
                 for(var y = 0; y < ry; y++) {
@@ -250,12 +252,17 @@ var gb = {
                         rleOffsets.push((rleBytes.length >> 8), rleBytes.length & 0xff);
 
                         // RLE encode the room data
+                        //var copy = roomBytes.slice();
                         var c = gb.rleEncode(gb.rleMapValue, roomBytes, 3, (255 - gb.rleMapValue + 3));
+                        //var l = gb.pack(copy, false).length;
+                        //ll += l;
+                        //console.log(c.length, '/', l);
                         rleBytes.push.apply(rleBytes, c);
 
                     }
                 }
 
+                //console.log(rleBytes.length, ll);
                 var compressed = rleOffsets.concat(rleBytes);
                 return Promise.fulfilled(compressed);
 
@@ -471,7 +478,7 @@ var gb = {
     saveFile: function(name, data) {
 
         var d = Promise.pending(),
-            file = path.join(gb.base, name);
+            file = path.join(gb.bin, name);
 
         var buf = new Buffer(data);
         fs.writeFile(file, buf, {
@@ -485,7 +492,7 @@ var gb = {
 
     },
 
-    pack: function(bytes) {
+    pack: function(bytes, prefix) {
 
         var minRun = 3,
             maxRun = 128 + minRun - 1,
@@ -603,35 +610,22 @@ var gb = {
         }
 
         if (gb.unpack(compressed).join(',') !== bytes.join(',')) {
+            console.log(compressed, bytes);
             throw new Error('Data did not correctly decompress!!!');
-
-        } else {
-            console.log('PACKED ', compressed.length, 'of', bytes.length, 100 / bytes.length * compressed.length);
+            //console.log('PACKED ', compressed.length, 'of', bytes.length, 100 / bytes.length * compressed.length);
         }
 
-        var size = bytes.length;
-        return [(size >> 8), size & 0xff].concat(compressed);
+        if (prefix !== false) {
+            var size = bytes.length;
+            return [(size >> 8), size & 0xff].concat(compressed);
+
+        } else {
+            return compressed;
+        }
 
     },
 
     unpack: function(compressed) {
-
-
-        // repeat 3
-        // copy 13
-        // repeat 3
-        // copy 13
-
-        // 250
-        // repeat 8
-        // copy 6
-        // 255
-        // repeat 3
-        // copy 15
-        // 250
-        // repeat 8
-        // copy 24
-        // 250
 
         var bytes = [],
             offset = 0,
@@ -644,10 +638,8 @@ var gb = {
             if (count > 127) {
 
                 //count = (minRun - 1) - (count - 256);
-                console.log(count);
                 count = 255 - (count - 3);
 
-                console.log('repeat', count);
                 if ((cur = compressed[offset++]) === undefined) {
                     count = 0;
                     throw new Error('Run block is too short');
@@ -662,7 +654,6 @@ var gb = {
 
                 count++;
 
-                console.log('copy', count);
                 while(count > 0) {
 
                     if ((cur = compressed[offset++]) !== undefined) {
