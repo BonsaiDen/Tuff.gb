@@ -47,6 +47,7 @@ player_reset:
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ld      [playerDecTick],a
+    ld      [playerMoveTick],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -142,10 +143,6 @@ player_water_update:
     cp      0
     jp      nz,.not_initial;
 
-    ; set initial
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-    
     ; save speed
     ld      a,[playerFallFrames]
     ld      [playerWaterHitDepth],a
@@ -157,6 +154,7 @@ player_water_update:
     ld      [playerFallFrames],a
 
 .not_initial:
+
 
     ; prevent sleep and reset fall speed
     ld      a,0
@@ -832,12 +830,27 @@ player_move:
     ld     a,PLAYER_ANIMATION_WALKING
     ld     [playerAnimation],a
     
-    ; load x position
 .not_on_ground:
+
+    ld     a,[playerInWater]
+    cp     0
+    jp     z,.not_in_water
+
+    ld     a,PLAYER_ANIMATION_SWIMMING
+    ld     [playerAnimation],a
+
+    ; half speed when in water
+    ld     a,[playerMoveTick]
+    cp     1
+    jp     nz,.delay
+    ld     a,0
+    ld     [playerMoveTick],a
+
+.not_in_water:
+
+    ; load x position
     ld     a,[playerX]
     ld     d,a
-
-
 
     ; move right -----------------------------------
 .move_right:
@@ -891,19 +904,31 @@ player_move:
 .moved:
     ld     a,d
     ld     [playerX],a
-    jp     .done
+    ret    z
 
 .stopped: 
 
     ; reset to idle animation if on ground
     ld     a,[playerOnGround]
     cp     0
-    jp     z,.done
+    jp     z,.stopped_water
 
     ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
+    ret
 
-.done:
+.stopped_water:
+    ld     a,[playerInWater]
+    cp     0
+    ret    z
+
+    ld     a,PLAYER_ANIMATION_IDLE
+    ld     [playerAnimation],a
+    ret
+
+.delay:
+    inc    a
+    ld     [playerMoveTick],a
     ret
 
 

@@ -35,4 +35,6 @@
     DB $fd, $02,$03,$02,$03, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
     ; Swimming
+    DB $00, $18,$19,$1A,$1B, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $06,$0B,$06,$0B, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
         

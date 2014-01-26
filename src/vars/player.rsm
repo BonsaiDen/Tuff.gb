@@ -21,6 +21,7 @@ PLAYER_ANIMATION_PUSHING   EQU 3
 PLAYER_ANIMATION_JUMP      EQU 4
 PLAYER_ANIMATION_FALL      EQU 5
 PLAYER_ANIMATION_RUNNING   EQU 6
+PLAYER_ANIMATION_SWIMMING  EQU 7
 
 PLAYER_HALF_WIDTH          EQU 7
 PLAYER_HEIGHT              EQU 13
@@ -32,6 +33,7 @@ playerY:             DB
 playerYOffset:       DB ; y offset the player is rendered at, only visual
 playerSpeedRight:    DB 
 playerSpeedLeft:     DB 
+playerMoveTick:      DB
 
 playerSleepTick:     DB
 playerDecTick:       DB
