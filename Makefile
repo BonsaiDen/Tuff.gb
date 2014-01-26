@@ -9,6 +9,7 @@ rom: convert
 	node stat build/main.map
 
 convert:
+	@mkdir -p src/data/bin
 	node convert src/data/ext src/data/bin
 
 clean:

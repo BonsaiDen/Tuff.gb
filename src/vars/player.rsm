@@ -2,7 +2,9 @@
 PLAYER_DIRECTION_LEFT      EQU 1
 PLAYER_DIRECTION_RIGHT     EQU 2
 
-PLAYER_JUMP_MAX            EQU 2
+PLAYER_JUMP_LAND           EQU 2
+PLAYER_JUMP_WATER          EQU 2
+PLAYER_JUMP_SCREEN_BOOST   EQU 2
 PLAYER_FALL_MAX            EQU 3
 PLAYER_SPEED_MAX           EQU 1
 PLAYER_GRAVITY_MAX         EQU 2
@@ -27,6 +29,7 @@ PLAYER_HEIGHT              EQU 13
 ; Variables -------------------------------------------------------------------
 playerX:             DB 
 playerY:             DB 
+playerYOffset:       DB ; y offset the player is rendered at, only visual
 playerSpeedRight:    DB 
 playerSpeedLeft:     DB 
 
@@ -40,11 +43,16 @@ playerDirection:     DB
 playerDirectionLast: DB
 
 ; Gravity and Jumping
-playerFallSpeed:     DB
+playerFallSpeed:     DB ; current fall speed per frame
+playerFallFrames:    DB ; number of frames the player is falling (max 255)
 
-playerGravityTick:   DB
-playerJumpPressed:   DB
-playerOnGround:      DB
-playerJumpForce:     DB
-playerJumpFrames:    DB
+playerGravityTick:   DB ; ticker for applying gravity
+playerJumpPressed:   DB ; whether the jump button is still continously pressed
+playerOnGround:      DB ; is the player on ground
+playerJumpForce:     DB ; current jump force per frame
+
+playerInWater:       DB ; is the player in water?
+playerWaterHitDone:  DB ; whether the intitial splash hit is done
+playerWaterTick:     DB ; player water offset ticker
+playerWaterHitDepth: DB ; value to check how deep the player should splash into the water
 

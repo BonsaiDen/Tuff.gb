@@ -494,12 +494,12 @@ sprite_update: ; d = ypos, a c = xpos, b = tile
 
     ; y position
     ld      a,d
-    ld      [hl],a; 
+    ld      [hl],a
     inc     hl
 
     ; x position
     ld      a,c
-    ld      [hl],a; 
+    ld      [hl],a
     inc     hl
 
     ; tile
