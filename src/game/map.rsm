@@ -4,8 +4,6 @@ map_load_spritesheet: ; hl = source
     ; copy tiles to character data
     ld      de,$8000
     call    core_unpack
-    ;ld      bc,2048     ; length (8 bytes per tile) x (256 tiles)
-    ;call    mem_Copy    ; Copy tile data to memory
 
     ret
 
@@ -14,83 +12,12 @@ map_load_tileset: ; hl = offset
     ; copy tiles to character data
     ld      de,$8800
     call    core_unpack
-    ;ld      bc,4096     ; length (8 bytes per tile) x (256 tiles)
-    ;call    mem_Copy    
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
     ld      hl,$9400
     ld      de,TILE_ANIMATION_BUFFER
     ld      bc,1024
     call    mem_Copy    
-
-    ret
-
-
-; Map -------------------------------------------------------------------------
-; The map is always 25x32 rooms
-; each room has 10x8 (16x16px) tiles for a total of 80 tiles per room
-; map data is aligned in room offsets
-map_set_room: ; b = x, c = y
-
-    push    hl
-    push    de
-
-    ; store new room coordinates
-    ld      a,b
-    ld      [mapRoomX],a
-    ld      a,c
-    ld      [mapRoomY],a
-
-    ; RoomId = y * MAP_WIDTH + x
-    ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
-    ; MapData = (MapOffset + MapIndexSize + RoomOffset) - 1
-
-    ; Offset into Index ------------------------
-
-    ; y * MAP_WIDTH
-    ld      h,16
-    ld      e,c
-    call    math_mul8b ; hl = offset into index
-
-    ; + x
-    ld      c,b
-    ld      b,0
-    add     hl,bc
-
-    ; * 2
-    add     hl,hl
-
-    ; + MapOffset
-    ld      bc,DataMapMain
-    add     hl,bc
-
-    ; Room Offset Value ------------------------
-    ld      a,[hli]
-    ld      b,a
-
-    ld      a,[hl]
-    ld      c,a
-
-    ; MapOffset Room Offset 
-    ld      hl,DataMapMain
-    add     hl,bc
-
-    ; + MapIndexSize - 1
-    ld      bc,MAP_INDEX_SIZE - 1
-    add     hl,bc
-
-
-    ; store it
-    ld      a,h
-    ld      [mapRoomDataOffsetTopD],a
-    ld      a,l
-    ld      [mapRoomDataOffsetTopE],a
-
-    pop     de
-    pop     hl
-
-    ; draw the room
-    call    map_draw_room
 
     ret
 
@@ -136,27 +63,84 @@ map_scroll_up:
     ret
 
 
+; Map -------------------------------------------------------------------------
+map_set_room: ; b = x, c = y
+
+    push    hl
+    push    de
+    push    bc
+
+    ; store new room coordinates
+    ld      a,b
+    ld      [mapRoomX],a
+    ld      a,c
+    ld      [mapRoomY],a
+
+    ; RoomId = y * MAP_WIDTH + x
+    ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
+    ; MapData = (MapOffset + MapIndexSize + RoomOffset) - 1
+
+    ; Offset into Index ------------------------
+
+    ; y * MAP_WIDTH
+    ld      h,16
+    ld      e,c
+    call    math_mul8b ; hl = offset into index
+
+    ; + x
+    ld      c,b
+    ld      b,0
+    add     hl,bc
+
+    ; * 2
+    add     hl,hl
+
+    ; + MapOffset
+    ld      bc,DataMapMain
+    add     hl,bc
+
+    ; Get Room Offset Value 
+    ld      a,[hli]
+    ld      b,a
+
+    ld      a,[hl]
+    ld      c,a
+
+    ; MapOffset + Room Offset 
+    ld      hl,DataMapMain
+    add     hl,bc
+
+    ; + MapIndexSize
+    ld      bc,MAP_INDEX_SIZE
+    add     hl,bc ; hl = pointer to packed room data
+
+    ; unpack the data
+    ld      de,mapRoomUnpackBuffer
+    ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE 
+    call    core_unpack_raw
+
+    ; draw the room
+    call    map_draw_room
+
+    pop     bc
+    pop     de
+    pop     hl
+
+    ret
+
+
+
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
 
-    ; row counter
-    ld      b,8
-    
-    ; col counter
-    ld      c,0
 
-    ; screen pointer base offset
+    ; we read from the unpacked room data
     ld      hl,mapRoomBuffer
+    ld      de,mapRoomUnpackBuffer - 1
 
-    ; map room pointer
-    ld      a,[mapRoomDataOffsetTopD]
-    ld      d,a
-    ld      a,[mapRoomDataOffsetTopE]
-    ld      e,a
-
-    ; reset RLE
-    ld      a,0
-    ld      [mapRLERepeat],a
+    ; setup loop counts
+    ld      b,8 ; row
+    ld      c,0 ; col
 
 .loop_y:
 
@@ -174,41 +158,10 @@ map_draw_room:
     dec     c ; reduce column counter
 
     ; RLE ----------------------------------------
-    
-    ; check if we need to repeat any more blocks
-    ld      a,[mapRLERepeat]
-    cp      0
-    jp      nz,.draw_rle ; if so, just draw another block
 
     ; otherwise fetch the next block
     inc     de; 
     ld      a,[de]
-
-    ; check if it is RLE data
-    cp      MAP_RLE_VALUE
-    jp      z,.rle
-    cp      MAP_RLE_VALUE + 1 ; check for rle length indicator (blockValue > 249)
-    jp      c,.draw_block
-
-.rle:
-
-    ; yes we got RLE data, store the number of repeats;
-    ; 249 means draw the following tile value 3 times
-    sub     MAP_RLE_VALUE - 2
-    ld      [mapRLERepeat],a;
-
-    ; load the real block value
-    inc     de
-    ld      a,[de]
-    ld      [mapRLEValue],a
-    jp      .draw_block
-
-.draw_rle:
-    dec     a
-    ld      [mapRLERepeat],a
-    ld      a,[mapRLEValue]
-
-    ; RLE ----------------------------------------
 
 .draw_block:
 

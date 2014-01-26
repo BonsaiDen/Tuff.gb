@@ -205,9 +205,9 @@ ScreenOn:
 ; Data Unpacking --------------------------------------------------------------
 core_unpack: ; HL = source, DE = target
 
-    ; load uncompressed size from packed data
-    push    hl
+    push    hl; store source address
 
+    ; load uncompressed size from packed data
     ld      a,[hl]
     inc     hl
     ld      b,a
@@ -222,12 +222,18 @@ core_unpack: ; HL = source, DE = target
     ld      b,h
     ld      c,l
 
-    pop     hl
+    pop     hl ; restore source address
 
     ; skip size word again
     inc     hl
     inc     hl
 
+    call    core_unpack_raw
+
+    ret
+
+
+core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
 .loop:
     ; check if we reached the end of the data uncompressed data (de == bc)
     ld      a,e

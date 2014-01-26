@@ -7,7 +7,6 @@ var path = require('path'),
 
 // Gameboy Data Conversion ----------------------------------------------------
 // ----------------------------------------------------------------------------
-console.log(process.argv);
 var gb = {
 
     rleMapValue: 249,
@@ -37,7 +36,7 @@ var gb = {
             '0,0,0': 1, // blocking
             '0,255,255': 2, // water top (swimming)
             '0,0,255': 3,  // water full (diving)
-            '255,0,0': 4,  // danger (killing)
+            '255,0,0': 4,  // danger (environmental hazard)
             '255,255,255': 5 // saving?
         }
 
@@ -225,14 +224,12 @@ var gb = {
                 var data = map.layers[0].data.map(function(i) {
                         return ((i - 1) + 256) % 256;
                     }),
-                    rleBytes = [],
-                    rleOffsets = [],
+                    mapBytes = [],
+                    roomOffsets = [],
                     w = map.width,
                     h = map.height,
                     rx = w / 10,
                     ry = h / 8;
-
-                //var ll = 0;
 
                 // Generate rooms
                 for(var y = 0; y < ry; y++) {
@@ -249,26 +246,20 @@ var gb = {
                         }
 
                         // Push the data offset into the room index
-                        rleOffsets.push((rleBytes.length >> 8), rleBytes.length & 0xff);
+                        roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
 
-                        // RLE encode the room data
-                        //var copy = roomBytes.slice();
-                        var c = gb.rleEncode(gb.rleMapValue, roomBytes, 3, (255 - gb.rleMapValue + 3));
-                        //var l = gb.pack(copy, false).length;
-                        //ll += l;
-                        //console.log(c.length, '/', l);
-                        rleBytes.push.apply(rleBytes, c);
+                        // Pack the room data and append it to the map data
+                        mapBytes.push.apply(mapBytes, gb.pack(roomBytes, false));
 
                     }
                 }
 
-                //console.log(rleBytes.length, ll);
-                var compressed = rleOffsets.concat(rleBytes);
+                var compressed = roomOffsets.concat(mapBytes);
                 return Promise.fulfilled(compressed);
 
             }).then(function(data) {
                 file = file.replace(/\.json$/, '.bin');
-                console.log('[map] Saving rle encoded map data "%s" (%s bytes)...', file, data.length);
+                console.log('[map] Saving packed data "%s" (%s bytes)...', file, data.length);
                 return gb.saveFile(file ,data);
 
             }).then(function() {
@@ -310,38 +301,6 @@ var gb = {
 
 
     // Helpers ----------------------------------------------------------------
-    rleEncode: function(magicByte, data, minLength, maxLength) {
-
-        var compressed = [];
-
-        for(var i = 0; i < data.length; i++) {
-
-            var matching = 0;
-            for(var e = i; e < data.length; e++) {
-                if (data[e] === data[i] && matching < maxLength) {
-                    matching++;
-
-                } else {
-                    break;
-                }
-            }
-
-            if (matching >= minLength) {
-
-                compressed.push(magicByte + (matching - minLength), data[i]);
-                i += matching;
-
-            }
-
-            // don't forget the tile which didn't match!
-            compressed.push(data[i]);
-
-        }
-
-        return compressed;
-
-    },
-
     rearrangeTiles16: function(bytes, columns, rows) {
 
         // Re-arrange the data for simple use with 8x16 LCD sprites
@@ -492,7 +451,7 @@ var gb = {
 
     },
 
-    pack: function(bytes, prefix) {
+    pack: function(bytes, prefixSize) {
 
         var minRun = 3,
             maxRun = 128 + minRun - 1,
@@ -615,7 +574,7 @@ var gb = {
             //console.log('PACKED ', compressed.length, 'of', bytes.length, 100 / bytes.length * compressed.length);
         }
 
-        if (prefix !== false) {
+        if (prefixSize !== false) {
             var size = bytes.length;
             return [(size >> 8), size & 0xff].concat(compressed);
 
@@ -625,6 +584,7 @@ var gb = {
 
     },
 
+    // Only here for verifying that the packed uncompressed correctly
     unpack: function(compressed) {
 
         var bytes = [],
@@ -676,6 +636,7 @@ var gb = {
     }
 
 };
+
 
 gb.convert.Tileset('tiles.bg.png').then(function() {
     gb.convert.Tileset('tiles.ch.png', true).then(function() {
