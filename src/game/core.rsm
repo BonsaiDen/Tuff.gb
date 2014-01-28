@@ -235,14 +235,18 @@ core_unpack: ; HL = source, DE = target
 
 core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
 .loop:
-    ; check if we reached the end of the data uncompressed data (de == bc)
-    ld      a,e
-    cp      c ; c == e
+
+    ; check if we reached or passed the end of the data uncompressed data 
+    ; (de >= bc)
+    ld      a,d
+    cp      b
     jp      nz,.next
 
-    ld      a,d
-    cp      b ; b == d
-    ret     z
+    ; check low byte
+    ld      a,e
+    cp      c 
+    ret     z ; c == e
+    ret     nc ; c > e
 
 .next:
 

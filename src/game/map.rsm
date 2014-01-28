@@ -247,6 +247,14 @@ map_draw_room:
 ; Collision Detection ---------------------------------------------------------
 map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if no collision, nz if collision
 
+    ; check for the bottom end of the screen
+    ; if we index into the ram beyond this area we will read invalid data
+    ; so we assume that there is never any collision beyond y 128
+    ld      a,c
+    cp      128
+    jp      nc,.off_screen ; reset collision flag and indicate no collision
+
+    ; save hl
     push    hl
 
     ; divide x by 8
@@ -290,14 +298,20 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     cp      1
     jp      z,.collision
 
+    ; everything that is not solid has no collision
 .no_collision:
     ld      [mapCollisionFlag],a
     cp      a ; set z
     ret
 
-    ; everything falls back to blocking collision
 .collision:
     or      1 ; set nz
+    ret
+
+.off_screen:
+    ld      a,0
+    ld      [mapCollisionFlag],a
+    cp      a ; set z
     ret
 
 

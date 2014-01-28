@@ -1,4 +1,4 @@
-export PATH :=./tools:$(PATH)
+#export PATH :=./tools:$(PATH)
 
 rom: convert
 	@mkdir -p build

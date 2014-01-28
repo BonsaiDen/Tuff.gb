@@ -24,6 +24,9 @@ game_init:
     ; Player
     call    player_init
 
+    ; Hud
+    call    game_hud
+
     ; Map
     ld      b,2
     ld      c,0
@@ -102,6 +105,15 @@ game_loop:
     call    game_fade_in
 
 .not_fade_in:
+    ret
+
+
+; Hud -------------------------------------------------------------------------
+game_hud:
+    ld      a,$bf - 128
+    ld      hl,$9a00
+    ld      bc,20
+    call    mem_SetVRAM
     ret
 
 

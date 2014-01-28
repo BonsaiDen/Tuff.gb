@@ -299,7 +299,6 @@ player_collision_up:
     ld      b,a
     call    map_get_collision
 
-
     ret
 
 
@@ -454,11 +453,11 @@ player_scroll_map:
     ; down ------------------------------
 .check_down:
     ld      a,[playerY]
-    cp      129 ; > 140
+    cp      127 ; 
     jp      c,.done
     call    map_scroll_down
 
-    ld      a,2
+    ld      a,1
     ld      [playerY],a
 
 .done:
@@ -864,7 +863,19 @@ player_move:
     call   player_collision_right
     jp     z,.not_blocked_right
 
+    ; set pushing animation when not in water
+    ld     a,[playerInWater]
+    cp     0
+    jp     z,.pushing_right
+    jp     .idle_right
+
+.pushing_right:
     ld     a,PLAYER_ANIMATION_PUSHING
+    ld     [playerAnimation],a
+    jp     .move_left
+
+.idle_right:
+    ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
     jp     .move_left
 
@@ -888,7 +899,19 @@ player_move:
     call   player_collision_left
     jp     z,.not_blocked_left
 
+    ; set pushing animation when not in water
+    ld     a,[playerInWater]
+    cp     0
+    jp     z,.pushing_left
+    jp      .idle_left
+
+.pushing_left:
     ld     a,PLAYER_ANIMATION_PUSHING
+    ld     [playerAnimation],a
+    jp     .moved
+
+.idle_left:
+    ld     a,PLAYER_ANIMATION_IDLE
     ld     [playerAnimation],a
     jp     .moved
 
