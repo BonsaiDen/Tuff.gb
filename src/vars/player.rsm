@@ -22,6 +22,8 @@ PLAYER_ANIMATION_JUMP      EQU 4
 PLAYER_ANIMATION_FALL      EQU 5
 PLAYER_ANIMATION_RUNNING   EQU 6
 PLAYER_ANIMATION_SWIMMING  EQU 7
+PLAYER_ANIMATION_DISSOLVE  EQU 8
+PLAYER_ANIMATION_SURFACE   EQU 9
 
 PLAYER_HALF_WIDTH          EQU 7
 PLAYER_HEIGHT              EQU 13
@@ -57,4 +59,7 @@ playerInWater:       DB ; is the player in water?
 playerWaterHitDone:  DB ; whether the intitial splash hit is done
 playerWaterTick:     DB ; player water offset ticker
 playerWaterHitDepth: DB ; value to check how deep the player should splash into the water
+
+playerDissolveTick:  DB ; tick for when the player is dissolving
+
 

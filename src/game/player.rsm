@@ -53,6 +53,9 @@ player_reset:
     ld      a,PLAYER_SLEEP_WAIT
     ld      [playerSleepTick],a
 
+    ld      a,255
+    ld      [playerDissolveTick],a
+
     ret
 
 
@@ -60,7 +63,27 @@ player_reset:
 ; Player Logic ----------------------------------------------------------------
 player_update:
 
+    ; check if we're dissolving
+    ld      a,[playerDissolveTick]
+    cp      255
+    jp      z,.control
+
+    ; wait for 40 frames before flashing screen and resetting player position
+    inc     a
+    ld      [playerDissolveTick],a
+    cp      25
+    jp      nz,.update
+
+    ld      a,255
+    ld      [playerDissolveTick],a
+
+    call    game_flash_screen
+    call    save_reset_player
+    ret
+
+
     ; control / animation
+.control:
     call    player_accelerate
     call    player_decelerate
     call    player_move
@@ -84,21 +107,25 @@ player_update:
 
     ; check if the pixel still lies in water
     ld      a,[mapCollisionFlag]
-    cp      0
-    jp      z,.land
-    call    player_water_update
-    jp      .update
+    cp      2 
+    jp      z,.water
+    cp      3
+    jp      z,.water
 
-    ; reset water variables
+    ; reset water variables when on land
 .land:
     ld      a,0
     ld      [playerInWater],a
     ld      [playerWaterHitDone],a
+    jp      .update
 
+.water:
+    call    player_water_update
+
+    ; animation / other logic
 .update:
     call    player_animate
     call    player_scroll_map
-
 
     ; update player sprite position
     ld      a,[playerX]
@@ -113,11 +140,26 @@ player_update:
 .special_collision:
     ld      a,[mapCollisionFlag]
     cp      4
-    ret     nz
+    jp      z,player_dissolve
+    ;cp      2
+    ;jp      z,player_dissolve
+    ret     
 
-    ; reset player when hitting a hazard
-    call    game_flash_screen
-    call    save_reset_player
+
+player_dissolve:
+
+    ; jump out if already dissolving
+    ld      a,[playerDissolveTick]
+    cp      255
+    jp      nz,.done
+
+    ; dissolve player when hitting a hazard
+    ld      a,PLAYER_ANIMATION_DISSOLVE
+    ld      [playerAnimation],a
+    ld      a,0
+    ld      [playerDissolveTick],a
+
+.done:
     ret
 
 
@@ -132,8 +174,8 @@ playerWaterSwimOffsetTable:
     DB      1,1,2,2,1,1,0,0,1,1,2,2,1,1,0,0
 
 playerWaterHitOffsetTable:
-    DB      1,2,3,4,6,7,8,8,7,7,7,6,5,5,5,5,5,4,4,4
-    DB      4,4,4,3,3,3,3,3,3,3,2,2,2,2,2,1,1,1,0,0
+    DB      1,2,3,4,6,7,8,9,10,8,7,7,6,6,6,5,5,5,5,4
+    DB      4,4,4,3,3,3,3,3,2,2,2,2,2,1,1,1
 
 
 player_water_update:
@@ -168,7 +210,7 @@ player_water_update:
     
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]
-    cp      39; check if we're done
+    cp      35; check if we're done
     jp      z,.water_hit_done
 
     ld      a,[playerWaterTick]
@@ -181,7 +223,18 @@ player_water_update:
     ld      c,a
     add     hl,bc
 
-    ; load offset value
+    ; set diving / surfacing animation
+    cp      14
+    jp      c,.down
+    ld      a,PLAYER_ANIMATION_SURFACE
+    jp      .animate
+.down:
+    ld      a,PLAYER_ANIMATION_FALL
+
+.animate:
+    ld      [playerAnimation],a
+
+    ; load y offset value
     ld      a,[hl]
     ld      b,a
 

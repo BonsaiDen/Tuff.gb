@@ -22,13 +22,13 @@
     DB $00, $10,$11,$12,$13, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $0B,$0D,$0B,$0D, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
-    ; Jumping
+    ; Jumping 
     DB $00, $04,$08,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $01,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
-    ; Falling
+    ; Falling / Diving down
     DB $00, $07,$09,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $01,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $02,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
     ; Running
     DB $00, $04,$05,$06,$07, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
@@ -38,3 +38,11 @@
     DB $00, $18,$19,$1A,$1B, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $06,$0B,$06,$0B, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
         
+    ; Dissolving 
+    DB $00, $1C,$1D,$1E,$1F, $03,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
+    DB $fd, $05,$04,$03,$02, $02,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
+
+    ; Swimming to the Surface
+    DB $00, $00,$08,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
