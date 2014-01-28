@@ -28,6 +28,7 @@ player_init:
 
     ret
 
+
 player_reset:
 
     ; Gravity
@@ -68,10 +69,15 @@ player_update:
     cp      255
     jp      z,.control
 
-    ; wait for 40 frames before flashing screen and resetting player position
+    ; wait for 25 ticks before flashing screen and resetting player position
+    ;call    player_gravity
+    ;ld      a,[playerY]
+    ;ld      [playerYOffset],a
+
+    ld      a,[playerDissolveTick]
     inc     a
     ld      [playerDissolveTick],a
-    cp      25
+    cp      30
     jp      nz,.update
 
     ld      a,255
@@ -88,7 +94,18 @@ player_update:
     call    player_decelerate
     call    player_move
 
+    ; check for hazard
+    ld      a,[mapCollisionFlag]
+    cp      4
+    jp      z,player_dissolve
+
     call    player_gravity
+
+    ; check for hazard
+    ld      a,[mapCollisionFlag]
+    cp      4
+    jp      z,player_dissolve
+
     call    player_sleep
 
     ; y position for sprite
@@ -111,6 +128,8 @@ player_update:
     jp      z,.water
     cp      3
     jp      z,.water
+    cp      4
+    jp      z,player_dissolve
 
     ; reset water variables when on land
 .land:
@@ -135,14 +154,6 @@ player_update:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_set_position
 
-
-    ; Special Collision Flags
-.special_collision:
-    ld      a,[mapCollisionFlag]
-    cp      4
-    jp      z,player_dissolve
-    ;cp      2
-    ;jp      z,player_dissolve
     ret     
 
 
@@ -158,6 +169,7 @@ player_dissolve:
     ld      [playerAnimation],a
     ld      a,0
     ld      [playerDissolveTick],a
+    ld      [mapCollisionFlag],a
 
 .done:
     ret

@@ -58,7 +58,7 @@ sprite_animate_all:
 .next_sprite:
     inc    b
     ld     a,b
-    cp     20
+    cp     20 ; 20 sprites overall
     jp     nz,.update_loop
     ret
 
