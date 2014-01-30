@@ -1,9 +1,9 @@
 ; Hardware Library ------------------------------------------------------------
-    INCLUDE "src/lib/gbhw.inc"
+    INCLUDE "lib/gbhw.inc"
     
 ; WRAM0 -----------------------------------------------------------------------
 SECTION "Variables",WRAM0
-    INCLUDE "src/vars/include.rsm"
+    INCLUDE "vars/include.rsm"
 
 
 ; ROM0 ------------------------------------------------------------------------
@@ -23,27 +23,27 @@ SECTION "Variables",WRAM0
 
 
 ; Core Program ----------------------------------------------------------------
-    INCLUDE "src/lib/memory.rsm"
-    INCLUDE "src/lib/math.rsm"
-    INCLUDE "src/game/core.rsm"
+    INCLUDE "lib/memory.rsm"
+    INCLUDE "lib/math.rsm"
+    INCLUDE "game/core.rsm"
 
 
 ; Game Program ----------------------------------------------------------------
-    INCLUDE "src/game/input.rsm"
-    INCLUDE "src/game/game.rsm"
-    INCLUDE "src/game/map.rsm"
-    INCLUDE "src/game/sprite.rsm"
-    INCLUDE "src/game/player.rsm"
-    INCLUDE "src/game/entity.rsm"
-    INCLUDE "src/game/save.rsm"
+    INCLUDE "game/input.rsm"
+    INCLUDE "game/game.rsm"
+    INCLUDE "game/map.rsm"
+    INCLUDE "game/sprite.rsm"
+    INCLUDE "game/player.rsm"
+    INCLUDE "game/entity.rsm"
+    INCLUDE "game/save.rsm"
 
 
 ; Bank 0 Data -----------------------------------------------------------------
 SECTION "Org $2000",ROM0[$2000]
-    INCLUDE "src/data/bank0.rsm" ; we use the last 8kb of ROM0 for generic data
+    INCLUDE "data/bank0.rsm" ; we use the last 8kb of ROM0 for generic data
     
 
 ; Bank 1 Data -----------------------------------------------------------------
 SECTION "Bank1",ROMX,BANK[1]
-    INCLUDE "src/data/bank1.rsm"
+    INCLUDE "data/bank1.rsm"
 

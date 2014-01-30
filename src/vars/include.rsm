@@ -1,19 +1,19 @@
 ; Variables -------------------------------------------------------------------
 
     ; sprite data is at C000 for DMA copy
-    INCLUDE "src/vars/sprite.rsm"
+    INCLUDE "vars/sprite.rsm"
 
-    INCLUDE "src/vars/core.rsm"
-    INCLUDE "src/vars/input.rsm"
-    INCLUDE "src/vars/game.rsm"
-    INCLUDE "src/vars/player.rsm"
-    INCLUDE "src/vars/save.rsm"
+    INCLUDE "vars/core.rsm"
+    INCLUDE "vars/input.rsm"
+    INCLUDE "vars/game.rsm"
+    INCLUDE "vars/player.rsm"
+    INCLUDE "vars/save.rsm"
 
 
     ; map data is at C300 for room buffer
 SECTION "MapBuffer",WRAM0[$C300]
-    INCLUDE "src/vars/map.rsm"; 
+    INCLUDE "vars/map.rsm"; 
 
     ; entity data 
-    INCLUDE "src/vars/entity.rsm"
+    INCLUDE "vars/entity.rsm"
 

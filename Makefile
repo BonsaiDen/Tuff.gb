@@ -2,7 +2,7 @@
 
 rom: convert
 	@mkdir -p build
-	@rgbasm -o build/main.o src/main.rsm
+	@cd src && rgbasm -o ../build/main.o main.rsm
 	@rgblink -o build/main.gb build/main.o -m build/main.map
 	@rgbfix -v -p 0 build/main.gb
 	@cp build/main.gb tools/emu/roms/tuff.gb
