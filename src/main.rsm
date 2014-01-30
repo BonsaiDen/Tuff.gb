@@ -1,5 +1,5 @@
 ; Hardware Library ------------------------------------------------------------
-    INCLUDE "lib/gbhw.inc"
+    INCLUDE "include/gb.inc"
     
 ; WRAM0 -----------------------------------------------------------------------
 SECTION "Variables",WRAM0
