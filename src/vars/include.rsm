@@ -14,3 +14,6 @@
 SECTION "MapBuffer",WRAM0[$C300]
     INCLUDE "src/vars/map.rsm"; 
 
+    ; entity data 
+    INCLUDE "src/vars/entity.rsm"
+

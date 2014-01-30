@@ -5,9 +5,13 @@ game_init:
     ld      a,%11100100
     ld      [rBGP],a; load a into the memory pointed to by rBGP
 
-    ; set object palette 0
+    ; set sprite palette 0
     ld      a,%11010000 
     ld      [rOBP0],a 
+
+    ; set sprite palette 1
+    ld      a,%10010000 
+    ld      [rOBP1],a 
 
     ; reset fading
     ld      a,0
@@ -203,12 +207,14 @@ game_fade_timer:
 gameBGFlashMask:
     DB      %00000000
     DB      %00000000
+    DB      %00000000
     DB      %01010100
     DB      %10100100
     DB      %11100100
 
 
 gameSpriteFlashMask:
+    DB      %00000000
     DB      %00000000
     DB      %00000000
     DB      %01010000 
@@ -251,7 +257,7 @@ game_flash_timer:
 
     ; update
     ld      a,[gameFlashIndex]
-    cp      4
+    cp      5
     jp      z,.complete
     inc     a
     ld      [gameFlashIndex],a

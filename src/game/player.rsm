@@ -70,9 +70,9 @@ player_update:
     jp      z,.control
 
     ; wait for 25 ticks before flashing screen and resetting player position
-    ;call    player_gravity
-    ;ld      a,[playerY]
-    ;ld      [playerYOffset],a
+    ld      a,[playerY]
+    add     2
+    ld      [playerYOffset],a
 
     ld      a,[playerDissolveTick]
     inc     a

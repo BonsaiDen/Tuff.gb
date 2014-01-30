@@ -1,6 +1,8 @@
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE      EQU     512
 MAP_ROOM_SIZE       EQU     80
+MAP_WIDTH           EQU     16
+MAP_HEIGHT          EQU     16
 
 
 ; Room drawing ----------------------------------------------------------------

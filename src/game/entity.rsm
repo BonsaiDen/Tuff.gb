@@ -1,0 +1,67 @@
+; Load the entity state from RAM or the map default and  ----------------------
+; Set up sprite and initial data based on type handler ------------------------
+entity_load:
+    ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
+    ld      de,entityScreenData 
+    ld      b,ENTITY_PER_ROOM
+.loop:
+    dec     b
+
+    ; get type / used
+    ld      a,[hl]
+
+
+    ; TODO load entities for current room, if type > 0 the entity is used
+    ; TODO load state (fallback to defaults if there is no state)
+    ; TODO setup entity sprite number etc.
+    ; TODO call handler
+
+    ; next entity
+.next:
+    inc     de
+    inc     hl
+    inc     hl
+    jp      nz,.loop
+    ret
+
+
+; Store the entity state into RAM based on the type handler -------------------
+; Also reset the entity sprite and screen data --------------------------------
+entity_store:
+    ld      b,ENTITY_PER_ROOM
+.loop:
+    dec     b
+
+    ; TODO store entities for current room, if type > 0 the entity was used
+    ; TODO save state (x, y, direction, custom state)
+.next:
+    jp      nz,.loop
+    ret
+
+
+; Update the on screen entites based on the type handler ----------------------
+entity_update:
+    ld      hl,entityScreenData
+    ld      b,ENTITY_PER_ROOM
+.loop:
+    dec     b
+
+    ; load type / active
+    ld      a,[hl]
+    
+    ; TODO update entities on screen, if type > 0 the entity is active
+    ; handler MUST increase hl by 8 bytes!!
+    
+    ; next entity block
+.next:
+    jp      nz,.loop
+    ret
+
+
+; Handler Tables --------------------------------------------------------------
+entityLoadHandler:
+
+entityStoredHandler:
+
+entityUpdateHandler:
+    

@@ -34,6 +34,7 @@ SECTION "Variables",WRAM0
     INCLUDE "src/game/map.rsm"
     INCLUDE "src/game/sprite.rsm"
     INCLUDE "src/game/player.rsm"
+    INCLUDE "src/game/entity.rsm"
     INCLUDE "src/game/save.rsm"
 
 

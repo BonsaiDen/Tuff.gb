@@ -62,4 +62,3 @@ playerWaterHitDepth: DB ; value to check how deep the player should splash into 
 
 playerDissolveTick:  DB ; tick for when the player is dissolving
 
-
