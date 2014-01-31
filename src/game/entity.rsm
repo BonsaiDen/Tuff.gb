@@ -1,3 +1,5 @@
+SECTION "EntityLogic",ROM0
+
 ; Load the entity state from RAM or the map default and  ----------------------
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:

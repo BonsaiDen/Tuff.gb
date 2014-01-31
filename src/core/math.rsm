@@ -1,5 +1,5 @@
 ; 8 x 8 bit multiplication ----------------------------------------------------
-math_mul8b:                          ; this routine performs the operation HL=H*E
+math_mul8b:                     ; this routine performs the operation HL=H*E
     ld      d,0                 ; clearing D and L
     ld      l,d
     ld      a,8                 ; we have 8 bits

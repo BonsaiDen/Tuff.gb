@@ -1,0 +1,48 @@
+; Initialize Hardware and Core ------------------------------------------------
+core_init:
+
+    di                      ; Disable interrupts
+    ld      sp,$ffff        ; init stack pointer
+    call    core_screen_off ; Disable Screen
+    call    core_setup_dma  ; Setup DMA transfer
+
+    ; Clear RAM, otherwise we will run into problems on real hardware
+    ; where it is not going to get initialized
+    ld      a,$00           
+    ld      hl,$c000
+    ld      bc,8192
+    call    core_mem_set
+
+    ; Clear Bcakground Screen Buffer
+    ld      a,$7f
+    ld      hl,$9800
+    ld      bc,1024
+    call    core_mem_set
+
+    ; Reset Scroll registers
+    ld      a,0
+    ld      [rSCX],a
+    ld      [rSCY],a
+
+    ; Reset vblank flag
+    ld      [coreVBlankDone],a
+
+    ; Reset timers
+    ld      [coreTimer125],a
+    ld      [coreHalfTickSwitch],a
+    ld      [coreHalfTick],a
+
+    ; Run init code and the loop once so we don't have a blank frame on powerup
+    call    game_init
+    call    game_loop
+
+    ; Enable interrupts
+    ei
+    ld      a,IEF_VBLANK|IEF_TIMER
+    ld      [rIE],a
+    ld      a,TACF_START|TACF_4KHZ
+    ld      [rTAC],a
+
+    call    core_screen_on  ; Turn on the screen
+    jp      core_loop       ; Start main loop
+

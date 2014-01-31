@@ -1,0 +1,76 @@
+;*
+;* Taken from:
+;*
+;* MEMORY.ASM - Memory Manipulation Code
+;* by GABY. Inspired by Carsten Sorensen & others.
+;*
+;* V1.0 - Original release
+;*
+
+; Memory Set ------------------------------------------------------------------
+core_mem_set: ; a = value, hl = address, bc = bytecount
+	inc	b
+	inc	c
+	jr	.skip
+.loop	ld	[hl+],a
+.skip	dec	c
+	jr	nz,.loop
+	dec	b
+	jr	nz,.loop
+	ret
+
+
+; Memory Copy -----------------------------------------------------------------
+core_mem_cpy: ; hl = source, de = dest, bc = bytecount
+	inc	b
+	inc	c
+	jr	.skip
+.loop	ld	a,[hl+]
+	ld	[de],a
+	inc	de
+.skip	dec	c
+	jr	nz,.loop
+	dec	b
+	jr	nz,.loop
+	ret
+
+
+; VRAM Set --------------------------------------------------------------------
+core_vram_set: ; a = value, hl = address, bc = bytecount
+	inc	b
+	inc	c
+	jr	.skip
+.loop   push    af
+        di
+        ld      a,[rSTAT]       ; <---+
+        and     STATF_BUSY      ;     |
+        jr      nz,@-4          ; ----+
+        pop     af
+        ld      [hl+],a
+        ei
+.skip	dec	c
+	jr	nz,.loop
+	dec	b
+	jr	nz,.loop
+	ret
+
+
+; VRAM Copy -------------------------------------------------------------------
+core_vram_cpy: ; hl = source, de = dest, bc = bytecount
+	inc	b
+	inc	c
+	jr	.skip
+.loop   di
+        ld      a,[rSTAT]       ; <---+
+        and     STATF_BUSY      ;     |
+        jr      nz,@-4          ; ----+
+        ld      a,[hl+]
+	ld	[de],a
+        ei
+	inc	de
+.skip	dec	c
+	jr	nz,.loop
+	dec	b
+	jr	nz,.loop
+	ret
+

@@ -1,3 +1,5 @@
+SECTION "MapRam",WRAM0[$C300]
+
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE      EQU     512
 MAP_ROOM_SIZE       EQU     80
@@ -6,7 +8,7 @@ MAP_HEIGHT          EQU     16
 
 
 ; Room drawing ----------------------------------------------------------------
-mapRoomBuffer:              DS 512  + 16; must be at the top ($c3000) for fast collision checks
+mapRoomBuffer:              DS 512; must be at the top ($c3000) for fast collision checks
 mapRoomUnpackBuffer:        DS MAP_ROOM_SIZE ; buffer for the decompressed room data
 mapRoomDataPointer:         DW ; pointer to packed data of the current room
 

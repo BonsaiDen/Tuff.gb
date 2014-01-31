@@ -1,3 +1,7 @@
+; Main Game Logic -------------------------------------------------------------
+SECTION "GameLogic",ROM0
+
+
 ; Initialization --------------------------------------------------------------
 game_init:
 
@@ -45,70 +49,25 @@ game_init:
     inc     hl
     ld      [hl],%00000000 ; dis-able sound
 
-    ;ld      hl,$FF10
-
-    ;;          -SSSOIII / sweep register
-    ;ld      a,%00000000
-    ;ld      [hli],a
-
-    ;;          WWLLLLLL / length wave pattern duty
-    ;ld      a,%10111111
-    ;ld      [hli],a
-
-    ;;          VVVVENNN
-    ;ld      a,%01110001
-    ;ld      [hli],a
-
-    ;;          FFFFFFFF frequency lower 8 bits
-    ;ld      a,%00000010
-    ;ld      [hli],a
-    ;
-    ;;          IS000FFF frequency lower 8 bits
-    ;ld      a,%10000000
-    ;ld      [hli],a
-
-
-    ; noise
-    ;ld      hl,$FF20
-    ;ld      [hl],%00001111
-    ;inc     hl
-
-    ;;             VVVVESSS
-    ;ld      [hl],%00010000 ; fade out
-    ;inc     hl
-
-    ;;             FFFFSDDD
-    ;ld      [hl],%01110101 ; polynomial counter, higher value > lower noise (darker), noise freq, 1 = 7 steps, sounds glichted, 0 = 15 = normal noise
-    ;inc     hl
-    ;;             IE
-    ;ld      [hl],%10000000 ; start intiially, play it endlessly
-
-
     ret
 
 
 ; Main Loop -------------------------------------------------------------------
-game_loop_half:
+game_loop:
+    call    sprite_animate_all
+    ret
+
+game_loop_one_half:
     call    player_update
     ret
 
 
-game_loop:
-    call    sprite_animate_all
-
-    ; Fading test
-    ld      a,[inputState]
-    and     %00000010
-    jp      z,.not_fade_out
-    call    game_flash_screen
-
-.not_fade_out:
-    ld      a,[inputState]
-    and     %00000100
-    jp      z,.not_fade_in
-    call    game_fade_in
-
-.not_fade_in:
+; 125ms Timer -----------------------------------------------------------------
+game_timer_125
+    call    map_animate_tiles
+    call    player_timer_125
+    call    game_fade_timer
+    call    game_flash_timer
     ret
 
 
@@ -117,7 +76,7 @@ game_hud:
     ld      a,$bf - 128
     ld      hl,$9a00
     ld      bc,20
-    call    mem_SetVRAM
+    call    core_vram_set
     ret
 
 
@@ -270,11 +229,4 @@ game_flash_timer:
 
 
 
-; 125ms Timer -----------------------------------------------------------------
-game_timer_125
-    call    map_animate_tiles
-    call    player_timer_125
-    call    game_fade_timer
-    call    game_flash_timer
-    ret
 

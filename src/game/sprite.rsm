@@ -1,3 +1,5 @@
+SECTION "SpriteLogic",ROM0
+
 ; Sprite Animation Update -----------------------------------------------------
 sprite_animate_all:
     ld      b,0 ; loop counter
@@ -430,18 +432,6 @@ sprite_unset_mirror: ; a = sprite index
     and     %11111101 ; unset mirror flag
     ld      [hl],a
     pop     hl
-
-    ret
-
-
-; Sprite Rendering ------------------------------------------------------------
-sprite_draw_all:
-
-    ; Update sprite memory
-    ld      hl,spriteData
-    ld      de,_OAMRAM
-    ld      bc,160     ; length (8 bytes per tile) x (256 tiles)
-    call    mem_Copy    ; Copy tile data to memory
 
     ret
 

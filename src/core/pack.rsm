@@ -1,0 +1,103 @@
+; Data Unpacking Routines -----------------------------------------------------
+core_unpack: ; HL = source, DE = target
+    push    hl; store source address
+
+    ; load uncompressed size from packed data
+    ld      a,[hl]
+    inc     hl
+    ld      b,a
+
+    ld      a,[hl]
+    ld      c,a
+
+    ; bc = de + size
+    ld      h,d
+    ld      l,e
+    add     hl,bc
+    ld      b,h
+    ld      c,l
+
+    pop     hl ; restore source address
+
+    ; skip size word again
+    inc     hl
+    inc     hl
+
+    call    core_unpack_raw
+
+    ret
+
+
+core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
+.loop:
+
+    ; check if we reached or passed the end of the data uncompressed data 
+    ; (de >= bc)
+    ld      a,d
+    cp      b
+    jp      nz,.next
+
+    ; check low byte
+    ld      a,e
+    cp      c 
+    ret     z ; c == e
+    ret     nc ; c > e
+
+.next:
+
+    ; fetch next instruction byte
+    ld      a,[hl]
+    inc     hl
+    cp      127 ; a > 127
+    jp      z,.copy
+    jp      c,.copy
+
+
+    ; repeat X bytes
+.repeat:
+    
+    push    bc ; store end of data
+
+    ; 255 - (count - minRun - 1) (minRun = 2)
+    sub     3 ; count - 3
+    ld      b,a ; save count
+    ld      a,255
+    sub     b ; 255 - count, a is now the number of bytes to repeat
+    ld      b,a ; set up loop counter
+
+    ; load byte to repeat
+    ld      a,[hl]
+    inc     hl
+    
+.repeat_loop:
+
+    ; while count > 0 inc de
+    ld      [de],a
+    inc     de
+    dec     b
+    jp      nz,.repeat_loop
+
+    ; next instruction
+    pop     bc ; restore end of data
+    jp      .loop
+
+
+    ; copy X bytes
+.copy:
+    push    bc ; store end of data
+
+    inc     a ; count++
+    ld      b,a ; set up loop counter
+    
+.copy_loop:
+    ld      a,[hl] ; load byte to copy
+    inc     hl
+    ld      [de],a
+    inc     de
+    dec     b
+    jp      nz,.copy_loop
+
+    ; next instruction
+    pop     bc ; restore end of data
+    jp      .loop
+

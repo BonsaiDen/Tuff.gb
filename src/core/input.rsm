@@ -1,6 +1,7 @@
-input_read:
+; Input Handling --------------------------------------------------------------
+core_input:
     ld      a, 0
-    ld      [inputState], a
+    ld      [coreInput], a
 
     ; read the d-pad:
     ld      a, %00100000    ; bit 4 = 0, bit 5 = 1 (d-pad on, buttons off)
@@ -37,7 +38,7 @@ input_read:
     ; make the complement of it (so activated buttons read as 1)
     ; and save it 
     cpl
-    ld      [inputState], a
+    ld      [coreInput], a
             
     ; reset the joypad
     ld      a,$30

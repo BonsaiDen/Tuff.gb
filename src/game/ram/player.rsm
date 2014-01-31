@@ -1,3 +1,5 @@
+SECTION "PlayerRam",WRAM0[$CA00]
+
 ; Constants -------------------------------------------------------------------
 PLAYER_DIRECTION_LEFT      EQU 1
 PLAYER_DIRECTION_RIGHT     EQU 2

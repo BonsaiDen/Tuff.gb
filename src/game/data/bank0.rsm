@@ -1,4 +1,21 @@
+SECTION "Bank0 Data",ROM0[$2000]
+
+; Shared Game Data (last 8kb of Bank0) ----------------------------------------
+DataBlockDef: 
+    INCBIN  "../data/bin/blocks.def.bin" ; $0400 bytes (1kb)
+
+DataTileCol: ; @2400 for collision checks
+    INCBIN  "../data/bin/tiles.col.bin"; 256 byte
+
+DataTileImg:
+    INCBIN  "../data/bin/tiles.bg.bin" ; 4 KB
+
+DataCharImg:
+    INCBIN  "../data/bin/tiles.ch.bin" ; 2 KB
+
+
 ; Sprite Animations -----------------------------------------------------------
+DataSpriteAnimation:
 
     ; Each Animation takes 32 bytes
     ; The first 16 are the tile indexes (which are 16x16)
@@ -45,4 +62,31 @@
     ; Swimming to the Surface
     DB $00, $00,$08,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+
+; Tile Animations -------------------------------------------------------------
+DataTileAnimation:
+
+    ; tiles c0 - ff
+
+    ; Water Top
+    DB $c0,$c1,$c2,$c3
+
+    ; Water
+    DB $c4,$c5,$c6,$c7
+
+    ; Waterfall
+    DB $c8,$c9,$ca,$cb
+    DB $cc,$cd,$ce,$cf
+
+    ; Lava Top
+    DB $d0,$d1,$d2,$d3
+    DB $d4,$d5,$d6,$d7
+
+    ; Torch
+    DB $d8,$d9,$da,$db
+
+    ; Lava Bottom
+    DB $e0,$e1,$e2,$e3
+    DB $e4,$e5,$e6,$e7
 

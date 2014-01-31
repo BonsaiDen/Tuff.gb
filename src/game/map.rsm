@@ -1,3 +1,5 @@
+SECTION "MapLogic",ROM0
+
 ; Tileset ---------------------------------------------------------------------
 map_load_spritesheet: ; hl = source
 
@@ -17,7 +19,7 @@ map_load_tileset: ; hl = offset
     ld      hl,$9400
     ld      de,TILE_ANIMATION_BUFFER
     ld      bc,1024
-    call    mem_Copy    
+    call    core_mem_cpy
 
     ret
 
@@ -240,7 +242,7 @@ map_draw_room:
     ld       hl,mapRoomBuffer
     ld       de,$9800
     ld       bc,512
-    call     mem_CopyVRAM
+    call     core_vram_cpy
     ret
 
 
@@ -391,7 +393,7 @@ map_animate_tiles:
     ; set the length
     ld      b,0
     ld      c,16
-    call    mem_CopyVRAM
+    call    core_vram_cpy
 
     pop     de
     pop     hl

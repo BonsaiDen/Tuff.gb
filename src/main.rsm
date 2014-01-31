@@ -1,49 +1,41 @@
-; Hardware Library ------------------------------------------------------------
-    INCLUDE "include/gb.inc"
-    
-; WRAM0 -----------------------------------------------------------------------
-SECTION "Variables",WRAM0
-    INCLUDE "vars/include.rsm"
+; ROM Definitions -------------------------------------------------------------
+INCLUDE     "core/include/rom.inc"
 
 
-; ROM0 ------------------------------------------------------------------------
-    SECTION "Org $40",ROM0[$0040]
-    jp      core_vblank_handler ; Interrupt Handler
-
-    SECTION "Org $50",ROM0[$0050]
-    jp      core_timer_handler ; Interrupt Handler
-
-    SECTION "Org $100",ROM0[$100]
-    nop
-    call    core_loop
+; Catridge Information --------------------------------------------------------
+ROM_NAME            EQUS       "Tuff"
+ROM_TYPE            EQU        ROM_NOMBC
+ROM_SIZE            EQU        ROM_SIZE_32KBYTE
+RAM_SIZE            EQU        RAM_SIZE_0KBIT
+ROM_DEST            EQU        ROM_DEST_OTHER
 
 
-; Header ----------------------------------------------------------------------
-    ROM_HEADER      ROM_NOMBC, ROM_SIZE_32KBYTE, RAM_SIZE_0KBYTE
+; Include Core Library --------------------------------------------------------
+INCLUDE     "core/core.rsm"
 
 
-; Core Program ----------------------------------------------------------------
-    INCLUDE "lib/memory.rsm"
-    INCLUDE "lib/math.rsm"
-    INCLUDE "game/core.rsm"
+; Constants and Variables -----------------------------------------------------
+INCLUDE     "game/ram/sprite.rsm"
+INCLUDE     "game/ram/map.rsm"
+INCLUDE     "game/ram/game.rsm"
+INCLUDE     "game/ram/save.rsm"
+INCLUDE     "game/ram/player.rsm"
+INCLUDE     "game/ram/entity.rsm"
 
 
-; Game Program ----------------------------------------------------------------
-    INCLUDE "game/input.rsm"
-    INCLUDE "game/game.rsm"
-    INCLUDE "game/map.rsm"
-    INCLUDE "game/sprite.rsm"
-    INCLUDE "game/player.rsm"
-    INCLUDE "game/entity.rsm"
-    INCLUDE "game/save.rsm"
+; Modules ---------------------------------------------------------------------
+INCLUDE     "game/entity.rsm"
+INCLUDE     "game/map.rsm"
+INCLUDE     "game/player.rsm"
+INCLUDE     "game/save.rsm"
+INCLUDE     "game/sprite.rsm"
 
 
-; Bank 0 Data -----------------------------------------------------------------
-SECTION "Org $2000",ROM0[$2000]
-    INCLUDE "data/bank0.rsm" ; we use the last 8kb of ROM0 for generic data
-    
+; Main Game -------------------------------------------------------------------
+INCLUDE     "game/game.rsm"
 
-; Bank 1 Data -----------------------------------------------------------------
-SECTION "Bank1",ROMX,BANK[1]
-    INCLUDE "data/bank1.rsm"
+
+; Data ------------------------------------------------------------------------
+INCLUDE     "game/data/bank0.rsm"
+INCLUDE     "game/data/bank1.rsm"
 

@@ -1,3 +1,5 @@
+SECTION "PlayerLogic",ROM0
+
 ; Player ----------------------------------------------------------------------
 player_init:
 
@@ -582,7 +584,7 @@ player_gravity:
 player_jump:
 
     ; see if the jump button has been pressed
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00000001
     jp      z,.not_pressed
 
@@ -790,11 +792,11 @@ player_increase_fall:
 player_accelerate:
 
     ; check which direction is pressed
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00100000
     jp      nz,.left
 
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00010000
     jp      nz,.right
 
@@ -842,7 +844,7 @@ player_decelerate:
 .decrease_right:
 
     ; check if right direction is still pressed
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00010000
     jp      nz,.decrease_left
 
@@ -856,7 +858,7 @@ player_decelerate:
 .decrease_left:
 
     ; check if left direction is still pressed
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00100000
     jp      nz,.done
 
@@ -1079,7 +1081,7 @@ player_animate:
 player_sleep:
 
     ; in case no button is pressed decrease the sleep ticker 
-    ld      a,[inputState]
+    ld      a,[coreInput]
     and     %00110001
     jp      nz,.active
 

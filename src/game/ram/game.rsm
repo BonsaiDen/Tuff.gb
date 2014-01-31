@@ -1,0 +1,9 @@
+SECTION "GameRam",WRAM0[$C100]
+
+; Screen State ----------------------------------------------------------------
+gameFadeMode:       DB
+gameFadeIndex:      DB
+
+gameFlashMode:      DB
+gameFlashIndex:     DB
+

@@ -1,0 +1,8 @@
+SECTION "SaveRam",WRAM0[$C200]
+
+; Saved Game / Player State ---------------------------------------------------
+saveRoomX:           DB
+saveRoomY:           DB
+savePlayerX:         DB
+savePlayerY:         DB
+

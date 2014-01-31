@@ -1,0 +1,41 @@
+; Core Loop -------------------------------------------------------------------
+core_loop:
+
+    halt    ; stop system clock, return from halt when interrupted
+    nop     ; If interrupts are disabled halt jumps one instruction!
+
+    ld      a,[coreVBlankDone]
+    and     a                   ; V-Blank interrupt ?
+    jr      z,core_loop         ; No, some other interrupt
+    xor     a
+    ld      [coreVBlankDone],a  ; Clear V-Blank flag
+                                
+    ; fetch joypad state
+    call    core_input
+
+    ; run the 1.5 frame loop
+    ld      a,[coreHalfTick]
+    cp      0
+    jp      nz,.no_half_tick
+    call    game_loop_one_half
+
+    ; every other tick we switch the delay between 0 or 1 to 
+    ; emulate moving by 1.5 pixels every frame
+    ld      a,[coreHalfTickSwitch]
+    ld      [coreHalfTick],a
+
+    ; switch between 0 and 1
+    ld      a,[coreHalfTickSwitch]
+    xor     a
+    ld      [coreHalfTickSwitch],a
+    jp      .half_ticked
+
+.no_half_tick:
+    dec     a
+    ld      [coreHalfTick],a
+
+.half_ticked:
+    ; run the main loop (every frame)
+    call    game_loop
+    jr      core_loop
+

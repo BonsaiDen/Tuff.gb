@@ -1,3 +1,5 @@
+SECTION "SaveLogic",ROM0
+
 ; Saving / Loading ------------------------------------------------------------
 save_store_player:
 

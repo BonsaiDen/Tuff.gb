@@ -1,5 +1,7 @@
 var fs = require('fs');
 
+require('colors');
+
 var lines = fs.readFileSync(process.argv[2]).toString().split('\n');
 var banks = [],
     bank = null,
@@ -33,15 +35,8 @@ for(var i = 0, l = lines.length; i < l; i++) {
                         size: parseInt(s[3], 16)
                     };
 
-                    if (!bank.sections.length) {
-
-                        if (banks.length === 1) {
-                            bank.start = 0;
-
-                        } else {
-                            bank.start = section.start;
-                        }
-
+                    if (section.start < bank.start) {
+                        bank.start = section.start;
                     }
 
                     bank.used += section.size;
@@ -67,7 +62,7 @@ for(var i = 0, l = lines.length; i < l; i++) {
                 free: 0,
                 used: 0,
                 size: -1,
-                start: 0,
+                start: 100000,
                 end: -1,
                 sections: []
             };
@@ -86,6 +81,16 @@ function toHex(val) {
     return '$' + (new Array(5 - val.length).join('0')) + val;
 }
 
+function ljust(val, length) {
+    val = val.toString();
+    return new Array(length - val.length + 1).join(' ') + val;
+}
+
+function rjust(val, length) {
+    val = val.toString();
+    return val + new Array(length - val.length + 1).join(' ');
+}
+
 
 console.log('');
 
@@ -101,7 +106,7 @@ banks.filter(function(b) {
 
     bank.end = bank.start + bank.size;
 
-    console.log('  %s @ %s (%s of %s bytes used) (%s free)', bank.name, toHex(bank.start), bank.used, bank.size, bank.free - 1);
+    console.log('  %s @ %s (%s of %s bytes used) (%s free)'.cyan, rjust(bank.name, 7), toHex(bank.start), ljust(bank.used, 5), ljust(bank.size, 5), ljust(bank.free - 1, 5));
     console.log('');
 
     // Sections
@@ -111,21 +116,21 @@ banks.filter(function(b) {
         if (prev) {
             var unused = section.start - (prev.end + 1);
             if (unused > 0) {
-                console.log('    - %s-%s [unused] (%s bytes free)', toHex(prev.end + 1), toHex(prev.end + unused), unused);
+                console.log('    - %s-%s ........ (%s bytes free)'.grey, toHex(prev.end + 1), toHex(prev.end + unused), ljust(unused, 5));
             }
 
         } else if (section.start > bank.start) {
-            console.log('    - %s-%s [unused] (%s bytes free)', toHex(bank.start), toHex(section.start - 1), section.start - 1);
+            console.log('    - %s-%s ........ (%s bytes free)'.grey, toHex(bank.start), toHex(section.start - 1), ljust(section.start - 1, 5));
         }
 
-        console.log('    - %s-%s -------- (%s bytes)', toHex(section.start), toHex(section.end), section.size);
+        console.log('    - %s-%s ######## (%s bytes)', toHex(section.start), toHex(section.end), ljust(section.size, 5));
         prev = section;
 
     });
 
     var left = (bank.end - 1) - (prev.end + 1);
     if (left > 0) {
-        console.log('    - %s-%s [unused] (%s bytes free)', toHex(prev.end - 1), toHex(bank.end - 1), left);
+        console.log('    - %s-%s ........ (%s bytes free)'.grey, toHex(prev.end - 1), toHex(bank.end - 1), ljust(left, 5));
     }
 
     console.log('\n');

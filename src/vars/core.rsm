@@ -1,5 +1,0 @@
-coreVBlankDone:     DB
-coreHalfTick:       DB
-coreHalfTickSwitch: DB
-coreTimer125:       DB
-
