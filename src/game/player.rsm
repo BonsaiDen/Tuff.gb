@@ -4,9 +4,9 @@ SECTION "PlayerLogic",ROM0
 player_init:
 
     ; Position 
-    ld      a,32
+    ld      a,8
     ld      [playerX],a
-    ld      a,32
+    ld      a,16
     ld      [playerY],a
 
     ; Direction
@@ -117,6 +117,7 @@ player_update:
     jp      z,player_dissolve
 
     call    player_sleep
+
 
     ; y position for sprite
     ld      a,[playerY]
@@ -483,6 +484,95 @@ player_collision_right:
     ret
 
 
+; Wall Jump Collision Checks --------------------------------------------------
+player_collision_left_all:
+
+    ; middle
+    ld      a,[playerY]
+    sub     a,7
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+
+    ; upper half 
+    ld      a,[playerY]
+    sub     a,PLAYER_HEIGHT - 1
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+
+    ; lower half 
+    ld      a,[playerY]
+    sub     1
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 1
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+    
+    ; set collision flag
+    or      1 ; set nz
+    ret
+
+.no_collision:
+    cp      a ; set z
+    ret     
+
+
+player_collision_right_all:
+
+    ; middle
+    ld      a,[playerY]
+    sub     a,7
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+
+    ; upper half 
+    ld      a,[playerY]
+    sub     a,PLAYER_HEIGHT - 1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+
+    ; lower half 
+    ld      a,[playerY]
+    sub     1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    jp      z,.no_collision
+
+    ; set collision flag
+    or      1 ; set nz
+    ret
+
+.no_collision:
+    cp      a ; set z
+    ret     
+
+
 ; Handle Map Scrolling --------------------------------------------------------
 player_scroll_map:
 
@@ -512,7 +602,7 @@ player_scroll_map:
     ; up --------------------------------
 .check_up:
     ld      a,[playerY]
-    cp      1 ; < 1
+    cp      2 ; < 1
     jp      nc,.check_down
     call    map_scroll_up
 
@@ -520,7 +610,7 @@ player_scroll_map:
     ld      a,PLAYER_JUMP_SCREEN_BOOST
     ld      [playerJumpForce],a
 
-    ld      a,126
+    ld      a,125
     ld      [playerY],a
     jp      .done
 
@@ -528,11 +618,11 @@ player_scroll_map:
     ; down ------------------------------
 .check_down:
     ld      a,[playerY]
-    cp      127 ; 
+    cp      126 ; 
     jp      c,.done
     call    map_scroll_down
 
-    ld      a,1
+    ld      a,3
     ld      [playerY],a
 
 .done:
@@ -1064,6 +1154,11 @@ player_move:
 
 ; Wall Sliding / Jumping Logic ------------------------------------------------
 player_slide_wall:
+
+    ; check if wall jump was performed
+    ld     a,[playerWallJumpTick]
+    cp     0
+    jp     nz,.wall_jump_speed
     
     ; check if on ground
     ld     a,[playerOnGround]
@@ -1073,7 +1168,7 @@ player_slide_wall:
     ; check if falling
     ld     a,[playerFallSpeed]
     cp     1
-    jp     c,.not_pressing_wall
+    jp     c,.not_pressing_wall ; if fall speed is <= 1 do not slide
 
     ; check if pressing against a wall
     ld     a,[playerDirectionWall]
@@ -1103,9 +1198,23 @@ player_slide_wall:
     cp     b
     ret    z ; exit if same direction
 
-    ; otherwise init a slide
+    ; check if player fully touches the wall before initiating a slide
+    ld     a,[playerDirection]
+    cp     PLAYER_DIRECTION_RIGHT
+    jp     z,.slide_right
+
+.slide_left:
+    call   player_collision_left_all
+    ret    z
     call   player_slide_wall_init
     ret
+
+.slide_right:
+    call   player_collision_right_all
+    ret    z
+    call   player_slide_wall_init
+    ret
+
 
 .sliding:
 
@@ -1123,6 +1232,7 @@ player_slide_wall:
 
     ret
 
+
 .sliding_done:
 
     call    player_slide_wall_stop
@@ -1132,6 +1242,7 @@ player_slide_wall:
     ld      a,PLAYER_WALL_JUMP_WINDOW
     ld      [playerWallJumpWindow],a
     ret
+
 
 .not_pressing_wall:
 
@@ -1156,6 +1267,7 @@ player_slide_wall:
             
     ret
 
+
 .on_ground:
 
     ; if we didnt slide we dont need to reset
@@ -1169,6 +1281,7 @@ player_slide_wall:
     ld      [playerWallSlideDir],a
 
     ret
+
 
 .check_wall_jump:
 
@@ -1201,6 +1314,48 @@ player_slide_wall:
     ld      [playerFallSpeed],a
     ld      [playerWallJumpWindow],a
 
+    ; setup forced movement away from the wall
+    ld      a,[playerWallSlideDir]
+    ld      [playerWallJumpDir],a
+
+    ld      a,PLAYER_WALL_JUMP_DURATION
+    ld      [playerWallJumpTick],a
+
+    ret
+
+
+.wall_jump_speed:
+    
+    ; decrease ticks left for wall jump speed boost
+    ld      a,[playerWallJumpTick]
+    dec     a
+    ld      [playerWallJumpTick],a
+    cp      0
+    jp      z,.stop
+
+    ; modify player speed variable
+    ld      a,[playerWallJumpDir]
+    cp      PLAYER_DIRECTION_LEFT
+    jp      z,.right
+
+.left:
+    ld      a,2
+    ld      [playerSpeedLeft],a
+    ld      a,0
+    ld      [playerSpeedRight],a
+    ret
+
+.right:
+    ld      a,2
+    ld      [playerSpeedRight],a
+    ld      a,0
+    ld      [playerSpeedLeft],a
+    ret
+
+.stop:
+    ld      a,0
+    ld      [playerSpeedRight],a
+    ld      [playerSpeedLeft],a
     ret
 
 
@@ -1221,6 +1376,7 @@ player_slide_wall_stop:
     ; reset tick
     ld      a,0
     ld      [playerWallSlideTick],a
+    ld      [playerWallJumpWindow],a
 
     ret
 
@@ -1310,6 +1466,7 @@ player_sleep:
 
 .done:
     ret
+
 
 player_sleep_timer:
     ld      a,[playerSleepTick]

@@ -35,6 +35,7 @@ PLAYER_HEIGHT              EQU 13
 PLAYER_SLIDE_DURATION      EQU 60 ; in frames
 PLAYER_SLIDE_SLOWDOWN      EQU 3 ; only apply fall speed every X other ticks while sliding
 PLAYER_WALL_JUMP_WINDOW    EQU 5
+PLAYER_WALL_JUMP_DURATION  EQU 5
 
 
 ; Variables -------------------------------------------------------------------

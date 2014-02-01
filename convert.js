@@ -4,6 +4,8 @@ var path = require('path'),
     fs = require('fs'),
     PNG = require('pngjs').PNG;
 
+require('colors');
+
 
 // Gameboy Data Conversion ----------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -122,7 +124,7 @@ var gb = {
                 console.log('[tileset] Done!');
 
             }, function(err) {
-                console.error('[tileset] Error:', err);
+                console.error(('[tileset] Error: ' + err).red);
             });
 
         },
@@ -210,7 +212,7 @@ var gb = {
                 console.log('[blocks] Done!');
 
             }, function(err) {
-                console.error('[blocks] Error:', err);
+                console.error(('[blocks] Error: ' + err).red);
             });
 
         },
@@ -266,7 +268,7 @@ var gb = {
                 console.log('[map] Done!');
 
             }, function(err) {
-                console.error('[map] Error:', err);
+                console.error(('[map] Error: ' + err).red);
             });
 
         },
@@ -292,7 +294,7 @@ var gb = {
                 console.log('[col] Done!');
 
             }, function(err) {
-                console.error('[col] Error:', err);
+                console.error(('[col] Error: ' + err).red);
             });
 
         }
