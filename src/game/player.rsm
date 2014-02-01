@@ -57,6 +57,7 @@ player_reset:
     ld      [playerDirectionWall],a
     ld      [playerWallSlideDir],a
     ld      [playerWallSlideTick],a
+    ld      [playerWallJumpPressed],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -691,7 +692,7 @@ player_jump:
     cp      1
     jp      z,.still_pressed
 
-    ; otherwrise set the button pressed on first press
+    ; otherwise set the button pressed on first press
     ld      a,1
     ld      [playerJumpPressed],a
 
@@ -726,6 +727,7 @@ player_jump:
 .not_pressed:
     ld      a,0
     ld      [playerJumpPressed],a
+    ld      [playerWallJumpPressed],a
 
 
     ; if we're still pressing the button or are in the air update the jump value
@@ -1297,6 +1299,11 @@ player_slide_wall:
     cp      b
     ret     z ; player must press joypad away from the wall he slided on, otherwise return
 
+    ; check if button was hold down since the last jump, if so don't jump again
+    ld      a,[playerWallJumpPressed]
+    cp      1
+    ret     z
+
     ; check if jump button got pressed
     ld      a,[coreInput]
     and     %00000001
@@ -1320,6 +1327,10 @@ player_slide_wall:
 
     ld      a,PLAYER_WALL_JUMP_DURATION
     ld      [playerWallJumpTick],a
+
+    ; set up jump button state
+    ld      a,1
+    ld      [playerWallJumpPressed],a
 
     ret
 
