@@ -3,11 +3,11 @@ INCLUDE     "core/include/rom.inc"
 
 
 ; Catridge Information --------------------------------------------------------
-ROM_NAME            EQUS       "Tuff"
-ROM_TYPE            EQU        ROM_NOMBC
-ROM_SIZE            EQU        ROM_SIZE_32KBYTE
-RAM_SIZE            EQU        RAM_SIZE_0KBIT
-ROM_DEST            EQU        ROM_DEST_OTHER
+CART_NAME       EQUS       "Tuff"
+CART_TYPE       EQU        ROM_NOMBC
+CART_ROM_SIZE   EQU        ROM_SIZE_32KBYTE
+CART_RAM_SIZE   EQU        RAM_SIZE_0KBIT
+CART_DEST       EQU        ROM_DEST_OTHER
 
 
 ; Include Core Library --------------------------------------------------------

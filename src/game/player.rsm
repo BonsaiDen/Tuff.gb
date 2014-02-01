@@ -4,7 +4,7 @@ SECTION "PlayerLogic",ROM0
 player_init:
 
     ; Position 
-    ld      a,20
+    ld      a,32
     ld      [playerX],a
     ld      a,32
     ld      [playerY],a
@@ -12,7 +12,7 @@ player_init:
     ; Direction
     ld      a,PLAYER_DIRECTION_RIGHT
     ld      [playerDirection],a
-    ld      a,255
+    ld      a,0
     ld      [playerDirectionLast],a
 
     ; Animation
@@ -51,6 +51,13 @@ player_reset:
     ld      [playerSpeedLeft],a
     ld      [playerDecTick],a
     ld      [playerMoveTick],a
+    ld      [playerDirLastPressed],a
+
+    ; Sliding
+    ld      a,0
+    ld      [playerDirectionWall],a
+    ld      [playerWallSlideDir],a
+    ld      [playerWallSlideTick],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -101,7 +108,9 @@ player_update:
     cp      4
     jp      z,player_dissolve
 
+    ; Jumping / Falling
     call    player_gravity
+    call    player_slide_wall
 
     ; check for hazard
     ld      a,[mapCollisionFlag]
@@ -721,10 +730,17 @@ player_decrease_jump:
 
 player_fall:
 
+    ; check if we're falling at all
     ld      a,[playerFallSpeed]
     ld      d,a ; load the current fall speed as the loop counter
     cp      0
     ret     z
+
+    ; if we're sliding only fall every couple of ticks
+    ld      a,[playerWallSlideTick]
+    and     PLAYER_SLIDE_SLOWDOWN
+    cp      0
+    ret     nz
 
 .fall:
 
@@ -787,7 +803,6 @@ player_increase_fall:
     ret
 
 
-
 ; Movement --------------------------------------------------------------------
 player_accelerate:
 
@@ -801,22 +816,38 @@ player_accelerate:
     jp      nz,.right
 
     ; not moving
+    ld      a,0
+    ld      [playerDirLastPressed],a
     jp      .done
 
 .right:
     ld      hl,playerSpeedRight
-    ld      b,PLAYER_DIRECTION_RIGHT
+
+    ; do not change direction unless joypad state changed
+    ld      a,[playerDirLastPressed]
+    cp      PLAYER_DIRECTION_RIGHT
+    jp      z,.accelerate
+
+    ; set player direction
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirection],a
+    ld      [playerDirLastPressed],a
     jp      .accelerate
 
 .left:
     ld      hl,playerSpeedLeft
-    ld      b,PLAYER_DIRECTION_LEFT
 
-.accelerate:
+    ; do not change direction unless joypad state changed
+    ld      a,[playerDirLastPressed]
+    cp      PLAYER_DIRECTION_LEFT
+    jp      z,.accelerate
 
     ; set player direction
-    ld      a,b
+    ld      a,PLAYER_DIRECTION_LEFT
     ld      [playerDirection],a
+    ld      [playerDirLastPressed],a
+
+.accelerate:
 
     ; load speed variable
     ld      a,[hl]
@@ -880,6 +911,10 @@ player_decelerate:
 ; Movement Logic --------------------------------------------------------------
 player_move:
 
+    ; reset wall flag
+    ld     a,0
+    ld     [playerDirectionWall],a
+
     ; are we moving at all?
     ld     a,[playerSpeedLeft]
     ld     b,a
@@ -888,10 +923,18 @@ player_move:
     cp     0
     jp     z,.stopped
 
-    ; set walking animation when on ground
+    ; set walking animation only when on ground
     ld     a,[playerOnGround]
     cp     1
     jp     nz,.not_on_ground
+
+    ; set walking animation
+    ; only if current playerDirection matches last input
+    ld     a,[playerDirLastPressed]
+    ld     b,a
+    ld     a,[playerDirection]
+    cp     b
+    jp     nz,.stopped
 
     ld     a,PLAYER_ANIMATION_WALKING
     ld     [playerAnimation],a
@@ -930,6 +973,10 @@ player_move:
     call   player_collision_right
     jp     z,.not_blocked_right
 
+    ; set wall flag
+    ld     a,PLAYER_DIRECTION_RIGHT
+    ld     [playerDirectionWall],a
+
     ; set pushing animation when not in water
     ld     a,[playerInWater]
     cp     0
@@ -937,6 +984,14 @@ player_move:
     jp     .idle_right
 
 .pushing_right:
+
+    ; after wall sliding down a wall we don't want the push animation
+    ; since we'll be facing away from the wall, so we check here
+    ; if the playerDirection matches the wall direction
+    ld     a,[playerDirection]
+    cp     PLAYER_DIRECTION_RIGHT
+    jp     nz,.move_left
+
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .move_left
@@ -966,6 +1021,10 @@ player_move:
     call   player_collision_left
     jp     z,.not_blocked_left
 
+    ; set wall flag
+    ld     a,PLAYER_DIRECTION_LEFT
+    ld     [playerDirectionWall],a
+
     ; set pushing animation when not in water
     ld     a,[playerInWater]
     cp     0
@@ -973,6 +1032,10 @@ player_move:
     jp      .idle_left
 
 .pushing_left:
+    ld     a,[playerDirection]
+    cp     PLAYER_DIRECTION_LEFT
+    jp     nz,.moved
+
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .moved
@@ -1019,6 +1082,158 @@ player_move:
 .delay:
     inc    a
     ld     [playerMoveTick],a
+    ret
+
+
+; Wall Sliding / Jumping Logic ------------------------------------------------
+player_slide_wall:
+    
+    ; check if on ground
+    ld     a,[playerOnGround]
+    cp     1
+    jp     z,.on_ground
+    
+    ; check if falling
+    ld     a,[playerFallSpeed]
+    cp     1
+    jp     c,.not_pressing_wall
+
+    ; check if pressing against a wall
+    ld     a,[playerDirectionWall]
+    cp     0
+    jp     z,.not_pressing_wall 
+
+
+
+    ; check if the joypad is still hold against the wall
+    ; there is a one frame window (when playermaxspeed = 1)
+    ; where the above check will return okay
+    ; but the input is already moving away from the wall
+    ld     b,a
+    ld     a,[playerDirLastPressed]
+    cp     b
+
+    ; TODO if this happens check for a jump button press
+    ; TODO and trigger a wall jump
+    jp     nz,.not_pressing_wall 
+
+    ; check if player direction is matching last input
+    ; this must be done so that if sliding down a wall to the ground
+    ; and still pressind the direction button, we will not trigger
+    ; another slide when simply jumping up while still holding the direction
+    ; button pressed (which would result in a wrong faced sprite)
+    ld     b,a
+    ld     a,[playerDirection]
+    cp     b
+    jp     nz,.not_pressing_wall 
+
+.pressing_wall:
+    ld     b,a ; store wall direction
+
+    ; check if already sliding
+    ld     a,[playerWallSlideTick]
+    cp     0 ; check if not sliding
+    jp     nz,.sliding
+
+    ; if pressing against a wall and not sliding and 
+    ; directionWall != slideDirection init slide
+    ; TODO only allow slide if dir = 0 or after wall jump
+    ; in case of wall jump, still do not allow the same wall to be used again
+    ld     a,[playerWallSlideDir]
+    cp     b
+    ret    z ; exit if same direction
+
+    ; otherwise init a slide
+    call   player_slide_wall_init
+    ret
+
+.sliding:
+
+    ; if sliding for more than X frames end slide
+    cp    PLAYER_SLIDE_DURATION
+    jp    z,.stop_slide
+
+    ; otherwise continue sliding
+    inc   a
+    ld    [playerWallSlideTick],a
+
+    ; set animation
+    ld    a,PLAYER_ANIMATION_SLIDE
+    ld    [playerAnimation],a
+
+    ret
+
+.stop_slide:
+    ; TODO fix sliding down to ground not moving
+    ; TODO if all input buttons are released reset directions
+    call   player_slide_wall_stop
+    ld     a,0
+    ld     [playerWallSlideTick],a
+    ld     [playerDirLastPressed],a
+    ret
+
+.not_pressing_wall:
+
+    ; if sliding and no longer pressing, end slide
+    ld     a,[playerWallSlideTick]
+    cp     0 
+    ret    z ; if not sliding, do nothing
+    
+    ; avoid graphical glitches when switching animation and direction
+    ld     a,PLAYER_ANIMATION_FALL
+    ld     [playerAnimation],a
+
+    ; otherwise stop the slide and set the correct direction
+    call   player_slide_wall_stop
+    ret
+
+.on_ground:
+
+    ld     a,[playerWallSlideTick]
+    cp     0
+    ret    z
+
+    ; if we didnt slide we dont need to reset
+    ld     a,[playerWallSlideDir]
+    cp     0
+    ret    z
+
+    ; otherwise reset the sliding state and switch the direction
+    call   player_slide_wall_stop
+    ld     a,0
+    ld     [playerWallSlideDir],a
+
+    ret
+
+
+player_slide_wall_init:
+    ld     a,[playerDirectionWall]
+    ld     [playerWallSlideDir],a
+    ld     a,20
+    ld     [playerWallSlideTick],a
+    ret
+
+
+player_slide_wall_stop:
+
+    ; reset tick
+    ld     a,0
+    ld     [playerWallSlideTick],a
+
+    ; after the slide ended the player should face in the opposite direction
+    ; (away from the wall) if falling
+    ld     a,[playerWallSlideDir]
+    cp     PLAYER_DIRECTION_LEFT
+    jp     z,.left
+
+.right:
+    ld     a,PLAYER_DIRECTION_LEFT
+    ld     [playerDirection],a
+    ret
+
+.left:
+    ld     a,PLAYER_DIRECTION_RIGHT
+    ld     [playerDirection],a
     ret
 
 

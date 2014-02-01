@@ -26,9 +26,13 @@ PLAYER_ANIMATION_RUNNING   EQU 6
 PLAYER_ANIMATION_SWIMMING  EQU 7
 PLAYER_ANIMATION_DISSOLVE  EQU 8
 PLAYER_ANIMATION_SURFACE   EQU 9
+PLAYER_ANIMATION_SLIDE     EQU 10
 
 PLAYER_HALF_WIDTH          EQU 7
 PLAYER_HEIGHT              EQU 13
+
+PLAYER_SLIDE_DURATION      EQU 60 ; in frames
+PLAYER_SLIDE_SLOWDOWN      EQU 3 ; only apply fall speed every X other ticks while sliding
 
 
 ; Variables -------------------------------------------------------------------
@@ -47,6 +51,12 @@ playerAnimationLast: DB
 
 playerDirection:     DB
 playerDirectionLast: DB
+playerDirLastPressed:DB
+playerDirectionWall: DB
+
+; Wall Sliding
+playerWallSlideDir:  DB
+playerWallSlideTick: DB
 
 ; Gravity and Jumping
 playerFallSpeed:     DB ; current fall speed per frame

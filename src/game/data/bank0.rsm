@@ -63,6 +63,10 @@ DataSpriteAnimation:
     DB $00, $00,$08,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
+    ; Wall Sliding
+    DB $00, $0A,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $20,$ff,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
 
 ; Tile Animations -------------------------------------------------------------
 DataTileAnimation:

@@ -227,6 +227,3 @@ game_flash_timer:
     ld      [gameFlashMode],a
     ret
 
-
-
-

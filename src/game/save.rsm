@@ -27,6 +27,8 @@ save_reset_player:
 
     call    map_set_room
 
+    call    player_reset
+
     ld      a,[savePlayerX]
     ld      [playerX],a
     ld      a,[savePlayerY]
