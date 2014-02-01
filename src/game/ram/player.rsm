@@ -6,6 +6,7 @@ PLAYER_DIRECTION_RIGHT     EQU 2
 
 PLAYER_JUMP_LAND           EQU 2
 PLAYER_JUMP_WATER          EQU 2
+PLAYER_JUMP_WALL           EQU 2
 PLAYER_JUMP_SCREEN_BOOST   EQU 2
 PLAYER_FALL_MAX            EQU 3
 PLAYER_SPEED_MAX           EQU 1
@@ -33,6 +34,7 @@ PLAYER_HEIGHT              EQU 13
 
 PLAYER_SLIDE_DURATION      EQU 60 ; in frames
 PLAYER_SLIDE_SLOWDOWN      EQU 3 ; only apply fall speed every X other ticks while sliding
+PLAYER_WALL_JUMP_WINDOW    EQU 5
 
 
 ; Variables -------------------------------------------------------------------
@@ -51,12 +53,14 @@ playerAnimationLast: DB
 
 playerDirection:     DB
 playerDirectionLast: DB
-playerDirLastPressed:DB
 playerDirectionWall: DB
 
 ; Wall Sliding
-playerWallSlideDir:  DB
-playerWallSlideTick: DB
+playerWallSlideDir:  DB ; direction of the wall which the player is/was sliding on
+playerWallSlideTick: DB ; number of ticks the player is sliding down the wall
+playerWallJumpWindow:DB ; number of ticks left in which a wall jump can be started
+playerWallJumpDir:   DB ; direction of the wall from which the player jumped of
+playerWallJumpTick:  DB ; ticks left during which the player movement will be forced into the direction of the wall jump
 
 ; Gravity and Jumping
 playerFallSpeed:     DB ; current fall speed per frame
