@@ -106,7 +106,7 @@ player_update:
     ; check for hazard
     ld      a,[mapCollisionFlag]
     cp      4
-    jp      z,player_dissolve
+    jr      z,player_dissolve
 
     ; Jumping / Falling
     call    player_gravity
@@ -115,8 +115,9 @@ player_update:
     ; check for hazard
     ld      a,[mapCollisionFlag]
     cp      4
-    jp      z,player_dissolve
+    jr      z,player_dissolve
 
+    call    player_scroll_map
     call    player_sleep
 
 
@@ -137,11 +138,11 @@ player_update:
     ; check if the pixel still lies in water
     ld      a,[mapCollisionFlag]
     cp      2 
-    jp      z,.water
+    jr      z,.water
     cp      3
-    jp      z,.water
+    jr      z,.water
     cp      4
-    jp      z,player_dissolve
+    jr      z,player_dissolve
 
     ; reset water variables when on land
 .land:
@@ -156,7 +157,6 @@ player_update:
     ; animation / other logic
 .update:
     call    player_animate
-    call    player_scroll_map
 
     ; update player sprite position
     ld      a,[playerX]
@@ -221,7 +221,6 @@ player_water_update:
 
 .not_initial:
 
-
     ; prevent sleep and reset fall speed
     ld      a,0
     ld      [playerSleepTick],a
@@ -235,7 +234,7 @@ player_water_update:
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]
     cp      35; check if we're done
-    jp      z,.water_hit_done
+    jr      z,.water_hit_done
 
     ld      a,[playerWaterTick]
     inc     a
@@ -497,7 +496,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
 
     ; upper half 
     ld      a,[playerY]
@@ -508,7 +507,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
 
     ; lower half 
     ld      a,[playerY]
@@ -519,7 +518,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
     
     ; set collision flag
     or      1 ; set nz
@@ -541,7 +540,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
 
     ; upper half 
     ld      a,[playerY]
@@ -552,7 +551,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
 
     ; lower half 
     ld      a,[playerY]
@@ -563,7 +562,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jp      z,.no_collision
+    jr      z,.no_collision
 
     ; set collision flag
     or      1 ; set nz
@@ -583,7 +582,7 @@ player_scroll_map:
     jp      nc,.check_right
     call    map_scroll_left
 
-    ld      a,159
+    ld      a,157
     ld      [playerX],a
     jp      .done
 
@@ -591,11 +590,11 @@ player_scroll_map:
     ; right -----------------------------
 .check_right:
     ld      a,[playerX]
-    cp      159 ; > 159
+    cp      158 ; > 159
     jp      c,.check_up
     call    map_scroll_right
 
-    ld      a,2
+    ld      a,3
     ld      [playerX],a
     jp      .done
 
@@ -1053,14 +1052,6 @@ player_move:
     jp     .idle_right
 
 .pushing_right:
-
-    ; after wall sliding down a wall we don't want the push animation
-    ; since we'll be facing away from the wall, so we check here
-    ; if the playerDirection matches the wall direction
-    ld     a,[playerDirection]
-    cp     PLAYER_DIRECTION_RIGHT
-    jp     nz,.move_left
-
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .move_left
@@ -1101,10 +1092,6 @@ player_move:
     jp      .idle_left
 
 .pushing_left:
-    ld     a,[playerDirection]
-    cp     PLAYER_DIRECTION_LEFT
-    jp     nz,.moved
-
     ld     a,PLAYER_ANIMATION_PUSHING
     ld     [playerAnimation],a
     jp     .moved
