@@ -79,7 +79,7 @@ sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     ld      a,b ; sprite index (counter)
     call    sprite_animation_timer
     cp      0 ;  cp 0, but faster
-    jp      nz,.done ; if there are still frames to play, dont advance index
+    ret     nz ; if there are still frames to play, dont advance index
 
 
     ; advance frame index based on direction
@@ -107,7 +107,7 @@ sprite_update_animation: ; a = sprite flags, hl = animation data base offset
 
     ; if it is a stop frame do nothing
     cp      $ff
-    jp      z,.done
+    ret     z
 
     ; if it is a loop frame jump back to the first frame
     cp      $fe
@@ -154,8 +154,6 @@ sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     inc     hl ; skip animation id
     inc     hl
     ld      [hl],0 ; reset timing data
-
-.done:
     ret
 
 
@@ -173,12 +171,12 @@ sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
     cp      0
     jp      nz,.decrease
     ld      a,e
-    dec     a; This is done since otherwise we'll get one extra frame all the time
+    dec     a; This is done since otherwise we'll get one extra frame playing
     ld      [hl],a
     jp      .done
 
     ; otherwise decrease it and put the value into a
-.decrease
+.decrease:
     dec     a
     ld      [hl],a
 

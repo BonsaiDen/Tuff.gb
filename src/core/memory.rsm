@@ -11,9 +11,11 @@
 core_mem_set: ; a = value, hl = address, bc = bytecount
 	inc	b
 	inc	c
-	jr	.skip
-.loop	ld	[hl+],a
-.skip	dec	c
+	jp	.skip
+.loop:
+    ld	[hl+],a
+.skip:
+    dec	c
 	jr	nz,.loop
 	dec	b
 	jr	nz,.loop
@@ -24,11 +26,13 @@ core_mem_set: ; a = value, hl = address, bc = bytecount
 core_mem_cpy: ; hl = source, de = dest, bc = bytecount
 	inc	b
 	inc	c
-	jr	.skip
-.loop	ld	a,[hl+]
+	jp	.skip
+.loop:
+    ld	a,[hl+]
 	ld	[de],a
 	inc	de
-.skip	dec	c
+.skip:
+    dec	c
 	jr	nz,.loop
 	dec	b
 	jr	nz,.loop
@@ -39,16 +43,18 @@ core_mem_cpy: ; hl = source, de = dest, bc = bytecount
 core_vram_set: ; a = value, hl = address, bc = bytecount
 	inc	b
 	inc	c
-	jr	.skip
-.loop   push    af
-        di
-        ld      a,[rSTAT]       ; <---+
-        and     STATF_BUSY      ;     |
-        jr      nz,@-4          ; ----+
-        pop     af
-        ld      [hl+],a
-        ei
-.skip	dec	c
+	jp	.skip
+.loop:
+    push    af
+    di
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    pop     af
+    ld      [hl+],a
+    ei
+.skip:
+    dec	c
 	jr	nz,.loop
 	dec	b
 	jr	nz,.loop
@@ -59,16 +65,18 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
 core_vram_cpy: ; hl = source, de = dest, bc = bytecount
 	inc	b
 	inc	c
-	jr	.skip
-.loop   di
-        ld      a,[rSTAT]       ; <---+
-        and     STATF_BUSY      ;     |
-        jr      nz,@-4          ; ----+
-        ld      a,[hl+]
+	jp	.skip
+.loop:
+    di
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,[hl+]
 	ld	[de],a
-        ei
+    ei
 	inc	de
-.skip	dec	c
+.skip:
+    dec	c
 	jr	nz,.loop
 	dec	b
 	jr	nz,.loop

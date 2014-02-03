@@ -63,7 +63,7 @@ game_loop_one_half:
 
 
 ; 125ms Timer -----------------------------------------------------------------
-game_timer_125
+game_timer_125:
     call    map_animate_tiles
     call    player_timer_125
     call    game_fade_timer

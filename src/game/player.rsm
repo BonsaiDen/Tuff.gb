@@ -662,20 +662,18 @@ player_gravity:
     ; set jump animation
     ld      a,PLAYER_ANIMATION_JUMP
     ld      [playerAnimation],a
-    jp     .done
+    ret     
 
 .no_jump:
 
     ; if fall speed > 0 set fall animation
     ld     a,[playerFallSpeed]
     cp     0
-    jp     z,.done
+    ret    z
 
     ; set fall animation
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
-
-.done:
     ret
 
 
@@ -721,7 +719,6 @@ player_jump:
     ld      [playerGravityTick],a
     jp      .still_pressed
 
-
     ; reset the jump state
 .not_pressed:
     ld      a,0
@@ -737,15 +734,13 @@ player_jump:
     ld      a,[playerJumpForce]
     ld      d,a
     cp      0
-    jp      z,.done
+    ret     z ; we're not moving any longer
 
     ; check if we're the button was released
     ld      a,[playerJumpPressed]
     cp      0
-    jp      nz,.apply_force
-
-    ; if so quickly reduce the jump force
-    jp      .done
+    jp      nz,.apply_force ; if not continue applying jump force
+    ret     z ; otherwise end here
 
     ; move player upwards
 .apply_force:
@@ -775,11 +770,10 @@ player_jump:
 
     ; loop until stored jump force reaches 0
     dec     d
-    jp      nz,.apply_force
-    jp      .done
+    jp      nz,.apply_force 
+    ret      
 
 .collision:
-
     ld      a,0
     ld      [playerJumpPressed],a
 
@@ -787,9 +781,7 @@ player_jump:
     srl     a
     srl     a
     ld      [playerJumpForce],a
-
-.done:
-    ret
+    ret 
 
 
 player_decrease_jump:
@@ -798,13 +790,14 @@ player_decrease_jump:
     ; if not we decrease the jump force more quickly
     ld      a,[playerJumpPressed]
     cp      0
-    jp      nz,.fast
+    jp      nz,.fast ; fast decrease in case the jump button was released
 
-    ; normal decrease -1
+    ; load current jump force
     ld      a,[playerJumpForce]
     cp      0
-    jp      z,.done
+    ret     z ; do nothing in case jump is already 0
 
+    ; normal decrease -1
     dec     a
     ld      [playerJumpForce],a
 
@@ -813,8 +806,6 @@ player_decrease_jump:
     ld      a,[playerJumpForce]
     srl     a
     ld      [playerJumpForce],a
-
-.done:
     ret
 
 
@@ -834,8 +825,9 @@ player_fall:
 
 .fall:
 
+    ; check for downward collision
     call    player_collision_down
-    jp      nz,.collision
+    jr      nz,.collision ; unlikely jump, thus jr and not jp
 
     ; reset ground state
     ld      a,0
@@ -852,6 +844,7 @@ player_fall:
     jp      .no_collision
 
 .collision:
+    ; reset player state to ground after collision
     ld      a,0
     ld      [playerFallSpeed],a
     ld      [playerFallFrames],a
@@ -860,10 +853,13 @@ player_fall:
     ret
 
 .no_collision:
+
     ; increase the number of frames we were falling
     ld      a,[playerFallFrames]
     cp      $ff
-    ret     z
+    ret     z ; fall frames max out at 255
+
+    ; increase if not yet at 255
     inc     a
     ld      [playerFallFrames],a
     ret
@@ -874,22 +870,20 @@ player_increase_fall:
     ; if we're still jumping do not increase the fall speed
     ld      a,[playerJumpForce]
     cp      0
-    jp      nz,.no_increase
+    ret     nz; do not incrase
 
     ; if we're in water do not increase the fall speed
     ld      a,[playerInWater]
     cp      0
-    jp      nz,.no_increase
+    ret     nz
 
-    ; otherwise increase it untiul we reach the maximum
+    ; otherwise increase it until we reach the maximum
     ld      a,[playerFallSpeed]
     cp      PLAYER_GRAVITY_MAX
-    jp      z,.no_increase
+    ret     z
 
     inc     a
     ld      [playerFallSpeed],a
-
-.no_increase:
     ret
 
 
@@ -899,16 +893,15 @@ player_accelerate:
     ; check which direction is pressed
     ld      a,[coreInput]
     and     %00100000
-    jp      nz,.left
+    jp      nz,.acc_left
 
     ld      a,[coreInput]
     and     %00010000
-    jp      nz,.right
+    jp      nz,.acc_right
 
-    ; not moving
-    jp      .done
+    ret ; not moving in any direction
 
-.right:
+.acc_right:
     ld      hl,playerSpeedRight
 
     ; set player direction
@@ -916,7 +909,7 @@ player_accelerate:
     ld      [playerDirection],a
     jp      .accelerate
 
-.left:
+.acc_left:
     ld      hl,playerSpeedLeft
 
     ; set player direction
@@ -924,29 +917,30 @@ player_accelerate:
     ld      [playerDirection],a
 
 .accelerate:
-
-    ; load speed variable
+    ; load speed from corresponding direction variable 
     ld      a,[hl]
-
-    ; check if max speed
-    cp      PLAYER_SPEED_MAX
-    jp      z,.done
+    cp      PLAYER_SPEED_MAX ; check if at max speed
+    ret     z
 
     ; if not increase
     inc     a
     ld      [hl],a
-
-.done:
     ret
+
 
 
 player_decelerate:
 
     ; only decelerate on every 10th frame
+    ; this introduces "lag" or a sliding when turning rapidly
     ld      a,[playerDecTick]
     inc     a
     cp      10
-    jp      nz,.no_tick
+    jp      z,.decrease_right
+
+    ; if not on 10th frame store frame count and return
+    ld      [playerDecTick],a
+    ret
 
 .decrease_right:
 
@@ -967,19 +961,18 @@ player_decelerate:
     ; check if left direction is still pressed
     ld      a,[coreInput]
     and     %00100000
-    jp      nz,.done
+    jp      nz,.no_decrease
 
     ; left
     ld      a,[playerSpeedLeft]
     cp      0
-    jp      z,.done
+    jp      z,.no_decrease ; if it reached zero we're done
+
     dec     a
     ld      [playerSpeedLeft],a
 
-.done:
+.no_decrease:
     ld      a,0
-
-.no_tick:
     ld      [playerDecTick],a
     ret
 
@@ -1168,8 +1161,7 @@ player_slide_wall:
     ld     b,a
     ld     a,[playerDirection]
     cp     b
-    jp     nz,.not_pressing_wall
-
+    jr     nz,.not_pressing_wall
 
 .pressing_wall:
     ld     b,a ; store wall direction
@@ -1218,7 +1210,6 @@ player_slide_wall:
     ; set animation
     ld     a,PLAYER_ANIMATION_SLIDE
     ld     [playerAnimation],a
-
     ret
 
 
@@ -1455,14 +1446,11 @@ player_sleep:
     ; set sleeping
     ld      a,PLAYER_ANIMATION_SLEEP
     ld      [playerAnimation],a
-    jp      .done
+    ret
 
 .active:
     ld      a,PLAYER_SLEEP_WAIT
     ld      [playerSleepTick],a
-    jp      .done
-
-.done:
     ret
 
 
@@ -1470,6 +1458,7 @@ player_sleep_timer:
     ld      a,[playerSleepTick]
     cp      0
     ret     z
+
     dec     a
     ld      [playerSleepTick],a
     ret

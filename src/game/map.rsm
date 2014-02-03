@@ -149,7 +149,7 @@ map_draw_room:
     ; y loop header
     ld      a,b
     cp      0
-    jp      z,.done
+    jr      z,.done
     dec     b
 
     ; y loop body
@@ -224,7 +224,7 @@ map_draw_room:
     ; x loop end
     ld      a,c
     cp      0
-    jp      nz,.loop_x
+    jr      nz,.loop_x
 
     ; y loop end (skip one 16x16 screen data row)
     push    de
@@ -254,7 +254,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     ; so we assume that there is never any collision beyond y 128
     ld      a,c
     cp      128
-    jp      nc,.off_screen ; reset collision flag and indicate no collision
+    jr      nc,.off_screen ; reset collision flag and indicate no collision
 
     ; save hl
     push    hl

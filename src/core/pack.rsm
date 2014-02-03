@@ -49,9 +49,8 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      a,[hl]
     inc     hl
     cp      127 ; a > 127
-    jp      z,.copy
-    jp      c,.copy
-
+    jr      z,.copy
+    jr      c,.copy
 
     ; repeat X bytes
 .repeat:
