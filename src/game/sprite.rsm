@@ -358,7 +358,6 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     pop     de
     pop     hl
     pop     af
-
     ret
 
 
@@ -368,6 +367,27 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     push    de
 
     ld      e,a ; store index
+
+    ; add scroll offset
+    ld      a,[rSCX]
+    cp      0
+    jp      z,.no_x_offset
+    ld      d,a
+    ld      a,b
+    sub     d
+    ld      b,a
+
+.no_x_offset:
+    ld      a,[rSCY]
+    cp      0
+    jp      z,.no_y_offset
+    ld      d,a
+    ld      a,c
+    sub     d
+    ld      c,a
+
+.no_y_offset:
+    ld      a,e
     call    sprite_meta_offset
     ld      a,[hl]
     and     %00000010

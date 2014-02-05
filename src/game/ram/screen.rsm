@@ -1,0 +1,11 @@
+SECTION "ScreenRam",WRAM0[$C1c0]
+
+; Screen State ----------------------------------------------------------------
+screenFadeMode:     DB
+screenFadeIndex:    DB
+
+screenFlashMode:    DB
+screenFlashIndex:   DB
+
+screenShakeTicks:   DB
+

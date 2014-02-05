@@ -4,7 +4,7 @@ SECTION "EntityLogic",ROM0
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
-    ld      de,entityScreenData 
+    ld      de,entityScreenState
     ld      b,ENTITY_PER_ROOM
 .loop:
     dec     b
@@ -15,6 +15,7 @@ entity_load:
 
     ; TODO load entities for current room, if type > 0 the entity is used
     ; TODO load state (fallback to defaults if there is no state)
+    ; TODO load sprite data into VRAM
     ; TODO setup entity sprite number etc.
     ; TODO call handler
 
@@ -43,7 +44,7 @@ entity_store:
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
-    ld      hl,entityScreenData
+    ld      hl,entityScreenState
     ld      b,ENTITY_PER_ROOM
 .loop:
     dec     b

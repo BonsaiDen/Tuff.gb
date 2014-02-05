@@ -13,6 +13,9 @@ DataTileImg:
 DataCharImg:
     INCBIN  "../data/bin/tiles.ch.bin" ; 2 KB
 
+EntityCharImg:
+    INCBIN  "../data/bin/entities.ch.bin" ; 2 KB
+
 
 ; Sprite Animations -----------------------------------------------------------
 DataSpriteAnimation:
@@ -93,4 +96,13 @@ DataTileAnimation:
     ; Lava Bottom
     DB $e0,$e1,$e2,$e3
     DB $e4,$e5,$e6,$e7
+
+
+; Entity Data -----------------------------------------------------------------
+EntityDefinitions:
+    
+    ; Foreground/Background Sprite, Entity Palette, Entity Sprite Row Offset
+    ; Animation Data
+    ; TODO Anything else? Animations
+
 

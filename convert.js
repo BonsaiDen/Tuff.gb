@@ -28,7 +28,8 @@ var gb = {
 
         chars: {
             '255,0,255': 0,
-            '255,255,255': 1,
+            '255,255,255': 1, // switched based on char palette
+            '82,82,82': 1,    // switched based on char palette
             '163,163,163': 2,
             '0,0,0': 3
         },
@@ -96,7 +97,7 @@ var gb = {
                                     }
 
                                 } else {
-                                    return Promise.rejected('Color %s at %sx%s was not found in pallete:', p, x, y);
+                                    return Promise.rejected('Color ' + p + ' at ' + x + 'x' + y + ' was not found in pallete.');
                                 }
 
                             }
@@ -641,12 +642,19 @@ var gb = {
 
 
 gb.convert.Tileset('tiles.bg.png').then(function() {
-    gb.convert.Tileset('tiles.ch.png', true).then(function() {
 
-        gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
+    gb.convert.Tileset('entities.ch.png', true).then(function() {
 
-            gb.convert.Map('main.map.json').then(function() {
-                gb.convert.Collision('tiles.col.png');
+        gb.convert.Tileset('tiles.ch.png', true).then(function() {
+
+            gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
+
+                gb.convert.Map('main.map.json').then(function() {
+                    gb.convert.Collision('tiles.col.png');
+
+                }, function() {
+                    process.exit(1);
+                });
 
             }, function() {
                 process.exit(1);

@@ -18,6 +18,7 @@ INCLUDE     "core/core.rsm"
 INCLUDE     "game/ram/sprite.rsm"
 INCLUDE     "game/ram/map.rsm"
 INCLUDE     "game/ram/game.rsm"
+INCLUDE     "game/ram/screen.rsm"
 INCLUDE     "game/ram/save.rsm"
 INCLUDE     "game/ram/player.rsm"
 INCLUDE     "game/ram/entity.rsm"
@@ -29,6 +30,7 @@ INCLUDE     "game/map.rsm"
 INCLUDE     "game/player.rsm"
 INCLUDE     "game/save.rsm"
 INCLUDE     "game/sprite.rsm"
+INCLUDE     "game/screen.rsm"
 
 
 ; Main Game -------------------------------------------------------------------

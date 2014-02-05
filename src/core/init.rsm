@@ -13,8 +13,8 @@ core_init:
     ld      bc,8192
     call    core_mem_set
 
-    ; Clear Bcakground Screen Buffer
-    ld      a,$7f
+    ; Clear Background Screen Buffer
+    ld      a,$00
     ld      hl,$9800
     ld      bc,1024
     call    core_mem_set

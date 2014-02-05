@@ -1,5 +1,21 @@
 SECTION "MapLogic",ROM0
 
+
+; Map -------------------------------------------------------------------------
+map_init: ; a = base value
+
+    sub     128
+    ld      hl,mapRoomBuffer
+    ld      bc,512
+    call    core_mem_set
+
+    ld      hl,$9800
+    ld      bc,1024
+    call    core_mem_set
+
+    ret
+
+
 ; Tileset ---------------------------------------------------------------------
 map_load_spritesheet: ; hl = source
 
@@ -134,7 +150,6 @@ map_set_room: ; b = x, c = y
 
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
-
 
     ; we read from the unpacked room data
     ld      hl,mapRoomBuffer

@@ -32,13 +32,16 @@ game_init:
     ; Player
     call    player_init
 
-    ; Hud
-    call    game_hud
-
     ; Map
+    ld      a,$5f
+    call    map_init
+
     ld      b,2
     ld      c,0
     call    map_set_room
+
+    ; Hud
+    call    game_hud
 
     ; Setup Initial Spawn Location
     call    save_store_player
@@ -55,6 +58,15 @@ game_init:
 ; Main Loop -------------------------------------------------------------------
 game_loop:
     call    sprite_animate_all
+
+    ld      a,[coreInput]
+    and     %00001000
+    cp      %00001000
+    jp      nz,.next
+    ld      a,8
+    call    screen_shake
+
+.next:
     ret
 
 game_loop_one_half:
@@ -66,8 +78,7 @@ game_loop_one_half:
 game_timer_125:
     call    map_animate_tiles
     call    player_timer_125
-    call    game_fade_timer
-    call    game_flash_timer
+    call    screen_timer
     ret
 
 
@@ -77,153 +88,5 @@ game_hud:
     ld      hl,$9a00
     ld      bc,20
     call    core_vram_set
-    ret
-
-
-; Screen Fading ---------------------------------------------------------------
-gameBGFadeMask:
-    DB      %11100100
-    DB      %11100101
-    DB      %11101010
-    DB      %11111111
-
-gameSpriteFadeMask:
-    DB      %11010000 
-    DB      %11100100 
-    DB      %11101000 
-    DB      %11111100 
-
-
-game_fade_out:
-    ld      a,1
-    ld      [gameFadeMode],a
-    ld      a,0
-    ld      [gameFadeIndex],a
-    ret
-
-
-game_fade_in:
-    ld      a,2
-    ld      [gameFadeMode],a
-    ld      a,3
-    ld      [gameFadeIndex],a
-    ret
-
-
-game_fade_timer:
-
-    ; check if fading
-    ld      a,[gameFadeMode]
-    cp      0
-    ret     z
-
-    ; fade index
-    ld      a,[gameFadeIndex]
-    ld      b,0
-    ld      c,a
-    
-    ; bg mask
-    ld      hl,gameBGFadeMask
-    add     hl,bc
-    ld      a,[hl]
-    ld      [rBGP],a
-
-    ; sprite mask
-    ld      hl,gameSpriteFadeMask
-    add     hl,bc
-    ld      a,[hl]
-    ld      [rOBP0],a
-
-    ; fade mode
-    ld      a,[gameFadeMode]
-    cp      2
-    jp      z,.fade_in
-        
-    ; fade out
-    ld      a,[gameFadeIndex]
-    cp      3
-    jp      z,.complete
-    inc     a
-    ld      [gameFadeIndex],a
-    ret
-
-    ; fade in
-.fade_in:
-    ld      a,[gameFadeIndex]
-    cp      0
-    jp      z,.complete
-    dec     a
-    ld      [gameFadeIndex],a
-    ret
-
-.complete:
-    ld      a,0
-    ld      [gameFadeMode],a
-    ret
-
-
-; Screen Flashing -------------------------------------------------------------
-gameBGFlashMask:
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %01010100
-    DB      %10100100
-    DB      %11100100
-
-
-gameSpriteFlashMask:
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %01010000 
-    DB      %10010000 
-    DB      %11010000 
-
-
-game_flash_screen:
-    ld      a,1
-    ld      [gameFlashMode],a
-    ld      a,0
-    ld      [gameFlashIndex],a
-    call    game_flash_timer
-    ret
-
-
-game_flash_timer:
-
-    ; check if fading
-    ld      a,[gameFlashMode]
-    cp      0
-    ret     z
-
-    ; flash index
-    ld      a,[gameFlashIndex]
-    ld      b,0
-    ld      c,a
-    
-    ; bg mask
-    ld      hl,gameBGFlashMask
-    add     hl,bc
-    ld      a,[hl]
-    ld      [rBGP],a
-
-    ; sprite mask
-    ld      hl,gameSpriteFlashMask
-    add     hl,bc
-    ld      a,[hl]
-    ld      [rOBP0],a
-
-    ; update
-    ld      a,[gameFlashIndex]
-    cp      5
-    jp      z,.complete
-    inc     a
-    ld      [gameFlashIndex],a
-    ret
-
-.complete:
-    ld      a,0
-    ld      [gameFlashMode],a
     ret
 

@@ -1,6 +1,7 @@
 ; Variables -------------------------------------------------------------------
 SECTION "CoreVars",WRAM0[$C0F0]
 
+coreRandomSeed:     DB
 coreVBlankDone:     DB
 coreHalfTick:       DB
 coreHalfTickSwitch: DB

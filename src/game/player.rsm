@@ -6,7 +6,7 @@ player_init:
     ; Position 
     ld      a,8
     ld      [playerX],a
-    ld      a,16
+    ld      a,48
     ld      [playerY],a
 
     ; Direction
@@ -92,7 +92,7 @@ player_update:
     ld      a,255
     ld      [playerDissolveTick],a
 
-    call    game_flash_screen
+    call    screen_flash
     call    save_reset_player
     ret
 

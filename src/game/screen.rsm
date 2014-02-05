@@ -1,0 +1,224 @@
+SECTION "ScreenLogic",ROM0
+
+
+; Screen ----------------------------------------------------------------------
+screen_timer:
+    call    screen_flash_timer
+    call    screen_fade_timer
+    call    screen_shake_timer
+    ret
+
+
+
+; Screen Shaking --------------------------------------------------------------
+screen_shake: ; a = duration in seconds / 8
+    ld      [screenShakeTicks],a
+    ret
+
+
+screen_shake_timer:
+    ld      a,[screenShakeTicks]
+    cp      0
+    ret     z
+
+    dec     a
+    ld      [screenShakeTicks],a
+    cp      0
+    jp      z,.reset
+
+.x:
+    call    math_random
+    ld      b,a
+    and     %01000000 ; negative
+    cp      %01000000
+    jp      z,.negative_x
+
+.positive_x:
+    ld      a,b
+    and     %00000011 ; 0-8
+    ld      [rSCX],a
+    jp      .y
+
+.negative_x:
+    ld      a,b
+    and     %00000011 ; 0-8
+    add     254
+    ld      [rSCX],a
+
+.y:
+    call    math_random
+    ld      b,a
+    and     %01000000 ; negative
+    cp      %01000000
+    jp      z,.negative_y
+
+.positive_y:
+    ld      a,b
+    and     %00000011 ; 0-8
+    ld      [rSCY],a
+    jp      .done
+
+.negative_y:
+    ld      a,b
+    and     %00000011 ; 0-8
+    add     254
+    ld      [rSCY],a
+
+.done:
+    ret
+
+.reset:
+    ld      a,0
+    ld      [rSCX],a
+    ld      [rSCY],a
+    ret
+
+
+
+; Screen Fading ---------------------------------------------------------------
+screenBGFadeMask:
+    DB      %11100100
+    DB      %11100101
+    DB      %11101010
+    DB      %11111111
+
+screenSpriteFadeMask:
+    DB      %11010000 
+    DB      %11100100 
+    DB      %11101000 
+    DB      %11111100 
+
+
+screen_fade_out:
+    ld      a,1
+    ld      [screenFadeMode],a
+    ld      a,0
+    ld      [screenFadeIndex],a
+    ret
+
+
+screen_fade_in:
+    ld      a,2
+    ld      [screenFadeMode],a
+    ld      a,3
+    ld      [screenFadeIndex],a
+    ret
+
+
+screen_fade_timer:
+
+    ; check if fading
+    ld      a,[screenFadeMode]
+    cp      0
+    ret     z
+
+    ; fade index
+    ld      a,[screenFadeIndex]
+    ld      b,0
+    ld      c,a
+    
+    ; bg mask
+    ld      hl,screenBGFadeMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rBGP],a
+
+    ; sprite mask
+    ld      hl,screenSpriteFadeMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP0],a
+
+    ; fade mode
+    ld      a,[screenFadeMode]
+    cp      2
+    jp      z,.fade_in
+        
+    ; fade out
+    ld      a,[screenFadeIndex]
+    cp      3
+    jp      z,.complete
+    inc     a
+    ld      [screenFadeIndex],a
+    ret
+
+    ; fade in
+.fade_in:
+    ld      a,[screenFadeIndex]
+    cp      0
+    jp      z,.complete
+    dec     a
+    ld      [screenFadeIndex],a
+    ret
+
+.complete:
+    ld      a,0
+    ld      [screenFadeMode],a
+    ret
+
+
+; Screen Flashing -------------------------------------------------------------
+screenBGFlashMask:
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %01010100
+    DB      %10100100
+    DB      %11100100
+
+
+screenSpriteFlashMask:
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %01010000 
+    DB      %10010000 
+    DB      %11010000 
+
+
+screen_flash:
+    ld      a,1
+    ld      [screenFlashMode],a
+    ld      a,0
+    ld      [screenFlashIndex],a
+    call    screen_flash_timer
+    ret
+
+
+screen_flash_timer:
+
+    ; check if fading
+    ld      a,[screenFlashMode]
+    cp      0
+    ret     z
+
+    ; flash index
+    ld      a,[screenFlashIndex]
+    ld      b,0
+    ld      c,a
+    
+    ; bg mask
+    ld      hl,screenBGFlashMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rBGP],a
+
+    ; sprite mask
+    ld      hl,screenSpriteFlashMask
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP0],a
+
+    ; update
+    ld      a,[screenFlashIndex]
+    cp      5
+    jp      z,.complete
+    inc     a
+    ld      [screenFlashIndex],a
+    ret
+
+.complete:
+    ld      a,0
+    ld      [screenFlashMode],a
+    ret
+

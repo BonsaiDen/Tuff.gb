@@ -3,12 +3,40 @@ math_mul8b:                     ; this routine performs the operation HL=H*E
     ld      d,0                 ; clearing D and L
     ld      l,d
     ld      a,8                 ; we have 8 bits
-Mul8bLoop:
+.Mul8bLoop:
     add     hl,hl               ; advancing a bit
-    jp      nc,Mul8bSkip        ; if zero, we skip the addition (jp is used for speed)
+    jp      nc,.Mul8bSkip        ; if zero, we skip the addition (jp is used for speed)
     add     hl,de               ; adding to the product if necessary
-Mul8bSkip:
+.Mul8bSkip:
     dec     a
-    jp      nz,Mul8bLoop
+    jp      nz,.Mul8bLoop
+    ret
+
+
+; Fast RND
+;
+; An 8-bit pseudo-random number generator,
+; using a similar method to the Spectrum ROM,
+;
+; R = random number seed
+; an integer in the range [1, 256]
+;
+; R -> (33*R) mod 257
+;
+; S = R - 1
+; an 8-bit unsigned integer
+math_random:
+    ld a,[coreRandomSeed]
+    ld b,a 
+
+    rrca; multiply by 32
+    rrca
+    rrca
+    xor $1f
+    
+    add a,b
+    sbc a,255 ; carry
+    
+    ld [coreRandomSeed],a
     ret
 

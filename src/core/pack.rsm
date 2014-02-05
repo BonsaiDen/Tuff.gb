@@ -29,7 +29,6 @@ core_unpack: ; HL = source, DE = target
 
 
 core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
-.loop:
 
     ; check if we reached or passed the end of the data uncompressed data 
     ; (de >= bc)
@@ -78,7 +77,7 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; next instruction
     pop     bc ; restore end of data
-    jp      .loop
+    jp      core_unpack_raw
 
 
     ; copy X bytes
@@ -98,5 +97,5 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; next instruction
     pop     bc ; restore end of data
-    jp      .loop
+    jp      core_unpack_raw
 
