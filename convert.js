@@ -227,6 +227,7 @@ var gb = {
                 var data = map.layers[0].data.map(function(i) {
                         return ((i - 1) + 256) % 256;
                     }),
+                    entityData = map.layers[1].data,
                     mapBytes = [],
                     roomOffsets = [],
                     w = map.width,
@@ -238,21 +239,55 @@ var gb = {
                 for(var y = 0; y < ry; y++) {
                     for(var x = 0; x < rx; x++) {
 
-                        var roomBytes = [];
+                        var tileBytes = [],
+                            entityBytes = [];
+
                         for(var i = 0; i < 8; i++) {
 
-                            var offset = ((y * 8 + i) * w) + x * 10,
-                                rowBytes = data.slice(offset, offset + 10);
+                            var offset = ((y * 8 + i) * w) + x * 10;
 
-                            roomBytes.push.apply(roomBytes, rowBytes);
+                            tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
+                            entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
 
                         }
+
 
                         // Push the data offset into the room index
                         roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
 
+                        // Find Entities
+                        var entities = [
+                                0, 0,
+                                0, 0,
+                                0, 0,
+                                0, 0
+                            ],
+                            entityIndex = -1;
+
+                        entityBytes.map(function(value, index) {
+
+                            if (value > 256) {
+
+                                if (entityIndex === 7) {
+                                    return Promise.rejected('More than 4 entities in map room ' + x + 'x' + y);
+                                }
+
+                                var ey = Math.floor(index / 10),
+                                    ex = index - ey * 10,
+                                    type = value - 256,
+                                    direction = 0;
+
+                                entities[++entityIndex] = (type & 0x3f) | ((direction & 0x03) << 6);
+                                entities[++entityIndex] = ((ex & 0x0f) << 4) | (ey & 0x0f);
+
+                            }
+
+                        });
+
+                        tileBytes.push.apply(tileBytes, entities);
+
                         // Pack the room data and append it to the map data
-                        mapBytes.push.apply(mapBytes, gb.pack(roomBytes, false));
+                        mapBytes.push.apply(mapBytes, gb.pack(tileBytes, false));
 
                     }
                 }

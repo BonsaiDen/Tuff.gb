@@ -1,5 +1,5 @@
 ; Variables -------------------------------------------------------------------
-SECTION "CoreVars",WRAM0[$C0F0]
+SECTION "CoreVars",WRAM0[$C0FA]
 
 coreRandomSeed:     DB
 coreVBlankDone:     DB

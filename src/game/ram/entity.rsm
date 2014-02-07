@@ -4,9 +4,10 @@ SECTION "EntityRam",WRAM0[$CB00]
 ENTITY_PER_ROOM         EQU 4
 
 ; RAM storage for entity positions / states -----------------------------------
-; mapStorage format is 2 bytes per entity [ttttdd] xxxxyyyy (type, direction, x, y)
+; mapStorage format is 2 bytes per entity [ddtttttt] xxxxyyyy (type, direction, x, y)
 entityStoredState:      DS  MAP_WIDTH * MAP_HEIGHT * ENTITY_PER_ROOM + 2 ; xxxxyyyy ddsssssf (x, y, direction, state, flag to indicate entity was saved)
 
 entityScreenState:      DS  32 ; 8 bytes per entity [type][flags][direction] [x][y][custom][custom][custom]
                                ; type > 0 = entity is active
+
 
