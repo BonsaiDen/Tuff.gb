@@ -292,18 +292,41 @@ sprite_animation_backward: ; a = sprite index
 
 ; Sprite Control --------------------------------------------------------------
 sprite_enable: ; a = sprite index
+    push    af
     push    hl
     call    sprite_meta_offset
     ld      [hl],1
     pop     hl
+    pop     af
     ret
 
 
 sprite_disable: ; a = sprite index
+    push    af
     push    hl
+    push    de
+    push    bc
+    ld      e,a ; store sprite index
+
+    ; reset all flags
     call    sprite_meta_offset
-    ld      [hl],0
+    ld      [hl],0 
+
+    ; reset tile index
+    ld      a,e
+    ld      b,0
+    call    sprite_set_tile_index
+
+    ; reset position
+    ld      a,e
+    ld      b,0
+    ld      c,0
+    call    sprite_set_position
+
+    pop     bc
+    pop     de
     pop     hl
+    pop     af
     ret
 
 
@@ -432,24 +455,28 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 
 sprite_set_mirror: ; a = sprite index
 
+    push    af
     push    hl
     call    sprite_meta_offset
     ld      a,[hl]
     or      %00000010 ; set enabled flag
     ld      [hl],a
     pop     hl
+    pop     af
 
     ret
 
 
 sprite_unset_mirror: ; a = sprite index
 
+    push    af
     push    hl
     call    sprite_meta_offset
     ld      a,[hl]
     and     %11111101 ; unset mirror flag
     ld      [hl],a
     pop     hl
+    pop     af
 
     ret
 
@@ -498,6 +525,14 @@ sprite_meta_offset: ; a = sprite index -> hl = offset
     ret
 
 
+sprite_update_all:
+    ld       hl,spriteData
+    ld       de,$FE00
+    ld       bc,160
+    call     core_vram_cpy
+    ret
+
+; TODO unused?
 sprite_update: ; d = ypos, a c = xpos, b = tile
 
     ; y position

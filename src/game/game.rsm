@@ -71,6 +71,7 @@ game_loop:
 
 game_loop_one_half:
     call    player_update
+    call    entity_update
     ret
 
 

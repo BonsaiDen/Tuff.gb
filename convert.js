@@ -278,7 +278,7 @@ var gb = {
                                     direction = 0;
 
                                 entities[++entityIndex] = (type & 0x3f) | ((direction & 0x03) << 6);
-                                entities[++entityIndex] = ((ex & 0x0f) << 4) | (ey & 0x0f);
+                                entities[++entityIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
 
                             }
 

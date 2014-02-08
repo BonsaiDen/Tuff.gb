@@ -4,59 +4,331 @@ SECTION "EntityLogic",ROM0
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
-    ld      de,entityScreenState
-    ld      b,ENTITY_PER_ROOM
+    ld      de,entityStoredState
+    ld      b,0
+
 .loop:
-    dec     b
 
     ; get type / used
     ld      a,[hl]
+    ld      c,a ; store byte
+    and     %00111111 ; mask type bits
+    cp      0
+    jp      z,.next ; entity is not set for room
+
+    ; init base state
+    push    hl
+    call    entity_screen_offset_hl
+
+    ; set type
+    ld      a,c
+    and     %00111111 ; mask type bits
+    ld      [hli],a
+
+    ; reset flags
+    ld      a,0
+    ld      [hli],a
+
+    ; set direction 
+    ld      a,c
+    and     %11000000 ; mask type bits
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    ld      [hl],a
+
+    pop     hl
+
+    ; check if the entity has stored state 
+    ; state is 2 byte per entity [syyy yyyy] [xxxx xxxx]
+    ld      a,[de]
+    and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
+    cp      128
+    jp      nz,.defaults; not stored, load defaults for position
 
 
-    ; TODO load entities for current room, if type > 0 the entity is used
-    ; TODO load state (fallback to defaults if there is no state)
-    ; TODO load sprite data into VRAM
-    ; TODO setup entity sprite number etc.
+.stored:
+    ; store index
+    push    hl
+    push    de
+
+    ; get entity screen offset for b into hl
+    call    entity_screen_offset_hl
+    inc     hl ; skip type
+    inc     hl ; skip flags
+    inc     hl ; skip direction
+
+    ; y position
+    ld      a,[de]
+    and     %01111111
+    ld      [hl],a
+    inc     de
+    inc     hl
+
+    ; x position
+    ld      a,[de]
+    ld      [hl],a
+
+    ; restore index
+    pop     de
+    pop     hl
+    jp      .loaded
+
+
+
+    ; load default data from map buffer
+.defaults:
+
+    ; store index
+    push    hl
+    push    de
+    
+    ; get entity screen offset for b into hl
+    call    entity_screen_offset_de
+    inc     de ; skip type
+    inc     de ; skip flags
+    inc     de ; skip direction
+
+    ; skip stored type and direction
+    inc     hl
+
+    ; load x/y value
+    ld      a,[hl]
+    and     %11110000 ; y position, just works we can skip the x16 here
+    add     16 ; anchor at the bottom
+    ld      [de],a
+    inc     de
+
+    ; x position
+    ld      a,[hl]
+    and     %00001111 ; need to multiply by 16 here
+    sla     a
+    sla     a
+    sla     a
+    sla     a
+    ld      [de],a
+
+    ; restore index
+    pop     de
+    pop     hl
+
+
+.loaded:
+
+    ; enable sprite 
+    ; TODO foreground / background sprite
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    add     a,b ; offset + entity index
+    ld      e,a
+    call    sprite_enable
+
+    ; save bc and de
+    push    bc
+    push    de
+
+    call    entity_screen_offset_de
+    inc     de ; skip type
+    inc     de ; skip flags
+    inc     de ; skip direction
+
+    ; load y position
+    ld      a,[de]
+    ld      c,a
+    inc     de
+
+    ; load x position
+    ld      a,[de]
+    ld      b,a
+
+    ; restore 
+    pop     de
+
+    ld      a,e
+    call    sprite_set_position
+    call    sprite_unset_mirror
+
+    ld      b,1
+    ld      a,e
+    call    sprite_set_tile_index
+
+    pop     bc; restore
+
+    ; TODO load entity definition from type
+    ; TODO load associated tile data into vram slot
+    ; TODO setup sprite based on background/foreground
     ; TODO call handler
+
 
     ; next entity
 .next:
     inc     de
+    inc     de
     inc     hl
     inc     hl
+
+    inc     b
+    ld      a,b
+    cp      ENTITY_PER_ROOM
     jp      nz,.loop
     ret
+
+
+entity_screen_offset_hl: ; b = entity index
+    push    bc
+
+    ld      c,b
+    ld      b,0
+    ld      hl,entityScreenState
+    sla     c ; multiply by 8
+    sla     c
+    sla     c
+    add     hl,bc
+
+    pop     bc
+    ret
+
+
+entity_screen_offset_de: ; b = entity index
+    push    hl
+    push    bc
+
+    ld      c,b
+    ld      b,0
+    ld      hl,entityScreenState
+    sla     c ; multiply by 8
+    sla     c
+    sla     c
+    
+    add     hl,bc
+    ld      d,h
+    ld      e,l
+
+    pop     bc
+    pop     hl
+    ret
+
 
 
 ; Store the entity state into RAM based on the type handler -------------------
 ; Also reset the entity sprite and screen data --------------------------------
 entity_store:
-    ld      b,ENTITY_PER_ROOM
-.loop:
-    dec     b
+    ld      hl,entityScreenState
+    ld      de,entityStoredState
+    ld      b,0
 
-    ; TODO store entities for current room, if type > 0 the entity was used
-    ; TODO save state (x, y, direction, custom state)
+.loop:
+    ld      a,[hl]
+    cp      0
+    jp      z,.skip; not loaded
+
+    ; unset type
+    ld      a,0
+    ld      [hl],a
+
+    ; disable sprite 
+    ; TODO foreground / background sprite
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    add     a,b; offset + entity index
+    call    sprite_disable
+
+    ; hl = screen state, de = stored state
+    inc     hl ; skip type [0]
+    inc     hl ; skip flag [1]
+    inc     hl ; skip direction [2]
+
+    ; store y position and active flag [3]
+    ld      a,[hli]
+    or      %10000000
+    ld      [de],a
+    inc     de
+
+    ; store x position
+    ld      a,[hli]
+    ld      [de],a
+    inc     de
+
+    inc     hl
+    inc     hl
+    inc     hl
+    jp      .next
+
+.skip:
+    inc     de
+    inc     de
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
 .next:
+    inc     b
+    ld      a,b
+    cp      ENTITY_PER_ROOM
     jp      nz,.loop
     ret
 
 
+
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
+    ret
     ld      hl,entityScreenState
-    ld      b,ENTITY_PER_ROOM
+    ld      b,0
+
 .loop:
-    dec     b
 
     ; load type / active
     ld      a,[hl]
-    
-    ; TODO update entities on screen, if type > 0 the entity is active
-    ; handler MUST increase hl by 8 bytes!!
-    
+    cp      0
+    jp      z,.next; not active skip
+
+    push    hl
+
+    inc     hl; skip type
+    inc     hl; skip flags
+    inc     hl; skip direction
+
+    ; update sprite 
+    ; TODO foreground / background sprite
+    ld      e,b ; save index
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    add     a,b; offset + entity index
+    ld      b,0
+    call    sprite_set_tile_index
+
+    ld      a,[hli] ; x position
+    ld      b,a
+
+    ld      a,[hl] ; y position
+    ld      b,c
+
+    ld      a,e  
+    call    sprite_set_position
+    ld      b,e ; restore index
+
+    pop     hl
+
     ; next entity block
 .next:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
+    inc     b
+    ld      a,b
+    cp      ENTITY_PER_ROOM
     jp      nz,.loop
     ret
 

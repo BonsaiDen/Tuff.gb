@@ -134,8 +134,12 @@ map_set_room: ; b = x, c = y
 
     ; unpack the data
     ld      de,mapRoomUnpackBuffer
-    ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE 
+    ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
     call    core_unpack_raw
+
+    ; un/load entities
+    call    entity_store
+    ;call    sprite_update_all
 
     ; draw the room
     call    map_draw_room
@@ -254,10 +258,13 @@ map_draw_room:
 .done:
 
     ; Copy to VRAM
-    ld       hl,mapRoomBuffer
-    ld       de,$9800
-    ld       bc,512
-    call     core_vram_cpy
+    ld      hl,mapRoomBuffer
+    ld      de,$9800
+    ld      bc,512
+    call    core_vram_cpy
+
+    call    entity_load
+
     ret
 
 
