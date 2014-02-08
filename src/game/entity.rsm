@@ -118,11 +118,11 @@ entity_load:
 
 .loaded:
 
-    ld      a,c
-    ;call    entity_sprite_offset
-    ld      a,ENTITY_BG_SPRITE_INDEX
+    ld      a,c ; type / dir flags
+    and     %00111111 ; mask type bits
+    call    entity_sprite_offset
     add     a,b ; offset + entity index
-    ld      e,a
+    ld      e,a ; store sprite index
     call    sprite_enable
 
     ; save bc and de
@@ -146,12 +146,12 @@ entity_load:
     ; restore 
     pop     de
 
-    ld      a,e
+    ld      a,e ; load sprite index
     call    sprite_set_position
     call    sprite_unset_mirror
 
     ld      b,1
-    ld      a,e
+    ld      a,e ; load sprite index
     call    sprite_set_tile_index
 
     pop     bc; restore
@@ -213,6 +213,7 @@ entity_screen_offset_de: ; b = entity index
 
 
 entity_sprite_offset: ; a = sprite type -> a = background offset
+
     call    entity_defintion
     and     %10000000
     cp      %10000000
@@ -225,18 +226,27 @@ entity_sprite_offset: ; a = sprite type -> a = background offset
     ret
 
 
-entity_defintion:
+entity_defintion: ; a = sprite type
+
     push    hl
-    push    bc
     ld      hl,entityDefintionTable
-    ld      b,0
+
+    dec     a; convert into zero based index
+
+    ; a x 8
     add     a
     add     a
     add     a
-    ld      c,a ; multiply by 8
-    add     hl,bc
+
+    ; hl + a
+    add     a,l
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    ; load definition
     ld      a,[hl]
-    pop     bc
     pop     hl
     ret
 
@@ -255,8 +265,7 @@ entity_store:
     jp      z,.skip; not loaded
 
     ; disable sprite 
-    ;call    entity_sprite_offset
-    ld      a,ENTITY_BG_SPRITE_INDEX
+    call    entity_sprite_offset
     add     a,b; offset + entity index
     call    sprite_disable
 
@@ -318,22 +327,22 @@ entity_update:
     cp      0
     jp      z,.skip; not active skip
 
+    ; update sprite 
+    call    entity_sprite_offset
+    add     a,b; offset + entity index
+    ld      e,a
+
+    ; store counter
+    push    bc
+
+    ; TODO animate and stuff
+    ld      b,22
+    call    sprite_set_tile_index
+
     inc     hl; skip type
     inc     hl; skip flags
     inc     hl; skip direction
 
-    ; update sprite 
-    ; TODO foreground / background sprite
-    ld      a,ENTITY_BG_SPRITE_INDEX
-    add     a,b; offset + entity index
-    ld      e,a
-
-    ; TODO ?????
-    ld      b,0
-    call    sprite_set_tile_index
-
-    ; update position
-    push    bc
     ld      a,[hli] ; x position
     ld      c,a
 
