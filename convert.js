@@ -280,6 +280,8 @@ var gb = {
                                 entities[++entityIndex] = (type & 0x3f) | ((direction & 0x03) << 6);
                                 entities[++entityIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
 
+                            } else if (value < 256){
+                                return Promise.rejected('Invalid entity ' + value + ' in map room ' + x + 'x' + y);
                             }
 
                         });

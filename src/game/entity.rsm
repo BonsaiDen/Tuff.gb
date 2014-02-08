@@ -3,8 +3,20 @@ SECTION "EntityLogic",ROM0
 ; Load the entity state from RAM or the map default and  ----------------------
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
+
+    ; calculate offfset into stored state buffer (based on CURRENT room)
+    ld      de,entityStoredState 
+    ld      a,[mapRoomX]
+    ld      h,a
+    ld      a,[mapRoomY]
+    ld      e,a
+    call    math_mul8b
+    inc     hl ; *= 2
+    ld      d,h
+    ld      e,l
+
+    ; get offset for entity map data
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
-    ld      de,entityStoredState ; TODO offset based on room!
     ld      b,0
 
 entity_load_loop:
@@ -48,7 +60,6 @@ entity_load_loop:
     and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
     cp      128
     jp      nz,entity_load_defaults; not stored, load defaults for position
-    jp      entity_load_defaults; TODO fix below and then remove
 
 entity_load_stored:
     ; store index
@@ -186,8 +197,19 @@ entity_load_next:
 ; Store the entity state into RAM based on the type handler -------------------
 ; Also reset the entity sprite and screen data --------------------------------
 entity_store:
+
+    ; calculate offfset into stored state buffer (based on LAST room)
+    ld      de,entityStoredState 
+    ld      a,[mapRoomLastX]
+    ld      h,a
+    ld      a,[mapRoomLastY]
+    ld      e,a
+    call    math_mul8b
+    inc     hl ; *= 2
+    ld      d,h
+    ld      e,l
+
     ld      hl,entityScreenState
-    ld      de,entityStoredState  ; TODO offset based on room!
     ld      b,0
 
 .loop:
