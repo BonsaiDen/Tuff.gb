@@ -17,6 +17,8 @@ mapRoomDataPointer:         DW ; pointer to packed data of the current room
 ; -----------------------------------------------------------------------------
 mapRoomX:                   DB ; current x index on the map
 mapRoomY:                   DB ; current y index on the map
+mapRoomLastX:               DB ; last x index on the map
+mapRoomLastY:               DB ; last y index on the map
 mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
 

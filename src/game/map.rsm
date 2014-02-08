@@ -43,9 +43,11 @@ map_load_tileset: ; hl = offset
 ; Scrolling -------------------------------------------------------------------
 map_scroll_left:
     ld      a,[mapRoomX]
+    ld      [mapRoomLastX],a
     dec     a
     ld      b,a
     ld      a,[mapRoomY]
+    ld      [mapRoomLastY],a
     ld      c,a
     call    map_set_room
     ret
@@ -53,9 +55,11 @@ map_scroll_left:
 
 map_scroll_right:
     ld      a,[mapRoomX]
+    ld      [mapRoomLastX],a
     inc     a
     ld      b,a
     ld      a,[mapRoomY]
+    ld      [mapRoomLastY],a
     ld      c,a
     call    map_set_room
     ret
@@ -63,8 +67,10 @@ map_scroll_right:
 
 map_scroll_down:
     ld      a,[mapRoomX]
+    ld      [mapRoomLastX],a
     ld      b,a
     ld      a,[mapRoomY]
+    ld      [mapRoomLastY],a
     inc     a
     ld      c,a
     call    map_set_room
@@ -73,8 +79,10 @@ map_scroll_down:
 
 map_scroll_up:
     ld      a,[mapRoomX]
+    ld      [mapRoomLastX],a
     ld      b,a
     ld      a,[mapRoomY]
+    ld      [mapRoomLastY],a
     dec     a
     ld      c,a
     call    map_set_room
@@ -139,7 +147,6 @@ map_set_room: ; b = x, c = y
 
     ; un/load entities
     call    entity_store
-    ;call    sprite_update_all
 
     ; draw the room
     call    map_draw_room
@@ -257,13 +264,14 @@ map_draw_room:
 
 .done:
 
+    ; setup sprites first to reduce flicker
+    call    entity_load
+
     ; Copy to VRAM
     ld      hl,mapRoomBuffer
     ld      de,$9800
     ld      bc,512
     call    core_vram_cpy
-
-    call    entity_load
 
     ret
 

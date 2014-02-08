@@ -4,17 +4,17 @@ SECTION "EntityLogic",ROM0
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
-    ld      de,entityStoredState
+    ld      de,entityStoredState ; TODO offset based on room!
     ld      b,0
 
-.loop:
+entity_load_loop:
 
     ; get type / used
     ld      a,[hl]
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
     cp      0
-    jp      z,.next ; entity is not set for room
+    jp      z,entity_load_next ; entity is not set for room
 
     ; init base state
     push    hl
@@ -47,10 +47,10 @@ entity_load:
     ld      a,[de]
     and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
     cp      128
-    jp      nz,.defaults; not stored, load defaults for position
+    jp      nz,entity_load_defaults; not stored, load defaults for position
+    jp      entity_load_defaults; TODO fix below and then remove
 
-
-.stored:
+entity_load_stored:
     ; store index
     push    hl
     push    de
@@ -75,12 +75,10 @@ entity_load:
     ; restore index
     pop     de
     pop     hl
-    jp      .loaded
-
-
+    jp      entity_load_init
 
     ; load default data from map buffer
-.defaults:
+entity_load_defaults:
 
     ; store index
     push    hl
@@ -109,62 +107,69 @@ entity_load:
     sla     a
     sla     a
     sla     a
+    add     8
     ld      [de],a
 
     ; restore index
     pop     de
     pop     hl
 
+entity_load_init:
 
-.loaded:
+    push    hl
 
     ld      a,c ; type / dir flags
     and     %00111111 ; mask type bits
+    ld      l,a; store entity type
     call    entity_sprite_offset
     add     a,b ; offset + entity index
-    ld      e,a ; store sprite index
+    ld      c,a ; store sprite index
     call    sprite_enable
 
-    ; save bc and de
+    ; TODO load associated tile data into vram slot
+    ; TODO save animation tile offset for sprite
+
+    ; get screen entity offset
+    call    entity_screen_offset_de
     push    bc
     push    de
 
-    call    entity_screen_offset_de
+    ; call custom load handler
+    ld      a,l
+    dec     a; convert into 0 based offset
+    ld      hl,entityLoadHandler
+    add     a,a  ; multiply entity type by 4
+    add     a,a
+    add     a,l ; add a to hl
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+    push    bc
+    jp      [hl]
+
+entity_load_handler_ret:; return target for load handler
+    pop     bc
+    pop     de
+    ld      l,c
+
+    ; set sprite position
     inc     de ; skip type
     inc     de ; skip flags
     inc     de ; skip direction
 
-    ; load y position
-    ld      a,[de]
+    ld      a,[de] ; load y position
     ld      c,a
     inc     de
-
-    ; load x position
-    ld      a,[de]
+    ld      a,[de] ; load x position
     ld      b,a
-
-    ; restore 
-    pop     de
-
-    ld      a,e ; load sprite index
+    ld      a,l ; load sprite index
     call    sprite_set_position
-    call    sprite_unset_mirror
 
-    ld      b,1
-    ld      a,e ; load sprite index
-    call    sprite_set_tile_index
+    pop     bc;  restore entity / loop index
+    pop     hl
 
-    pop     bc; restore
-
-
-    ; TODO load associated tile data into vram slot
-
-
-    ; TODO call the load handler
-
-
-    ; next entity
-.next:
+entity_load_next:
     inc     de
     inc     de
     inc     hl
@@ -173,81 +178,7 @@ entity_load:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.loop
-    ret
-
-
-entity_screen_offset_hl: ; b = entity index
-    push    bc
-
-    ld      c,b
-    ld      b,0
-    ld      hl,entityScreenState
-    sla     c ; multiply by 8
-    sla     c
-    sla     c
-    add     hl,bc
-
-    pop     bc
-    ret
-
-
-entity_screen_offset_de: ; b = entity index
-    push    hl
-    push    bc
-
-    ld      c,b
-    ld      b,0
-    ld      hl,entityScreenState
-    sla     c ; multiply by 8
-    sla     c
-    sla     c
-    
-    add     hl,bc
-    ld      d,h
-    ld      e,l
-
-    pop     bc
-    pop     hl
-    ret
-
-
-entity_sprite_offset: ; a = sprite type -> a = background offset
-
-    call    entity_defintion
-    and     %10000000
-    cp      %10000000
-    jp      z,.foreground
-    ld      a,ENTITY_BG_SPRITE_INDEX
-    ret
-
-.foreground:
-    ld      a,ENTITY_FG_SPRITE_INDEX
-    ret
-
-
-entity_defintion: ; a = sprite type
-
-    push    hl
-    ld      hl,entityDefintionTable
-
-    dec     a; convert into zero based index
-
-    ; a x 8
-    add     a
-    add     a
-    add     a
-
-    ; hl + a
-    add     a,l
-    ld      l,a
-    adc     a,h
-    sub     l
-    ld      h,a
-
-    ; load definition
-    ld      a,[hl]
-    pop     hl
+    jp      nz,entity_load_loop
     ret
 
 
@@ -256,7 +187,7 @@ entity_defintion: ; a = sprite type
 ; Also reset the entity sprite and screen data --------------------------------
 entity_store:
     ld      hl,entityScreenState
-    ld      de,entityStoredState
+    ld      de,entityStoredState  ; TODO offset based on room!
     ld      b,0
 
 .loop:
@@ -268,6 +199,7 @@ entity_store:
     call    entity_sprite_offset
     add     a,b; offset + entity index
     call    sprite_disable
+    ;call    sprite_unset_mirror
 
     ; unset type
     ld      a,0
@@ -317,65 +249,88 @@ entity_store:
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
-    ld      hl,entityScreenState
+    ret
+    ld      de,entityScreenState
     ld      b,0
 
-.loop:
+entity_update_loop:
 
     ; load type / active
-    ld      a,[hl]
+    ld      a,[de]
     cp      0
-    jp      z,.skip; not active skip
+    jp      z,entity_update_skip; not active skip
+    ld      l,a ; store type
 
-    ; update sprite 
+    ; get sprite index
     call    entity_sprite_offset
     add     a,b; offset + entity index
-    ld      e,a
+    ld      h,a; store sprite index
 
-    ; store counter
+    ; store counter, screen state address 
     push    bc
+    push    hl
+    push    de
 
-    ; TODO animate and stuff
-    ld      b,22
-    call    sprite_set_tile_index
+    ; invoke custom entity update handler
+    ld      a,l
+    dec     a; convert into 0 based offset
+    ld      hl,entityUpdateHandler
+    add     a,a  ; multiply entity type by 4
+    add     a,a
+    add     a,l ; add a to hl
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+    push    bc
+    jp      [hl]
 
-    inc     hl; skip type
-    inc     hl; skip flags
-    inc     hl; skip direction
+entity_update_handler_ret: ; upate handler return targer
+    pop     de
+    pop     hl
 
-    ld      a,[hli] ; x position
+    inc     de; skip type
+    inc     de; skip flags
+    inc     de; skip direction
+
+    ld      a,[de] ; x position
     ld      c,a
+    inc     de
 
-    ld      a,[hli] ; y position
+    ld      a,[de] ; y position
     ld      b,a
-    ld      a,e  
+    ld      a,h  
     call    sprite_set_position
+    inc     de
+
     pop     bc
 
-    inc     hl
-    inc     hl
-    inc     hl
-    jp      .next
+    inc     de
+    inc     de
+    inc     de
+    jp      entity_update_next
 
-.skip:
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
+entity_update_skip:
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
 
-.next:
+entity_update_next:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.loop
+    jp      nz,entity_update_loop
     ret
 
 
+
 ; Entity Definitions ----------------------------------------------------------
+; -----------------------------------------------------------------------------
 entityDefintionTable:
     
     ; [BG/FG] [TILEROW]
@@ -383,13 +338,114 @@ entityDefintionTable:
     DB      %10000001,$00,$00,$00, $00,$00,$00,$00
 
 
+
 ; Entity Handlers -------------------------------------------------------------
+; -----------------------------------------------------------------------------
+entity_handler_load: ; generic, b = entity index, c = sprite index
+    ld      a,c
+    ld      b,22
+    call    sprite_set_tile_index
+    jp      entity_load_handler_ret
+
+
+entity_handler_load_empty:
+    ld      a,c
+    ld      b,12
+    call    sprite_set_tile_index
+    jp      entity_load_handler_ret
+    
+
+entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
+    jp      entity_update_handler_ret
+
 
 
 ; Handler Tables --------------------------------------------------------------
+; -----------------------------------------------------------------------------
 entityLoadHandler:
+    jp      entity_handler_load
+    nop
+    jp      entity_handler_load_empty
+    nop
 
-entityStoreHandler:
-
+            
 entityUpdateHandler:
+    jp      entity_handler_update
+    nop
+    jp      entity_handler_update
+    nop
     
+
+
+; Helper ----------------------------------------------------------------------
+entity_screen_offset_hl: ; b = entity index
+    push    bc
+
+    ld      c,b
+    ld      b,0
+    ld      hl,entityScreenState
+    sla     c ; multiply by 8
+    sla     c
+    sla     c
+    add     hl,bc
+
+    pop     bc
+    ret
+
+
+entity_screen_offset_de: ; b = entity index
+    push    hl
+    push    bc
+
+    ld      c,b
+    ld      b,0
+    ld      hl,entityScreenState
+    sla     c ; multiply by 8
+    sla     c
+    sla     c
+    
+    add     hl,bc
+    ld      d,h
+    ld      e,l
+
+    pop     bc
+    pop     hl
+    ret
+
+
+entity_sprite_offset: ; a = sprite type -> a = background offset
+    call    entity_defintion
+    and     %10000000
+    cp      %10000000
+    jp      z,.foreground
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    ret
+
+.foreground:
+    ld      a,ENTITY_FG_SPRITE_INDEX
+    ret
+
+
+entity_defintion: ; a = sprite type
+    push    hl
+    ld      hl,entityDefintionTable
+
+    dec     a; convert into zero based index
+
+    ; a x 8
+    add     a
+    add     a
+    add     a
+
+    ; hl + a
+    add     a,l
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    ; load definition
+    ld      a,[hl]
+    pop     hl
+    ret
+
