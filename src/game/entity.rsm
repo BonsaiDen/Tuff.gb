@@ -118,8 +118,8 @@ entity_load:
 
 .loaded:
 
-    ; enable sprite 
-    ; TODO foreground / background sprite
+    ld      a,c
+    ;call    entity_sprite_offset
     ld      a,ENTITY_BG_SPRITE_INDEX
     add     a,b ; offset + entity index
     ld      e,a
@@ -156,10 +156,11 @@ entity_load:
 
     pop     bc; restore
 
-    ; TODO load entity definition from type
+
     ; TODO load associated tile data into vram slot
-    ; TODO setup sprite based on background/foreground
-    ; TODO call handler
+
+
+    ; TODO call the load handler
 
 
     ; next entity
@@ -211,6 +212,35 @@ entity_screen_offset_de: ; b = entity index
     ret
 
 
+entity_sprite_offset: ; a = sprite type -> a = background offset
+    call    entity_defintion
+    and     %10000000
+    cp      %10000000
+    jp      z,.foreground
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    ret
+
+.foreground:
+    ld      a,ENTITY_FG_SPRITE_INDEX
+    ret
+
+
+entity_defintion:
+    push    hl
+    push    bc
+    ld      hl,entityDefintionTable
+    ld      b,0
+    add     a
+    add     a
+    add     a
+    ld      c,a ; multiply by 8
+    add     hl,bc
+    ld      a,[hl]
+    pop     bc
+    pop     hl
+    ret
+
+
 
 ; Store the entity state into RAM based on the type handler -------------------
 ; Also reset the entity sprite and screen data --------------------------------
@@ -224,15 +254,15 @@ entity_store:
     cp      0
     jp      z,.skip; not loaded
 
-    ; unset type
-    ld      a,0
-    ld      [hl],a
-
     ; disable sprite 
-    ; TODO foreground / background sprite
+    ;call    entity_sprite_offset
     ld      a,ENTITY_BG_SPRITE_INDEX
     add     a,b; offset + entity index
     call    sprite_disable
+
+    ; unset type
+    ld      a,0
+    ld      [hl],a
 
     ; hl = screen state, de = stored state
     inc     hl ; skip type [0]
@@ -278,7 +308,6 @@ entity_store:
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
-    ret
     ld      hl,entityScreenState
     ld      b,0
 
@@ -287,9 +316,7 @@ entity_update:
     ; load type / active
     ld      a,[hl]
     cp      0
-    jp      z,.next; not active skip
-
-    push    hl
+    jp      z,.skip; not active skip
 
     inc     hl; skip type
     inc     hl; skip flags
@@ -297,35 +324,41 @@ entity_update:
 
     ; update sprite 
     ; TODO foreground / background sprite
-    ld      e,b ; save index
     ld      a,ENTITY_BG_SPRITE_INDEX
     add     a,b; offset + entity index
+    ld      e,a
+
+    ; TODO ?????
     ld      b,0
     call    sprite_set_tile_index
 
+    ; update position
+    push    bc
     ld      a,[hli] ; x position
+    ld      c,a
+
+    ld      a,[hli] ; y position
     ld      b,a
-
-    ld      a,[hl] ; y position
-    ld      b,c
-
     ld      a,e  
     call    sprite_set_position
-    ld      b,e ; restore index
+    pop     bc
 
-    pop     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    jp      .next
 
-    ; next entity block
+.skip:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
 .next:
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
@@ -333,10 +366,21 @@ entity_update:
     ret
 
 
+; Entity Definitions ----------------------------------------------------------
+entityDefintionTable:
+    
+    ; [BG/FG] [TILEROW]
+    DB      %00000000,$00,$00,$00, $00,$00,$00,$00
+    DB      %10000001,$00,$00,$00, $00,$00,$00,$00
+
+
+; Entity Handlers -------------------------------------------------------------
+
+
 ; Handler Tables --------------------------------------------------------------
 entityLoadHandler:
 
-entityStoredHandler:
+entityStoreHandler:
 
 entityUpdateHandler:
     

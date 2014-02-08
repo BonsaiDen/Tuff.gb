@@ -2,8 +2,8 @@ SECTION "EntityRam",WRAM0[$CB00]
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM         EQU 4
-ENTITY_BG_SPRITE_INDEX  EQU 6  ; start indexes to use for entity sprites that are in the background
-ENTITY_FG_SPRITE_INDEX  EQU 11 ; start indexes to use for entity sprites that are in the foreground
+ENTITY_BG_SPRITE_INDEX  EQU 11  ; start indexes to use for entity sprites that are in the background
+ENTITY_FG_SPRITE_INDEX  EQU 6 ; start indexes to use for entity sprites that are in the foreground
 
 
 ; RAM storage for entity positions / states -----------------------------------
