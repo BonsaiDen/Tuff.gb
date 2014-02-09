@@ -8,13 +8,13 @@ DataTileCol: ; @2400 for collision checks
     INCBIN  "../data/bin/tiles.col.bin"; 256 byte
 
 DataTileImg:
-    INCBIN  "../data/bin/tiles.bg.bin" ; 4 KB
+    INCBIN  "../data/bin/tiles.bg.bin" 
 
-DataCharImg:
-    INCBIN  "../data/bin/tiles.ch.bin" ; 2 KB
+DataPlayerImg:
+    INCBIN  "../data/bin/tiles.ch.bin" 
 
-EntityCharImg:
-    INCBIN  "../data/bin/entities.ch.bin" ; 2 KB
+DataEntityRows:
+    INCBIN  "../data/bin/entities.ch.bin" 
 
 
 ; Sprite Animations -----------------------------------------------------------
@@ -101,8 +101,10 @@ DataTileAnimation:
 ; Entity Data -----------------------------------------------------------------
 EntityDefinitions:
     
-    ; Foreground/Background Sprite, Entity Palette, Entity Sprite Row Offset
-    ; Animation Data
-    ; TODO Anything else? Animations
+    ; [BG/FG] [TILEROW]
+    DB      %00000000,$00,$00,$00, $00,$00,$00,$00
+    DB      %10000001,$00,$00,$00, $00,$00,$00,$00
 
+
+; Entity Handler --------------------------------------------------------------
 

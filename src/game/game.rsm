@@ -22,8 +22,8 @@ game_init:
     ld      [gameFadeMode],a
 
     ; sprite sheet
-    ld      hl,DataCharImg
-    call    map_load_spritesheet
+    ;ld      hl,DataCharImg
+    ;call    map_load_spritesheet
 
     ; load tile data
     ld      hl,DataTileImg

@@ -1,5 +1,15 @@
 SECTION "PlayerLogic",ROM0
 
+player_update_sprite_data:
+    ld      hl,DataPlayerImg
+    ld      b,0
+    ld      c,0
+    ld      de,$8000
+    ld      a,8
+    call    map_load_sprite_row
+    ret
+
+
 ; Player ----------------------------------------------------------------------
 player_init:
 
@@ -27,6 +37,8 @@ player_init:
     ; Sprite
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_enable
+
+    call    player_update_sprite_data
 
     ret
 
@@ -1388,6 +1400,7 @@ player_animate:
     call    sprite_animation_start
     ld      a,b
     ld      [playerAnimationLast],a
+    call    player_update_sprite_data
 
 .no_animation_change:
 

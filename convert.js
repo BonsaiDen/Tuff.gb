@@ -45,7 +45,125 @@ var gb = {
 
     },
 
+    processImg: function(img, palette, r8x16) {
+
+        var bytes = [];
+        for(var y = 0; y < img.height / 8; y++) {
+            for(var x = 0; x < img.width / 8; x++) {
+                var r = gb.processTile(img, palette, x, y);
+                if (r instanceof Array) {
+                    bytes.push.apply(bytes, r);
+
+                } else {
+                    return r;
+                }
+            }
+        }
+
+
+        if (r8x16) {
+            bytes = gb.rearrangeTiles16(bytes, img.width / 8, img.height / 8);
+        }
+
+        return bytes;
+
+    },
+
+    processTile: function(img, palette, blockX, blockY) {
+
+       var bytes = [];
+       for(var py = 0; py < 8; py++) {
+
+            var high = 0,
+                low = 0;
+
+            for(var px = 0; px < 8; px++) {
+
+                var i = ((img.width * (blockY * 8 + py)) + blockX * 8 + px) << 2,
+                    r = img.data[i],
+                    g = img.data[i + 1],
+                    b = img.data[i + 2];
+
+                var p = r + ',' + g + ',' + b;
+                if (palette.hasOwnProperty(p)) {
+
+                    var v = palette[p];
+                    if (v === 0) { // White
+                        v = 0;
+
+                    } else if (v === 1) { // light grey
+                        low |= 1 << 7 - px;
+
+                    } else if (v === 2) { // dark grey
+                        high |= 1 << 7 - px;
+
+                    } else if (v === 3) { // dark
+                        high |= 1 << 7 - px;
+                        low |= 1 << 7 - px;
+                    }
+
+                } else {
+                    return Promise.rejected('Color ' + p + ' at ' + blockX + 'x' + blockY + ' was not found in pallete.');
+                }
+
+            }
+
+            bytes.push(low, high);
+
+        }
+
+        return bytes;
+
+    },
+
     convert: {
+
+        TileRowMap: function(file) {
+
+            console.log('[tilerowmap] Converting tilerowmap "%s"...', file);
+
+            var palette = gb.palette.chars;
+            return gb.loadFile(file).then(function(img) {
+
+                var rowOffsets = [],
+                    rowBytes = [];
+
+                // Split img into rows
+                var bytesPerRow = 16 * 16 * 4 * 8;
+                for(var y = 0; y < img.height / 16; y++) {
+
+                    var sub = {
+                        width: img.width,
+                        height: 16,
+                        data: img.data.slice(y * bytesPerRow, y * bytesPerRow + bytesPerRow)
+                    };
+
+                    var bytes = gb.processImg(sub, palette, true);
+                    if (bytes instanceof Array) {
+                        rowOffsets.push((rowBytes.length >> 8), rowBytes.length & 0xff);
+                        rowBytes.push.apply(rowBytes, gb.pack(bytes));
+
+                    } else {
+                        return bytes;
+                    }
+
+                }
+
+                return Promise.fulfilled(rowOffsets.concat(rowBytes));
+
+            }).then(function(data) {
+                file = file.replace(/\.png$/, '.bin');
+                console.log('[tilerowmap] Saving tilerowmap "%s" (%s bytes RLE packed)...', file, data.length);
+                return gb.saveFile(file, data);
+
+            }).then(function() {
+                console.log('[tilerowmap] Done!');
+
+            }, function(err) {
+                console.error(('[tilerowmap] Error: ' + err).red);
+            });
+
+        },
 
         Tileset: function(file, r8x16) {
 
@@ -61,60 +179,13 @@ var gb = {
             }
 
             return gb.loadFile(file).then(function(img) {
+                var bytes = gb.processImg(img, palette, r8x16);
+                if (bytes instanceof Array) {
+                    return Promise.fulfilled(gb.pack(bytes));
 
-                var bytes = [];
-                for(var y = 0; y < img.height / 8; y++) {
-                    for(var x = 0; x < img.width / 8; x++) {
-
-                        for(var py = 0; py < 8; py++) {
-
-                            var high = 0,
-                                low = 0;
-
-                            for(var px = 0; px < 8; px++) {
-
-                                var i = ((img.width * (y * 8 + py)) + x * 8 + px) << 2,
-                                    r = img.data[i],
-                                    g = img.data[i + 1],
-                                    b = img.data[i + 2];
-
-                                var p = r + ',' + g + ',' + b;
-                                if (palette.hasOwnProperty(p)) {
-
-                                    var v = palette[p];
-                                    if (v === 0) { // White
-                                        v = 0;
-
-                                    } else if (v === 1) { // light grey
-                                        low |= 1 << 7 - px;
-
-                                    } else if (v === 2) { // dark grey
-                                        high |= 1 << 7 - px;
-
-                                    } else if (v === 3) { // dark
-                                        high |= 1 << 7 - px;
-                                        low |= 1 << 7 - px;
-                                    }
-
-                                } else {
-                                    return Promise.rejected('Color ' + p + ' at ' + x + 'x' + y + ' was not found in pallete.');
-                                }
-
-                            }
-
-                            bytes.push(low, high);
-
-                        }
-
-                    }
+                } else {
+                    return bytes;
                 }
-
-
-                if (r8x16) {
-                    bytes = gb.rearrangeTiles16(bytes, img.width / 8, img.height / 8);
-                }
-
-                return Promise.fulfilled(gb.pack(bytes));
 
             }).then(function(data) {
                 file = file.replace(/\.png$/, '.bin');
@@ -294,8 +365,7 @@ var gb = {
                     }
                 }
 
-                var compressed = roomOffsets.concat(mapBytes);
-                return Promise.fulfilled(compressed);
+                return Promise.fulfilled(roomOffsets.concat(mapBytes));
 
             }).then(function(data) {
                 file = file.replace(/\.json$/, '.bin');
@@ -680,18 +750,14 @@ var gb = {
 
 gb.convert.Tileset('tiles.bg.png').then(function() {
 
-    gb.convert.Tileset('entities.ch.png', true).then(function() {
+    gb.convert.Tileset('tiles.ch.png', true).then(function() {
 
-        gb.convert.Tileset('tiles.ch.png', true).then(function() {
+        gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
 
-            gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
-
-                gb.convert.Map('main.map.json').then(function() {
-                    gb.convert.Collision('tiles.col.png');
-
-                }, function() {
-                    process.exit(1);
-                });
+            gb.convert.Map('main.map.json').then(function() {
+                gb.convert.TileRowMap('tiles.ch.png', true);
+                gb.convert.Collision('tiles.col.png');
+                gb.convert.TileRowMap('entities.ch.png');
 
             }, function() {
                 process.exit(1);

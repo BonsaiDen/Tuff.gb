@@ -1,15 +1,20 @@
-SECTION "EntityRam",WRAM0[$CB00]
+SECTION "EntityRam",WRAM0[$C990]
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM         EQU 4
 ENTITY_BG_SPRITE_INDEX  EQU 11  ; start indexes to use for entity sprites that are in the background
 ENTITY_FG_SPRITE_INDEX  EQU 6 ; start indexes to use for entity sprites that are in the foreground
+ENTITY_SPRITE_ROWS      EQU 8 ; how many entity sprite rows are contained in the sprite map data
 
 
 ; RAM storage for entity positions / states -----------------------------------
 ; mapStorage format is 2 bytes per entity [ddtttttt] xxxxyyyy (type, direction, x, y)
 entityStoredState:      DS  MAP_WIDTH * MAP_HEIGHT * ENTITY_PER_ROOM + 2 ; [syyy yyyy] [xxxx xxxx]
 
-entityScreenState:      DS  32 ; 8 bytes per entity [type][flags][direction] [y][x][custom][custom][custom]
+entityScreenState:      DS  32 ; 8 bytes per entity 
+                               ; [type][flags][direction][y] 
+                               ; [x][tileslot][custom][custom]
                                ; type > 0 = entity is active
+
+entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into vram
 

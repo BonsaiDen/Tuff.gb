@@ -4,6 +4,9 @@ SECTION "EntityLogic",ROM0
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
 
+    ; clear tile row mapping
+    call    entity_reset_tile_row_mapping
+
     ; calculate offfset into stored state buffer (based on CURRENT room)
     ld      de,entityStoredState 
     ld      a,[mapRoomX]
@@ -19,14 +22,14 @@ entity_load:
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
     ld      b,0
 
-entity_load_loop:
+_entity_load_loop:
 
     ; get type / used
     ld      a,[hl]
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
     cp      0
-    jp      z,entity_load_next ; entity is not set for room
+    jp      z,_entity_load_next ; entity is not set for room
 
     ; init base state
     push    hl
@@ -59,9 +62,9 @@ entity_load_loop:
     ld      a,[de]
     and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
     cp      128
-    jp      nz,entity_load_defaults; not stored, load defaults for position
+    jp      nz,_entity_load_defaults; not stored, load defaults for position
 
-entity_load_stored:
+_entity_load_stored:
     ; store index
     push    hl
     push    de
@@ -86,10 +89,10 @@ entity_load_stored:
     ; restore index
     pop     de
     pop     hl
-    jp      entity_load_init
+    jp      _entity_load_init
 
     ; load default data from map buffer
-entity_load_defaults:
+_entity_load_defaults:
 
     ; store index
     push    hl
@@ -125,7 +128,7 @@ entity_load_defaults:
     pop     de
     pop     hl
 
-entity_load_init:
+_entity_load_init:
 
     push    hl
 
@@ -136,9 +139,6 @@ entity_load_init:
     add     a,b ; offset + entity index
     ld      c,a ; store sprite index
     call    sprite_enable
-
-    ; TODO load associated tile data into vram slot
-    ; TODO save animation tile offset for sprite
 
     ; get screen entity offset
     call    entity_screen_offset_de
@@ -159,10 +159,15 @@ entity_load_init:
     push    bc
     jp      [hl]
 
-entity_load_handler_ret:; return target for load handler
+_entity_load_handler_ret:; return target for load handler
     pop     bc
     pop     de
     ld      l,c
+
+    ; load entity sprite data into one of the available sprite row slots
+    ; in the upper half of the sprite memory
+    ld      a,[de] ; load type
+    call    entity_load_tile_row
 
     ; set sprite position
     inc     de ; skip type
@@ -180,7 +185,7 @@ entity_load_handler_ret:; return target for load handler
     pop     bc;  restore entity / loop index
     pop     hl
 
-entity_load_next:
+_entity_load_next:
     inc     de
     inc     de
     inc     hl
@@ -189,7 +194,7 @@ entity_load_next:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,entity_load_loop
+    jp      nz,_entity_load_loop
     ret
 
 
@@ -280,7 +285,7 @@ entity_update_loop:
     ; load type / active
     ld      a,[de]
     cp      0
-    jp      z,entity_update_skip; not active skip
+    jp      z,_entity_update_skip; not active skip
     ld      l,a ; store type
 
     ; get sprite index
@@ -307,7 +312,7 @@ entity_update_loop:
     push    bc
     jp      [hl]
 
-entity_update_handler_ret: ; upate handler return targer
+_entity_update_handler_ret: ; upate handler return targer
     pop     de
     pop     hl
 
@@ -330,9 +335,9 @@ entity_update_handler_ret: ; upate handler return targer
     inc     de
     inc     de
     inc     de
-    jp      entity_update_next
+    jp      _entity_update_next
 
-entity_update_skip:
+_entity_update_skip:
     inc     de
     inc     de
     inc     de
@@ -342,7 +347,7 @@ entity_update_skip:
     inc     de
     inc     de
 
-entity_update_next:
+_entity_update_next:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
@@ -351,34 +356,24 @@ entity_update_next:
 
 
 
-; Entity Definitions ----------------------------------------------------------
-; -----------------------------------------------------------------------------
-entityDefintionTable:
-    
-    ; [BG/FG] [TILEROW]
-    DB      %00000000,$00,$00,$00, $00,$00,$00,$00
-    DB      %10000001,$00,$00,$00, $00,$00,$00,$00
-
-
-
 ; Entity Handlers -------------------------------------------------------------
 ; -----------------------------------------------------------------------------
 entity_handler_load: ; generic, b = entity index, c = sprite index
     ld      a,c
-    ld      b,22
+    ld      b,17
     call    sprite_set_tile_index
-    jp      entity_load_handler_ret
+    jp      _entity_load_handler_ret
 
 
 entity_handler_load_empty:
     ld      a,c
     ld      b,12
     call    sprite_set_tile_index
-    jp      entity_load_handler_ret
+    jp      _entity_load_handler_ret
     
 
 entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
-    jp      entity_update_handler_ret
+    jp      _entity_update_handler_ret
 
 
 
@@ -397,6 +392,94 @@ entityUpdateHandler:
     jp      entity_handler_update
     nop
     
+
+
+; Entity Sprite Handling ------------------------------------------------------
+; -----------------------------------------------------------------------------
+entity_sprite_offset: ; a = sprite type -> a = background offset
+    call    entity_defintion
+    and     %10000000
+    cp      %10000000
+    jp      z,.foreground
+    ld      a,ENTITY_BG_SPRITE_INDEX
+    ret
+
+.foreground:
+    ld      a,ENTITY_FG_SPRITE_INDEX
+    ret
+
+
+entity_reset_tile_row_mapping:
+    ld      hl,entityTileRowMap
+    ld      a,255
+    ld      [hli],a
+    ld      [hli],a
+    ld      [hli],a
+    ld      [hl],a
+    ret
+
+
+entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
+
+    push    de
+    push    hl
+    push    bc
+
+    call    entity_defintion
+    and     %01111111 ; mask tile source row
+    ld      c,a ; store tile row into c
+    
+    ; TODO check if the sprite row is already mapped into vram
+    ld      b,0
+    ld      hl,entityTileRowMap
+
+.loop:
+    ld      a,[hl]
+
+    ; check if tilerow at this offset is the row required by the entity
+    cp      c 
+    jp      z,.done
+
+    ; otherwise check if we got a free slow in vram to put the tilerow into
+    cp      255
+    jp      z,.load
+
+    inc     hl
+    inc     b
+    cp      4
+    jp      nz,.loop
+
+    ; FIXME 
+    ; we should never end up here because we got at most 4 different entity
+    ; sprite rows
+    ld      b,0; failsafe
+
+.load: ; b is the index we we'll be mapping into, c is the sprite row of the entity that needs to be loaded
+    
+    ; mark tilerow as used
+    ld      a,c
+    ld      [hl],a
+
+    ; load sprite row for entity
+    ld      hl,DataEntityRows
+    ld      de,$8400
+    ld      a,ENTITY_SPRITE_ROWS * 2
+    call    map_load_sprite_row
+
+.done:
+    ; multiply by 8 to get the sprite tile offset
+    ld      a,b
+    add     a,a
+    add     a,a
+    add     a,a
+    add     a,32 ; skip the lower half of the sprite data
+
+    pop     bc
+    pop     hl
+    pop     de
+
+    ret
+
 
 
 ; Helper ----------------------------------------------------------------------
@@ -435,22 +518,9 @@ entity_screen_offset_de: ; b = entity index
     ret
 
 
-entity_sprite_offset: ; a = sprite type -> a = background offset
-    call    entity_defintion
-    and     %10000000
-    cp      %10000000
-    jp      z,.foreground
-    ld      a,ENTITY_BG_SPRITE_INDEX
-    ret
-
-.foreground:
-    ld      a,ENTITY_FG_SPRITE_INDEX
-    ret
-
-
 entity_defintion: ; a = sprite type
     push    hl
-    ld      hl,entityDefintionTable
+    ld      hl,EntityDefinitions
 
     dec     a; convert into zero based index
 
