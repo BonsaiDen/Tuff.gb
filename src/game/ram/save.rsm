@@ -1,4 +1,4 @@
-SECTION "SaveRam",WRAM0[$C200]
+SECTION "SaveRam",WRAM0[$C160]
 
 ; Saved Game / Player State ---------------------------------------------------
 saveRoomX:           DB

@@ -1,4 +1,4 @@
-SECTION "PlayerRam",WRAM0[$C970]
+SECTION "PlayerRam",WRAM0[$CB50]
 
 ; Constants -------------------------------------------------------------------
 PLAYER_DIRECTION_LEFT      EQU 1
@@ -17,6 +17,7 @@ PLAYER_GRAVITY_INTERVAL    EQU 10
 PLAYER_SLEEP_WAIT          EQU 240 ; ticks of 125ms timer = 30 seconds
 PLAYER_SPRITE_INDEX        EQU 10
 
+PLAYER_SPRITE_ROWS         EQU 8 
 PLAYER_ANIMATION_IDLE      EQU 0
 PLAYER_ANIMATION_WALKING   EQU 1
 PLAYER_ANIMATION_SLEEP     EQU 2

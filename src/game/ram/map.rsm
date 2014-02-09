@@ -1,4 +1,4 @@
-SECTION "MapRam",WRAM0[$C300]
+SECTION "MapRam",WRAM0[$C200]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE      EQU     512
@@ -9,7 +9,7 @@ MAP_HEIGHT          EQU     16
 
 
 ; Room drawing ----------------------------------------------------------------
-mapRoomBuffer:              DS 512; must be at the top ($c3000) for fast collision checks
+mapRoomBuffer:              DS 512; must be at the top ($c2000) for fast collision checks
 mapRoomUnpackBuffer:        DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomDataPointer:         DW ; pointer to packed data of the current room
 
@@ -31,4 +31,7 @@ mapAnimationIndexes         DS TILE_ANIMATION_COUNT
 
 ; Tile Animation RAM Buffer ---------------------------------------------------
 TILE_ANIMATION_BUFFER       DS 1024
+
+; Sprite Row Decompression Buffer
+SPRITE_ROW_BUFFER           DS 256
 

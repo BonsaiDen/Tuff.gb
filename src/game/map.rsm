@@ -51,11 +51,10 @@ map_load_sprite_row: ; hl = sprite map, c = row index, b = target row in ram, de
     add     hl,de ; add index, hl is now pointing at the compressed row data
 
     pop     de ; restore target pointer
-    ld      a,d ; add offset for row
-    add     b
+    ld      a,d ; add offset for row (in 256 byte steps, 4 = 16x16 tiles)
     add     b
     ld      d,a
-    call    core_unpack ; unpack sprite row
+    call    core_unpack_vram ; unpack sprite row
 
     pop     bc
 
@@ -348,7 +347,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     add     hl,hl ; 32
 
     ; + mapRoomBuffer + x
-    ld      b,$C3
+    ld      b,$C2
     ld      c,a ; restore x
     add     hl,bc
 

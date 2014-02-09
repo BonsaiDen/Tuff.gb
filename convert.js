@@ -129,7 +129,7 @@ var gb = {
                     rowBytes = [];
 
                 // Split img into rows
-                var bytesPerRow = 16 * 16 * 4 * 8;
+                var bytesPerRow = 16 * 16 * 4 * 4;
                 for(var y = 0; y < img.height / 16; y++) {
 
                     var sub = {
@@ -755,7 +755,7 @@ gb.convert.Tileset('tiles.bg.png').then(function() {
         gb.convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
 
             gb.convert.Map('main.map.json').then(function() {
-                gb.convert.TileRowMap('tiles.ch.png', true);
+                gb.convert.TileRowMap('player.ch.png');
                 gb.convert.Collision('tiles.col.png');
                 gb.convert.TileRowMap('entities.ch.png');
 

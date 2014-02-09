@@ -1,4 +1,4 @@
-SECTION "EntityRam",WRAM0[$C990]
+SECTION "EntityRam",WRAM0[$CBB0]
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM         EQU 4

@@ -167,7 +167,7 @@ _entity_load_handler_ret:; return target for load handler
     ; load entity sprite data into one of the available sprite row slots
     ; in the upper half of the sprite memory
     ld      a,[de] ; load type
-    call    entity_load_tile_row
+    ;call    entity_load_tile_row ; TODO re-enable
 
     ; set sprite position
     inc     de ; skip type

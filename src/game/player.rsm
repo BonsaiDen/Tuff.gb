@@ -1,15 +1,5 @@
 SECTION "PlayerLogic",ROM0
 
-player_update_sprite_data:
-    ld      hl,DataPlayerImg
-    ld      b,0
-    ld      c,0
-    ld      de,$8000
-    ld      a,8
-    call    map_load_sprite_row
-    ret
-
-
 ; Player ----------------------------------------------------------------------
 player_init:
 
@@ -38,7 +28,8 @@ player_init:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_enable
 
-    call    player_update_sprite_data
+    ; Load initial sprite data
+    call    player_update_sprite_row
 
     ret
 
@@ -902,14 +893,21 @@ player_increase_fall:
 ; Movement --------------------------------------------------------------------
 player_accelerate:
 
+    ld      a,[coreInput]
+    and     %00110000
+    cp      %00110000
+    ret     z
+
     ; check which direction is pressed
     ld      a,[coreInput]
     and     %00100000
-    jp      nz,.acc_left
+    cp      %00100000
+    jp      z,.acc_left
 
     ld      a,[coreInput]
     and     %00010000
-    jp      nz,.acc_right
+    cp      %00010000
+    jp      z,.acc_right
 
     ret ; not moving in any direction
 
@@ -1400,7 +1398,7 @@ player_animate:
     call    sprite_animation_start
     ld      a,b
     ld      [playerAnimationLast],a
-    call    player_update_sprite_data
+    call    player_update_sprite_row
 
 .no_animation_change:
 
@@ -1474,5 +1472,49 @@ player_sleep_timer:
 
     dec     a
     ld      [playerSleepTick],a
+    ret
+
+
+; Animation Sprite Row Mapping ------------------------------------------------
+playerAnimationRowMap:
+    DB 0; IDLE      
+    DB 1; WALKING   
+    DB 3; SLEEP     
+    DB 4; PUSHING   
+    DB 2; JUMP      
+    DB 2; FALL      
+    DB 1; RUNNING   
+    DB 6; SWIMMING  
+    DB 7; DISSOLVE  
+    DB 2; SURFACE   
+    DB 0; SLIDE     
+
+player_update_sprite_row:
+
+    push    hl
+    push    de
+    push    bc
+
+    ; figure out which row in the sprite sheet maps
+    ; to the current animation
+    ld      a,[playerAnimation]
+    ld      hl,playerAnimationRowMap
+    ld      d,0
+    ld      e,a
+    add     hl,de
+    ld      a,[hl]
+
+    ; load the corresponding row into vram
+    ld      hl,DataPlayerImg
+    ld      b,0
+    ld      c,a
+    ld      de,$8000
+    ld      a,PLAYER_SPRITE_ROWS * 2
+    call    map_load_sprite_row
+
+    pop     bc
+    pop     de
+    pop     hl
+
     ret
 
