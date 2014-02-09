@@ -3,7 +3,7 @@ SECTION "SpriteRam",WRAM0[$C000]
 ; Sprite Buffer and Meta Data -------------------------------------------------
 spriteData:     DS 160  ; Sprite data to be later copied into OAM during vblank
 
-spriteMeta:     DS 80   ; 20 sprites, 4 bytes per sprite (each sprite is 2 hardware sprites)
-                        ; [flags][frame][id][framesLeft]
+spriteMeta:     DS 160  ; 20 sprites, 6 bytes per sprite (each sprite is 2 hardware sprites)
+                        ; [flags][frame][id][framesLeft] [tileOffset][unused][unused][unused]
                         ; flags: 000[direction][loop][animating][mirrored][enabled]
 

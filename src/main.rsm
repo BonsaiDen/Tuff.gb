@@ -4,6 +4,7 @@ INCLUDE     "core/include/rom.inc"
 
 ; Catridge Information --------------------------------------------------------
 CART_NAME       EQUS       "Tuff"
+CART_LICENSEE   EQUS       "BD"
 CART_TYPE       EQU        ROM_NOMBC
 CART_ROM_SIZE   EQU        ROM_SIZE_32KBYTE
 CART_RAM_SIZE   EQU        RAM_SIZE_0KBIT

@@ -1,5 +1,5 @@
 ; Variables -------------------------------------------------------------------
-SECTION "CoreVars",WRAM0[$C0FA]
+SECTION "CoreVars",WRAM0[$CFFA]
 
 coreRandomSeed:     DB
 coreVBlankDone:     DB
@@ -34,7 +34,7 @@ DB STRUPR("{CART_NAME}")
 ; Cartridge Options -----------------------------------------------------------
 SECTION "Core Rom Header",ROM0[$143]
 DB 0                         ; $143
-DB 0,0                       ; $144 - Licensee code (not important)
+DB STRUPR("{CART_LICENSEE}") ; $144 - Licensee code (not important)
 DB 0                         ; $146 - SGB Support indicator
 DB CART_TYPE                 ; $147 - Cart type
 DB CART_ROM_SIZE             ; $148 - ROM Size
@@ -42,8 +42,8 @@ DB CART_RAM_SIZE             ; $149 - RAM Size
 DB CART_DEST                 ; $14a - Destination code
 DB $33                       ; $14b - Old licensee code
 DB 0                         ; $14c - Mask ROM version
-DB 0                         ; $14d - Complement check (important)
-DW 0                         ; $14e - Checksum (not important)
+DB 0                         ; $14d - Header checksum (important)
+DW 0                         ; $14e - Global checksum (not important)
 
 
 ; Core Program ----------------------------------------------------------------

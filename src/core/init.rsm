@@ -13,6 +13,12 @@ core_init:
     ld      bc,8192
     call    core_mem_set
 
+    ; Clear VRam (removing Nintendo Logo left over from boot up)
+    ld      a,$00           
+    ld      hl,$8000
+    ld      bc,6144
+    call    core_mem_set
+
     ; Clear Background Screen Buffer
     ld      a,$00
     ld      hl,$9800

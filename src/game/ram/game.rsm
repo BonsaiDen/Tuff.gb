@@ -1,4 +1,4 @@
-SECTION "GameRam",WRAM0[$C100]
+SECTION "GameRam",WRAM0[$C3D0]
 
 ; Screen State ----------------------------------------------------------------
 gameFadeMode:       DB

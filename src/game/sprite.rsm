@@ -1,5 +1,11 @@
 SECTION "SpriteLogic",ROM0
 
+
+; Sprite Position Update ------------------------------------------------------
+sprite_update_all:
+    ret
+
+
 ; Sprite Animation Update -----------------------------------------------------
 sprite_animate_all:
     ld      b,0 ; loop counter
@@ -330,19 +336,54 @@ sprite_disable: ; a = sprite index
     ret
 
 
+sprite_set_tile_offset: ; a = sprite, b = tile offset
+
+    push    af
+    push    hl
+
+    ; multiple tile offset by 4
+    sla     b
+    sla     b
+    call    sprite_meta_offset
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    ld      a,b
+    ld      [hl],a ; store offset
+
+    pop     hl
+    pop     af
+
+    ret
+
+
 sprite_set_tile_index: ; a = sprite index, b = tile index
 
     push    af
     push    hl
     push    de
 
-    ; multiple tile offset by 4
+    ; multiple tile index by 4
     sla     b
     sla     b
 
-    ld      e,a ; store index
+    ld      e,a ; store index for get_left / get_right
     call    sprite_meta_offset
     ld      a,[hl]
+    ld      d,a ; store flags
+
+    ; add tile offset
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    ld      a,[hl]
+    add     b
+    ld      b,a
+
+    ; check flags
+    ld      a,d
     and     %00000010
     jp      z,.not_mirrored
 
@@ -519,40 +560,17 @@ sprite_meta_offset: ; a = sprite index -> hl = offset
     ld      d,0
     add     a,a ; 2
     add     a,a ; 4
+    add     a,a ; 8
     ld      e,a
     add     hl,de
     pop     de
     ret
 
 
-sprite_update_all:
+sprite_copy_oam:
     ld       hl,spriteData
     ld       de,$FE00
     ld       bc,160
     call     core_vram_cpy
-    ret
-
-; TODO unused?
-sprite_update: ; d = ypos, a c = xpos, b = tile
-
-    ; y position
-    ld      a,d
-    ld      [hl],a
-    inc     hl
-
-    ; x position
-    ld      a,c
-    ld      [hl],a
-    inc     hl
-
-    ; tile
-    ld      a,b
-    ld      [hl],a
-    inc     hl
-
-    ; flags [priority][yflip][xflip][palette]0000
-    ld      [hl],0
-    inc     hl
-
     ret
 

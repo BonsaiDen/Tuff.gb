@@ -1,4 +1,4 @@
-SECTION "MapRam",WRAM0[$C200]
+SECTION "MapRam",WRAM0[$C400]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE      EQU     512

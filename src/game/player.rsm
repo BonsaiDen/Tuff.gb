@@ -27,6 +27,8 @@ player_init:
     ; Sprite
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_enable
+    ld      b,4
+    call    sprite_set_tile_offset
 
     ; Load initial sprite data
     call    player_update_sprite_row
@@ -170,6 +172,17 @@ player_update:
     call    sprite_set_position
 
     ret     
+
+
+player_set_position:
+    ; update player sprite position
+    ld      a,[playerX]
+    ld      b,a
+    ld      a,[playerY]
+    ld      c,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_position
+    ret
 
 
 player_dissolve:
@@ -583,10 +596,13 @@ player_scroll_map:
     ld      a,[playerX]
     cp      2 ; < 1
     jp      nc,.check_right
-    call    map_scroll_left
 
     ld      a,157
     ld      [playerX],a
+    call    player_set_position
+    call    sprite_copy_oam
+    call    map_scroll_left
+
     jp      .done
 
 
@@ -595,10 +611,13 @@ player_scroll_map:
     ld      a,[playerX]
     cp      158 ; > 159
     jp      c,.check_up
-    call    map_scroll_right
 
     ld      a,3
     ld      [playerX],a
+    call    player_set_position
+    call    sprite_copy_oam
+    call    map_scroll_right
+
     jp      .done
 
 
@@ -607,7 +626,6 @@ player_scroll_map:
     ld      a,[playerY]
     cp      2 ; < 1
     jp      nc,.check_down
-    call    map_scroll_up
 
     ; add a boost to the jump to we can reach a platform or something
     ld      a,PLAYER_JUMP_SCREEN_BOOST
@@ -615,6 +633,11 @@ player_scroll_map:
 
     ld      a,125
     ld      [playerY],a
+
+    call    player_set_position
+    call    sprite_copy_oam
+    call    map_scroll_up
+
     jp      .done
 
 
@@ -623,10 +646,12 @@ player_scroll_map:
     ld      a,[playerY]
     cp      126 ; 
     jp      c,.done
-    call    map_scroll_down
 
     ld      a,3
     ld      [playerY],a
+    call    player_set_position
+    call    sprite_copy_oam
+    call    map_scroll_down
 
 .done:
     ret
@@ -1506,7 +1531,7 @@ player_update_sprite_row:
 
     ; load the corresponding row into vram
     ld      hl,DataPlayerImg
-    ld      b,0
+    ld      b,1
     ld      c,a
     ld      de,$8000
     ld      a,PLAYER_SPRITE_ROWS * 2

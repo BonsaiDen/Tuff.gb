@@ -145,6 +145,16 @@ _entity_load_init:
     push    bc
     push    de
 
+
+    ; load entity sprite data into one of the available sprite row slots
+    ; in the upper half of the sprite memory
+    ld      a,[de] ; load type
+    call    entity_load_tile_row ; -> a = tile offset
+    ld      b,a ; load tile offset 
+    ld      a,c ; load sprite index
+    call    sprite_set_tile_offset
+
+
     ; call custom load handler
     ld      a,l
     dec     a; convert into 0 based offset
@@ -163,11 +173,6 @@ _entity_load_handler_ret:; return target for load handler
     pop     bc
     pop     de
     ld      l,c
-
-    ; load entity sprite data into one of the available sprite row slots
-    ; in the upper half of the sprite memory
-    ld      a,[de] ; load type
-    ;call    entity_load_tile_row ; TODO re-enable
 
     ; set sprite position
     inc     de ; skip type
@@ -360,14 +365,14 @@ _entity_update_next:
 ; -----------------------------------------------------------------------------
 entity_handler_load: ; generic, b = entity index, c = sprite index
     ld      a,c
-    ld      b,1
+    ld      b,0
     call    sprite_set_tile_index
     jp      _entity_load_handler_ret
 
 
 entity_handler_load_empty:
     ld      a,c
-    ld      b,3
+    ld      b,0
     call    sprite_set_tile_index
     jp      _entity_load_handler_ret
     
@@ -429,7 +434,7 @@ entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
     and     %01111111 ; mask tile source row
     ld      c,a ; store tile row into c
     
-    ; TODO check if the sprite row is already mapped into vram
+    ; start search loop for tilerow map
     ld      b,0
     ld      hl,entityTileRowMap
 
@@ -457,7 +462,7 @@ entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
 .load: ; b is the index we we'll be mapping into, c is the sprite row of the entity that needs to be loaded
     
     ; mark tilerow as used
-    ld      a,c
+    ld      a,c ; c = sprite row index used for the row at [hl]
     ld      [hl],a
 
     ; load sprite row for entity
@@ -467,12 +472,10 @@ entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
     call    map_load_sprite_row
 
 .done:
-    ; multiply by 8 to get the sprite tile offset
-    ld      a,b
+    ld      a,b ; load the row into which the sprite data got loaded
+    add     a,a ; x4
     add     a,a
-    add     a,a
-    add     a,a
-    add     a,32 ; skip the lower half of the sprite data
+    add     a,16 ; skip the first 4 rows in vram
 
     pop     bc
     pop     hl

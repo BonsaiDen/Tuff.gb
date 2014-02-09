@@ -12,7 +12,13 @@ convert:
 
 run: rom
 	gngb --fps -a build/game.gb
-	
+
+gambatte: rom
+	gambatte_qt build/game.gb
+
+bgb: rom
+	WINEPREFIX=~/.local/share/wineprefixes/steam wine ~/.local/bin/bgb.exe build/game.gb
+
 clean:
 	rm -rf build
 	find . -name "*.bin" -print0 | xargs -0 rm -rf

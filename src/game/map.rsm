@@ -32,7 +32,7 @@ map_load_sprite_row: ; hl = sprite map, c = row index, b = target row in ram, de
     ; get offset into entity sprite row index (offset + spriterow * 2)
     ; hl is the base of the data
     ld      d,0
-    ld      e,c
+    ld      e,c ; offset into sprite row data
     sla     e ; x 2
     add     hl,de ; = table offset pointer
     ld      a,[hli]; high byte of offset into compressed sprite row data
@@ -199,6 +199,9 @@ map_set_room: ; b = x, c = y
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
 
+    ; setup sprites first to reduce flicker
+    call    entity_load
+
     ; we read from the unpacked room data
     ld      hl,$9800
     ld      de,mapRoomUnpackBuffer - 1
@@ -328,10 +331,6 @@ map_draw_room:
 
 
 .done:
-
-    ; setup sprites first to reduce flicker
-    call    entity_load
-
     ret
 
 
