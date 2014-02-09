@@ -5,10 +5,6 @@ SECTION "MapLogic",ROM0
 map_init: ; a = base value
 
     sub     128
-    ld      hl,mapRoomBuffer
-    ld      bc,512
-    call    core_mem_set
-
     ld      hl,$9800
     ld      bc,1024
     call    core_mem_set
@@ -54,7 +50,12 @@ map_load_sprite_row: ; hl = sprite map, c = row index, b = target row in ram, de
     ld      a,d ; add offset for row (in 256 byte steps, 4 = 16x16 tiles)
     add     b
     ld      d,a
-    call    core_unpack_vram ; unpack sprite row
+    
+    ; end pointer de + 256 bytes
+    ld      b,d
+    ld      c,e
+    inc     b; 256 bytes
+    call    core_unpack_raw_vram ; unpack sprite row
 
     pop     bc
 
@@ -199,7 +200,7 @@ map_set_room: ; b = x, c = y
 map_draw_room:
 
     ; we read from the unpacked room data
-    ld      hl,mapRoomBuffer
+    ld      hl,$9800
     ld      de,mapRoomUnpackBuffer - 1
 
     ; setup loop counts
@@ -235,6 +236,8 @@ map_draw_room:
     push    bc
 
     ; drawing ------------------------------------------
+    
+    di
 
     ld      d,a ; save block data
 
@@ -243,6 +246,12 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
+
+    ld      b,a
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,b
     ld      [hli],a ;  draw + 0
 
 
@@ -251,6 +260,12 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
+
+    ld      b,a
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,b
     ld      [hl],a ; draw +1
 
     ; skip one screen buffer row
@@ -265,6 +280,12 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
+
+    ld      b,a
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,b
     ld      [hli],a ; draw + 32
 
     ; lower right
@@ -272,7 +293,15 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
+
+    ld      b,a
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,b
     ld      [hl],a ; draw + 33
+
+    ei
 
     ; drawing ------------------------------------------
     pop     bc
@@ -302,12 +331,6 @@ map_draw_room:
 
     ; setup sprites first to reduce flicker
     call    entity_load
-
-    ; Copy to VRAM
-    ld      hl,mapRoomBuffer
-    ld      de,$9800
-    ld      bc,512
-    call    core_vram_cpy
 
     ret
 
@@ -347,7 +370,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     add     hl,hl ; 32
 
     ; + mapRoomBuffer + x
-    ld      b,$C2
+    ld      b,$98
     ld      c,a ; restore x
     add     hl,bc
 

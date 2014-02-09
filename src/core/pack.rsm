@@ -123,10 +123,7 @@ core_unpack_vram: ; HL = source, DE = target
     inc     hl
     inc     hl
 
-    di
     call    core_unpack_raw_vram
-    ei
-
     ret
 
 
@@ -171,6 +168,7 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 .repeat_loop:
 
     ; set start
+    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
@@ -178,6 +176,7 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; while count > 0 inc de
     ld      a,c
     ld      [de],a
+    ei
     ; set end
 
     inc     de
@@ -199,12 +198,14 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 .copy_loop:
 
     ; copy start
+    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
 
     ld      a,[hli] ; load byte to copy
     ld      [de],a
+    ei
     ; copy end
 
     inc     de

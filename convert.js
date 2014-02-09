@@ -141,7 +141,7 @@ var gb = {
                     var bytes = gb.processImg(sub, palette, true);
                     if (bytes instanceof Array) {
                         rowOffsets.push((rowBytes.length >> 8), rowBytes.length & 0xff);
-                        rowBytes.push.apply(rowBytes, gb.pack(bytes));
+                        rowBytes.push.apply(rowBytes, gb.pack(bytes, false));
 
                     } else {
                         return bytes;

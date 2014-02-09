@@ -360,14 +360,14 @@ _entity_update_next:
 ; -----------------------------------------------------------------------------
 entity_handler_load: ; generic, b = entity index, c = sprite index
     ld      a,c
-    ld      b,17
+    ld      b,1
     call    sprite_set_tile_index
     jp      _entity_load_handler_ret
 
 
 entity_handler_load_empty:
     ld      a,c
-    ld      b,12
+    ld      b,3
     call    sprite_set_tile_index
     jp      _entity_load_handler_ret
     
