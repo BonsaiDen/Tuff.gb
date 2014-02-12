@@ -22,8 +22,8 @@ var Palette = {
     Sprite:  {
         '255,0,255': 0,
         '255,255,255': 1, // switched based on ingame OBJ palette
-        '82,82,82': 1,    // switched based on ingame OBJ palette
         '163,163,163': 2,
+        '82,82,82': 3,    // switched based on ingame OBJ palette
         '0,0,0': 3
     },
 
