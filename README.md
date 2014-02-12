@@ -1,16 +1,22 @@
 # Tuff
 
-Another port of a very old game of mine, this time for the original black and white gameboy.
+Another port of a very old game of mine, this time for the original black and white Gameboy!
 
-In case you're trying to get started with your own game, you might find some parts 
-of the code very helpful (e.g. Mainloop, Vblank Code, DMA).
+In case you're trying to get started with your own DMG game, you might find a lot of the code very helpful, the core runtime is mostly separated from the game code and there are many useful routines and a whole lot of comments for you to check out.
+
+
+## Screens
+
+![](http://dl.dropboxusercontent.com/u/2332843/tuff/screen1.png) . ![](http://dl.dropboxusercontent.com/u/2332843/tuff/screen2.png) 
+
+![](http://dl.dropboxusercontent.com/u/2332843/tuff/screen3.png) . ![](http://dl.dropboxusercontent.com/u/2332843/tuff/screen4.png)
 
 
 ## How to compile
 
 Get https://github.com/bentley/rgbds/ and then run `make`.
 
-You'll find the assembled ROM under `build/main.gb`, it should play in a GameBoy Emulator of your Choice.
+You'll find the assembled ROM under `build/main.gb`, it should play in a GameBoy Emulator of your choice.
 
 
 # License
