@@ -140,6 +140,18 @@ _entity_load_init:
     ld      c,a ; store sprite index
     call    sprite_enable
 
+    ; Get palette flag
+    push    bc
+    ld      a,l; load type
+    call    entity_defintion
+    and     %01000000
+    srl     a
+    srl     a
+    ld      b,a
+    ld      a,c
+    call    sprite_set_palette
+    pop     bc
+
     ; get screen entity offset
     call    entity_screen_offset_de
     push    bc
@@ -363,17 +375,19 @@ _entity_update_next:
 
 ; Entity Handlers -------------------------------------------------------------
 ; -----------------------------------------------------------------------------
-entity_handler_load: ; generic, b = entity index, c = sprite index
+entity_handler_load_save: ; generic, b = entity index, c = sprite index
     ld      a,c
-    ld      b,0
-    call    sprite_set_tile_index
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
+    call    sprite_animation_set
+    call    sprite_animation_start
     jp      _entity_load_handler_ret
 
 
-entity_handler_load_empty:
+entity_handler_load_glow:
     ld      a,c
-    ld      b,0
-    call    sprite_set_tile_index
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
+    call    sprite_animation_set
+    call    sprite_animation_start
     jp      _entity_load_handler_ret
     
 
@@ -385,9 +399,9 @@ entity_handler_update: ; generic, b = entity index, c = sprite index, de = scree
 ; Handler Tables --------------------------------------------------------------
 ; -----------------------------------------------------------------------------
 entityLoadHandler:
-    jp      entity_handler_load
+    jp      entity_handler_load_save
     nop
-    jp      entity_handler_load_empty
+    jp      entity_handler_load_glow
     nop
 
             
@@ -431,7 +445,7 @@ entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
     push    bc
 
     call    entity_defintion
-    and     %01111111 ; mask tile source row
+    and     %00111111 ; mask tile source row
     ld      c,a ; store tile row into c
     
     ; start search loop for tilerow map

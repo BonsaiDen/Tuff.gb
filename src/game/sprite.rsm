@@ -195,6 +195,7 @@ sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
 ; Animation Controls ----------------------------------------------------------
 sprite_animation_set: ; a = sprite index, b = animation id
 
+    push    af
     push    hl
 
     call    sprite_meta_offset
@@ -207,11 +208,13 @@ sprite_animation_set: ; a = sprite index, b = animation id
     ld      [hl],a
 
     pop     hl
+    pop     af
     ret
 
 
 sprite_animation_start: ; a = sprite index
 
+    push    af
     push    hl
 
     call    sprite_meta_offset
@@ -225,11 +228,13 @@ sprite_animation_start: ; a = sprite index
     ld      [hl],a
 
     pop     hl
+    pop     af
     ret
 
 
 sprite_animation_pause: ; a = sprite index
 
+    push    af
     push    hl
 
     call    sprite_meta_offset
@@ -238,11 +243,13 @@ sprite_animation_pause: ; a = sprite index
     ld      [hl],a
 
     pop hl
+    pop     af
     ret
 
 
 sprite_animation_resume: ; a = sprite index
 
+    push    af
     push    hl
 
     call    sprite_meta_offset
@@ -251,11 +258,13 @@ sprite_animation_resume: ; a = sprite index
     ld      [hl],a
 
     pop     hl
+    pop     af
     ret
 
 
 sprite_animation_stop: ; a = sprite index
 
+    push    af
     push    hl
 
     call    sprite_meta_offset
@@ -268,6 +277,7 @@ sprite_animation_stop: ; a = sprite index
     ld      [hl],1 ; 0 and 15 are border frames
 
     pop     hl
+    pop     af
     ret
 
 
@@ -293,6 +303,34 @@ sprite_animation_backward: ; a = sprite index
     ld      [hl],a
 
     pop     hl
+    ret
+
+
+sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
+    push    af
+    push    hl
+    push    de
+
+    ld      e,a ; store index
+    call    sprite_meta_offset
+
+    ld      d,3
+    call    sprite_get_left
+    ld      a,[hl]
+    and     %11100000 ; clear palette bit
+    or      b
+    ld      [hl],a
+
+    ld      d,3
+    call    sprite_get_right
+    ld      a,[hl]
+    and     %11100000 ; clear palette bit
+    or      b
+    ld      [hl],a
+
+    pop     de
+    pop     hl
+    pop     af
     ret
 
 
@@ -328,6 +366,11 @@ sprite_disable: ; a = sprite index
     ld      b,0
     ld      c,0
     call    sprite_set_position
+
+    ; reset palette
+    ld      a,e
+    ld      b,0
+    call    sprite_set_palette
 
     pop     bc
     pop     de
@@ -393,14 +436,20 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     call    sprite_get_left
     ld      [hl],b
     inc     hl
-    ld      [hl],%00100000
+    ld      a,[hl]
+    and     %11011111
+    or      %00100000
+    ld      [hl],a
 
     call    sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
     inc     hl
-    ld      [hl],%00100000
+    ld      a,[hl]
+    and     %11011111
+    or      %00100000
+    ld      [hl],a
 
     jp     .index_done
 
@@ -409,14 +458,18 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     call    sprite_get_left
     ld      [hl],b
     inc     hl
-    ld      [hl],%00000000
+    ld      a,[hl]
+    and     %11011111
+    ld      [hl],a
 
     call    sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
     inc     hl
-    ld      [hl],%00000000
+    ld      a,[hl]
+    and     %11011111
+    ld      [hl],a
 
 .index_done:
     pop     de

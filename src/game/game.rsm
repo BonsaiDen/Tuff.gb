@@ -10,11 +10,11 @@ game_init:
     ld      [rBGP],a; load a into the memory pointed to by rBGP
 
     ; set sprite palette 0
-    ld      a,%11010000 
+    ld      a,%11010000  ; 3 = black      2 = light gray  1 = white  0 = transparent
     ld      [rOBP0],a 
 
     ; set sprite palette 1
-    ld      a,%10010000 
+    ld      a,%10010000  ; 3 = dark gray  2 = light gray  1 = white  0 = transparent
     ld      [rOBP1],a 
 
     ; reset fading
@@ -36,7 +36,7 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ld      b,1
+    ld      b,2
     ld      c,0
     call    map_set_room
 

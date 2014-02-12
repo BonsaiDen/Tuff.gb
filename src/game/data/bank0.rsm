@@ -76,6 +76,14 @@ DataSpriteAnimation:
 
     ; Entity ------------------------------------------------------------------
 
+    ; Save Point
+    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $09,$09,$09,$09, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    
+    ; Glow Flicker
+    DB $00, $00,$01,$00,$01, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $04,$04,$04,$04, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
 
 ; Tile Animations -------------------------------------------------------------
 DataTileAnimation:
@@ -107,9 +115,9 @@ DataTileAnimation:
 ; Entity Data -----------------------------------------------------------------
 EntityDefinitions:
     
-    ; [BG/FG] [TILEROW]
+    ; [BG/FG] [PAL] [TILEROW] 
     DB      %00000000,$00,$00,$00, $00,$00,$00,$00
-    DB      %10000001,$00,$00,$00, $00,$00,$00,$00
+    DB      %11000001,$00,$00,$00, $00,$00,$00,$00
 
 
 ; Entity Handler --------------------------------------------------------------
