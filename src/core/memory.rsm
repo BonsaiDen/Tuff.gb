@@ -63,22 +63,22 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
 
 ; VRAM Copy -------------------------------------------------------------------
 core_vram_cpy: ; hl = source, de = dest, bc = bytecount
+    di
 	inc	b
 	inc	c
 	jp	.skip
 .loop:
-    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     ld      a,[hl+]
 	ld	[de],a
-    ei
 	inc	de
 .skip:
     dec	c
 	jr	nz,.loop
 	dec	b
 	jr	nz,.loop
+    ei
 	ret
 
