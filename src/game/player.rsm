@@ -600,7 +600,6 @@ player_scroll_map:
     ld      a,157
     ld      [playerX],a
     call    player_set_position
-    call    sprite_copy_oam
     call    map_scroll_left
 
     jp      .done
@@ -615,7 +614,6 @@ player_scroll_map:
     ld      a,3
     ld      [playerX],a
     call    player_set_position
-    call    sprite_copy_oam
     call    map_scroll_right
 
     jp      .done
@@ -635,7 +633,6 @@ player_scroll_map:
     ld      [playerY],a
 
     call    player_set_position
-    call    sprite_copy_oam
     call    map_scroll_up
 
     jp      .done
@@ -650,7 +647,6 @@ player_scroll_map:
     ld      a,3
     ld      [playerY],a
     call    player_set_position
-    call    sprite_copy_oam
     call    map_scroll_down
 
 .done:
