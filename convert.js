@@ -71,7 +71,7 @@ var IO = {
     },
 
     saveAs: function(ext, name, data) {
-        return IO.save(name.replace(/\.[^\.]{0,3}$/, '.' + ext), data);
+        return IO.save(name.replace(/\.[^\.]{0,4}$/, '.' + ext), data);
     },
 
     loadImage: function(file) {
