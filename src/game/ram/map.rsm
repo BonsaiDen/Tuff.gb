@@ -9,6 +9,7 @@ MAP_HEIGHT          EQU     16
 
 
 ; Room drawing ----------------------------------------------------------------
+mapRoomBuffer:              DS 512 ; 
 mapRoomUnpackBuffer:        DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomDataPointer:         DW ; pointer to packed data of the current room
 

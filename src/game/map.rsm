@@ -202,8 +202,10 @@ map_draw_room:
     ; setup sprites first to reduce flicker
     call    entity_load
 
+    ; target is the screen buffer
+    ld      hl,$C400
+
     ; we read from the unpacked room data
-    ld      hl,$9800
     ld      de,mapRoomUnpackBuffer - 1
 
     ; setup loop counts
@@ -240,8 +242,6 @@ map_draw_room:
 
     ; drawing ------------------------------------------
     
-    di
-
     ld      d,a ; save block data
 
     ; upper left
@@ -249,12 +249,6 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-
-    ld      b,a
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-    ld      a,b
     ld      [hli],a ;  draw + 0
 
 
@@ -263,12 +257,6 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-
-    ld      b,a
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-    ld      a,b
     ld      [hl],a ; draw +1
 
     ; skip one screen buffer row
@@ -283,12 +271,6 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-
-    ld      b,a
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-    ld      a,b
     ld      [hli],a ; draw + 32
 
     ; lower right
@@ -296,15 +278,7 @@ map_draw_room:
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
-
-    ld      b,a
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-    ld      a,b
     ld      [hl],a ; draw + 33
-
-    ei
 
     ; drawing ------------------------------------------
     pop     bc
@@ -331,6 +305,12 @@ map_draw_room:
 
 
 .done:
+    ld      hl,$C400
+    ld      de,$9800
+    ld      bc,512
+    call    core_vram_cpy
+    call    sprite_copy_oam
+
     ret
 
 
@@ -369,7 +349,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     add     hl,hl ; 32
 
     ; + mapRoomBuffer + x
-    ld      b,$98
+    ld      b,$C4
     ld      c,a ; restore x
     add     hl,bc
 
