@@ -1,11 +1,18 @@
 ; Input Handling --------------------------------------------------------------
 core_input:
-    ld      a, 0
+
+    ; store old input state
+    ld      a,[coreInput]
+    ld      d,a
+
+    ; reset state
+    ld      a,0
     ld      [coreInput], a
 
     ; read the d-pad:
-    ld      a, %00100000    ; bit 4 = 0, bit 5 = 1 (d-pad on, buttons off)
-    ld      [rP1], a
+    ld      a,%00100000    ; bit 4 = 0, bit 5 = 1 (d-pad on, buttons off)
+    ld      [rP1],a
+
     ; read the status of the d-pad
     ; we do several reads because of bouncing
     ld      a, [rP1]
@@ -15,19 +22,19 @@ core_input:
 
     and     $0F             ; just keep low nibble (d-pad status)
     swap    a               ; swap low and high nibbles
-    ld      b, a            ; save d-pad status in b register
+    ld      b,a            ; save d-pad status in b register
 
     ; let's read the buttons
-    ld      a, %00010000    ; bit 4 = 1, bit 5 = 0 (buttons on, d-pad off)
-    ld      [rP1], a
+    ld      a,%00010000    ; bit 4 = 1, bit 5 = 0 (buttons on, d-pad off)
+    ld      [rP1],a
 
     ; bouncing...
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
 
     ; we have in "a" the status of the buttons
     and     $0F             ; just keep low nibble.
@@ -38,11 +45,24 @@ core_input:
     ; make the complement of it (so activated buttons read as 1)
     ; and save it 
     cpl
-    ld      [coreInput], a
+    ld      [coreInput],a; store new state
+    ld      c,a ; store a copy
             
     ; reset the joypad
     ld      a,$30
-    ld      [rP1], a
+    ld      [rP1],a
+
+    ; get the buttons which were initially pressed on this frame
+    ld      a,c ; load the current state
+    xor     d; xor with the old state to get the state difference
+    and     c; and with the current state to only get inputs which were on this frame
+    ld      [coreInputOn],a
+
+    ; get the buttons released on this frame
+    ld      a,c ; load the current state
+    xor     d; xor with the old state to get the state difference
+    and     d; and with the current state to only get inputs which were on last frame
+    ld      [coreInputOff],a
 
     ; a = [Down][Up][Left][Right][Start][Select][B][A]
     jp      core_loop_after_input

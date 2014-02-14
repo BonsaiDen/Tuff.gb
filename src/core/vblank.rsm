@@ -1,0 +1,21 @@
+; VBlank Handler --------------------------------------------------------------
+core_vblank_handler:
+
+    di
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    call    $ff80 ; call the DMA code for transfering sprite data to OAM
+
+    ld      a,1
+    ld      [coreVBlankDone],a
+
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+
+    reti
+

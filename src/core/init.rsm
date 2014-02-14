@@ -34,7 +34,7 @@ core_init:
     ld      [coreVBlankDone],a
 
     ; Reset timers
-    ld      [coreTimer125],a
+    ld      [coreTimer],a
     ld      [coreHalfTickSwitch],a
     ld      [coreHalfTick],a
 
@@ -46,7 +46,7 @@ core_init:
     ei
     ld      a,IEF_VBLANK|IEF_TIMER
     ld      [rIE],a
-    ld      a,TACF_START|TACF_4KHZ
+    ld      a,TACF_START|TACF_16KHZ
     ld      [rTAC],a
 
     call    core_screen_on  ; Turn on the screen

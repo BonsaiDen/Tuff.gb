@@ -11,14 +11,15 @@ core_loop:
     xor     a
     ld      [coreVBlankDone],a  ; Clear V-Blank flag
                                 
+    ; run the 1.5 frame loop
+    ld      a,[coreHalfTick]
+    cp      0
+    jp      nz,core_loop_wait_one_half
+
     ; Fetch Joypad State
     jp      core_input
 core_loop_after_input:
 
-    ; run the 1.5 frame loop
-    ld      a,[coreHalfTick]
-    cp      0
-    jp      nz,.wait_one_half
     call    game_loop_one_half
 
     ; every other tick we switch the delay between 0 or 1 to 
@@ -30,13 +31,13 @@ core_loop_after_input:
     ld      a,[coreHalfTickSwitch]
     xor     a
     ld      [coreHalfTickSwitch],a
-    jp      .every_frame
+    jp      core_loop_every_frame
 
-.wait_one_half:
+core_loop_wait_one_half:
     dec     a
     ld      [coreHalfTick],a
 
-.every_frame:
+core_loop_every_frame:
     call    game_loop ; run the main loop 
     jp      core_loop
 

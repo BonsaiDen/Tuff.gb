@@ -1,0 +1,27 @@
+; Timer Handler ---------------------------------------------------------------
+core_timer_handler:
+
+    di
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    ; ~60ms timer (62.25585ms)
+    ld      a,[coreTimer]
+    inc     a
+    ld      [coreTimer],a
+    cp      4
+    jp      nz,.skip
+    call    game_timer
+    ld      a,0
+    ld      [coreTimer],a
+.skip:
+
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+
+    reti
+
