@@ -203,12 +203,6 @@ player_dissolve:
     ret
 
 
-player_timer_125:
-    call    player_sleep_timer
-    call    player_water_timer
-    ret
-
-
 ; Player Water Movement -------------------------------------------------------
 playerWaterSwimOffsetTable:
     DB      1,1,2,2,1,1,0,0,1,1,2,2,1,1,0,0

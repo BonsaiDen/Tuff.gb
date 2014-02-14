@@ -115,10 +115,98 @@ DataTileAnimation:
 ; Entity Data -----------------------------------------------------------------
 EntityDefinitions:
     
-    ; [BG/FG] [PAL] [TILEROW] 
+    ; [BG/FG] [PALETTE] [TILEROW] 
     DB      %00000000,$00,$00,$00, $00,$00,$00,$00
-    DB      %11000001,$00,$00,$00, $00,$00,$00,$00
+    DB      %01000001,$00,$00,$00, $00,$00,$00,$00
+    DB      %11000010,$00,$00,$00, $00,$00,$00,$00
+
+
+; Entity Handler Table --------------------------------------------------------
+entityLoadHandler:
+    jp      entity_handler_load_save
+    nop
+
+    jp      entity_handler_load_save
+    nop
+
+    jp      entity_handler_load_glow
+    nop
+
+            
+entityUpdateHandler:
+    jp      entity_handler_update_save
+    nop
+
+    jp      entity_handler_update_save
+    nop
+
+    jp      entity_handler_update
+    nop
 
 
 ; Entity Handler --------------------------------------------------------------
+entity_handler_load_save: ; generic, b = entity index, c = sprite index
+    ld      a,c
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
+    call    sprite_animation_set
+    call    sprite_animation_start
+    jp      _entity_load_handler_ret
+
+
+entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = screen data
+
+    inc     de; skip type
+    inc     de; skip flags
+    inc     de; skip direction
+
+    ; check player y === save y
+    ld      a,[de] ; y
+    ld      b,a
+    ld      a,[playerY]
+    cp      b
+    jp      nz,.done
+
+    ; check player x > save x - 8 and player x < save x + 8
+    inc     de
+
+    ; check right edge
+    ld      a,[de] ; x
+    add     7 
+    ld      b,a
+    ld      a,[playerX]
+    cp      b
+    jp      nc,.done; edge > player
+
+    ; check left edge
+    ld      a,[de] ; x
+    sub     6 
+    ld      b,a
+    ld      a,[playerX]
+    cp      b
+    jp      c,.done; edge < player
+
+    ; check down press
+    ld      a,[coreInputOn]
+    and     %10000000
+    cp      %10000000
+    jp      nz,.done
+
+    ; save game
+    call    save_store_player
+    call    screen_flash_short
+
+.done:
+    jp      _entity_update_handler_ret
+
+
+entity_handler_load_glow:
+    ld      a,c
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
+    call    sprite_animation_set
+    call    sprite_animation_start
+    jp      _entity_load_handler_ret
+    
+
+entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
+    jp      _entity_update_handler_ret
 

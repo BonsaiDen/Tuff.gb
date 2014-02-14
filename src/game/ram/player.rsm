@@ -14,7 +14,7 @@ PLAYER_GRAVITY_MAX         EQU 2
 
 PLAYER_GRAVITY_INTERVAL    EQU 10
 
-PLAYER_SLEEP_WAIT          EQU 240 ; ticks of 125ms timer = 30 seconds
+PLAYER_SLEEP_WAIT          EQU 255 ; ticks of 60ms timer = ~15.81 seconds
 PLAYER_SPRITE_INDEX        EQU 10
 
 PLAYER_SPRITE_ROWS         EQU 8 

@@ -75,10 +75,11 @@ game_loop_one_half:
     ret
 
 
-; 125ms Timer -----------------------------------------------------------------
-game_timer_125:
+; Timer -----------------------------------------------------------------------
+game_timer:
     call    map_animate_tiles
-    call    player_timer_125
+    call    player_sleep_timer
+    call    player_water_timer
     call    screen_timer
     ret
 

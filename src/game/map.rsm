@@ -389,7 +389,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
 map_animate_tiles:
 
     ld      a,[mapAnimationTick]
-    cp      1
+    cp      2
     jp      nz,.next
 
     ; check if there are any tile animations
@@ -483,7 +483,7 @@ map_animate_tiles:
 .next:
     ld      a,[mapAnimationTick]
     inc     a
-    and     %00000001 ; modulo 1
+    and     %00000011 ; modulo 2
     ld      [mapAnimationTick],a
     ret
 

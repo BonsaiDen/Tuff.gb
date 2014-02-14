@@ -293,7 +293,6 @@ entity_store:
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
-    ret
     ld      de,entityScreenState
     ld      b,0
 
@@ -329,7 +328,8 @@ entity_update_loop:
     push    bc
     jp      [hl]
 
-_entity_update_handler_ret: ; upate handler return targer
+_entity_update_handler_ret: ; update handler return target
+    pop     bc
     pop     de
     pop     hl
 
@@ -370,47 +370,6 @@ _entity_update_next:
     cp      ENTITY_PER_ROOM
     jp      nz,entity_update_loop
     ret
-
-
-
-; Entity Handlers -------------------------------------------------------------
-; -----------------------------------------------------------------------------
-entity_handler_load_save: ; generic, b = entity index, c = sprite index
-    ld      a,c
-    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
-    call    sprite_animation_set
-    call    sprite_animation_start
-    jp      _entity_load_handler_ret
-
-
-entity_handler_load_glow:
-    ld      a,c
-    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
-    call    sprite_animation_set
-    call    sprite_animation_start
-    jp      _entity_load_handler_ret
-    
-
-entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
-    jp      _entity_update_handler_ret
-
-
-
-; Handler Tables --------------------------------------------------------------
-; -----------------------------------------------------------------------------
-entityLoadHandler:
-    jp      entity_handler_load_save
-    nop
-    jp      entity_handler_load_glow
-    nop
-
-            
-entityUpdateHandler:
-    jp      entity_handler_update
-    nop
-    jp      entity_handler_update
-    nop
-    
 
 
 ; Entity Sprite Handling ------------------------------------------------------
