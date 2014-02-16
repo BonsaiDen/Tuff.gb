@@ -82,8 +82,14 @@ screenBGFadeMask:
     DB      %11101010
     DB      %11111111
 
-screenSpriteFadeMask:
+screenSpriteFadeMask0:
     DB      %11010000 
+    DB      %11100100 
+    DB      %11101000 
+    DB      %11111100 
+
+screenSpriteFadeMask1:
+    DB      %10010000 
     DB      %11100100 
     DB      %11101000 
     DB      %11111100 
@@ -124,10 +130,15 @@ screen_fade_timer:
     ld      [rBGP],a
 
     ; sprite mask
-    ld      hl,screenSpriteFadeMask
+    ld      hl,screenSpriteFadeMask0
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP0],a
+
+    ld      hl,screenSpriteFadeMask1
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP1],a
 
     ; fade mode
     ld      a,[screenFadeMode]
@@ -173,7 +184,7 @@ screenBGFlashMask:
     DB      %11100100
 
 
-screenSpriteFlashMask:
+screenSpriteFlashMask0:
     DB      %00000000
     DB      %00000000
     DB      %00000000
@@ -186,6 +197,20 @@ screenSpriteFlashMask:
     DB      %10010000 
     DB      %10010000 
     DB      %11010000 
+
+screenSpriteFlashMask1:
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %01010000 
+    DB      %01010000 
+    DB      %01010000 
+    DB      %10010000 
+    DB      %10010000 
+    DB      %10010000 
 
 
 screen_flash:
@@ -237,10 +262,14 @@ screen_flash_timer:
     ld      [rBGP],a
 
     ; sprite mask
-    ld      hl,screenSpriteFlashMask
+    ld      hl,screenSpriteFlashMask0
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP0],a
+
+    ld      hl,screenSpriteFlashMask1
+    add     hl,bc
+    ld      a,[hl]
     ld      [rOBP1],a
 
     ; update

@@ -5,6 +5,10 @@ SECTION "MapLogic",ROM0
 map_init: ; a = base value
 
     sub     128
+    ld      hl,mapRoomBuffer
+    ld      bc,512
+    call    core_mem_set
+
     ld      hl,$9800
     ld      bc,1024
     call    core_mem_set
@@ -13,15 +17,6 @@ map_init: ; a = base value
 
 
 ; Tileset ---------------------------------------------------------------------
-map_load_spritesheet: ; hl = source
-
-    ; copy tiles to character data
-    ld      de,$8000
-    call    core_unpack
-
-    ret
-
-
 map_load_sprite_row: ; hl = sprite map, c = row index, b = target row in ram, de = target base in ram, a = table index size
 
     push    bc
@@ -62,11 +57,15 @@ map_load_sprite_row: ; hl = sprite map, c = row index, b = target row in ram, de
     ret
 
 
-map_load_tileset: ; hl = offset
+map_load_tileset: ; hl = destination, de = source
 
     ; copy tiles to character data
-    ld      de,$8800
-    call    core_unpack
+    ld      hl,$8800
+    ld      a,h
+    add     16; 4096 bytes
+    ld      b,a
+    ld      c,l
+    call    lz4_decode_block
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
     ld      hl,$9400
@@ -180,7 +179,7 @@ map_set_room: ; b = x, c = y
     ; unpack the data
     ld      de,mapRoomUnpackBuffer
     ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
-    call    core_unpack_raw
+    call    core_unpack_raw_vram
 
     ; un/load entities
     call    entity_store

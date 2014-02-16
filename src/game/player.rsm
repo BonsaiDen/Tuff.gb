@@ -27,7 +27,7 @@ player_init:
     ; Sprite
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_enable
-    ld      b,4
+    ld      b,0
     call    sprite_set_tile_offset
 
     ; Load initial sprite data
@@ -1521,7 +1521,7 @@ player_update_sprite_row:
 
     ; load the corresponding row into vram
     ld      hl,DataPlayerImg
-    ld      b,1
+    ld      b,0
     ld      c,a
     ld      de,$8000
     ld      a,PLAYER_SPRITE_ROWS * 2

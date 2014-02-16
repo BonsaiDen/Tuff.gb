@@ -9,6 +9,8 @@
     "pngjs": "~0.4.0",
     "optimist": "~0.6.0",
     "bluebird": "~0.11.6-0",
-    "colors": "~0.6.2"
+    "colors": "~0.6.2",
+    "streamifier": "~0.1.0",
+    "lz4": "~0.2.3"
   }
 }

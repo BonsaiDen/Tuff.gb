@@ -1,6 +1,8 @@
 // Dependencies ---------------------------------------------------------------
 var path = require('path'),
     Promise = require('bluebird'),
+    streamifier = require('streamifier'),
+    lz4 = require('lz4'),
     fs = Promise.promisifyAll(require('fs')),
     PNG = require('pngjs').PNG;
 
@@ -116,6 +118,47 @@ var IO = {
 // Data Compression -----------------------------------------------------------
 // ----------------------------------------------------------------------------
 var Pack = {
+
+    lz4: function(buffer, storeSize, other) {
+
+        var deffered = Promise.pending(),
+            stream = streamifier.createReadStream(buffer),
+            output = new Buffer([]),
+            encoder = lz4.createEncoderStream({
+                blockIndependence: true,
+                highCompression: true,
+                streamSize: false,
+                blockChecksum: false,
+                streamChecksum: false
+            });
+
+        encoder.on('data', function(chunk) {
+            output = Buffer.concat([output, chunk]);
+        });
+
+        encoder.on('end', function() {
+
+            // Strip header and other things which are not related to the block
+            output = output.slice(11);
+            console.log('[lz4] %s -> %s bytes', buffer.length, output.length, other);
+
+            if (storeSize) {
+                var size = buffer.length;
+                deffered.fulfill(Buffer.concat(new Buffer([(size >> 8), size & 0xff]), output));
+
+            } else {
+                deffered.fulfill(output);
+            }
+
+
+        });
+
+        stream.pipe(encoder);
+
+        return deffered.promise;
+
+    },
+
 
     pack: function(bytes, addSizePrefix) {
 
@@ -234,10 +277,6 @@ var Pack = {
 
         }
 
-        //if (gb.unpack(compressed).join(',') !== bytes.join(',')) {
-        //    throw new Error('Data did not correctly decompress!!!');
-        //}
-
         if (addSizePrefix !== false) {
             var size = bytes.length;
             return [(size >> 8), size & 0xff].concat(compressed);
@@ -245,55 +284,6 @@ var Pack = {
         } else {
             return compressed;
         }
-
-    },
-
-    // Only here for verifying that the packed data uncompresses correctly
-    unpack: function(compressed) {
-
-        var bytes = [],
-            offset = 0,
-            count = 0,
-            cur = 0;
-
-        while((count = compressed[offset++]) !== undefined) {
-
-            if (count > 127) {
-
-                count = 255 - (count - 3);
-
-                if ((cur = compressed[offset++]) === undefined) {
-                    count = 0;
-                    throw new Error('Run block is too short');
-                }
-
-                while(count > 0) {
-                    bytes.push(cur);
-                    count--;
-                }
-
-            } else {
-
-                count++;
-
-                while(count > 0) {
-
-                    if ((cur = compressed[offset++]) !== undefined) {
-                        bytes.push(cur);
-
-                    } else {
-                        throw new Error('Copy block is too short');
-                    }
-
-                    count--;
-
-                }
-
-            }
-
-        }
-
-        return bytes;
 
     }
 
@@ -587,7 +577,10 @@ var Convert = {
         return IO.load(file).then(function(img) {
             return Parse.tilesFromImage(palette, r8x16, img);
 
-        }).then(Pack.pack).then(function(data) {
+        }).then(function(bytes) {
+            return Pack.lz4(new Buffer(bytes));
+
+        }).then(function(data) {
             return IO.saveAs('bin', file, data);
 
         }).then(function() {
@@ -741,7 +734,6 @@ IO.setDest(path.join(process.cwd(), process.argv[3]));
 // Convert --------------------------------------------------------------------
 Promise.all([
     Convert.Tileset('tiles.bg.png'),
-    Convert.Tileset('tiles.ch.png', true),
     Convert.TileRowMap('player.ch.png'),
     Convert.TileRowMap('entities.ch.png'),
     Convert.Collision('tiles.col.png'),

@@ -2,7 +2,16 @@
 core_init:
 
     di                      ; Disable interrupts
-    ld      sp,$ffff        ; init stack pointer
+
+    ld      a,0
+    ld      [coreRandomSeed],a
+    ld      [coreVBlankDone],a
+    ld      [coreHalfTick],a
+    ld      [coreHalfTickSwitch],a
+    ld      [coreTimer],a
+    ld      [coreInput],a
+
+    ld      sp,$FFFF        ; init stack pointer
     call    core_screen_off ; Disable Screen
     call    core_setup_dma  ; Setup DMA transfer
 
@@ -20,7 +29,7 @@ core_init:
     call    core_mem_set
 
     ; Clear Background Screen Buffer
-    ld      a,$00
+    ld      a,$80
     ld      hl,$9800
     ld      bc,1024
     call    core_mem_set
