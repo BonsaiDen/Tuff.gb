@@ -6,4 +6,5 @@ gameFadeIndex:      DB
 
 gameFlashMode:      DB
 gameFlashIndex:     DB
+gameTimerHalf:      DB
 

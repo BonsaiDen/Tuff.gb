@@ -99,6 +99,7 @@ DataTileAnimation:
     ; Waterfall
     DB $c8,$c9,$ca,$cb
     DB $cc,$cd,$ce,$cf
+    DB $dc,$dd,$de,$df
 
     ; Lava Top
     DB $d0,$d1,$d2,$d3

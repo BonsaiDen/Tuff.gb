@@ -32,8 +32,8 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ld      b,2
-    ld      c,0
+    ld      b,1
+    ld      c,4
     call    map_set_room
 
     ; Hud
@@ -73,9 +73,21 @@ game_loop_one_half:
 
 ; Timer -----------------------------------------------------------------------
 game_timer:
+
+    ld      a,[gameTimerHalf]
+    cp      1
+    jp      nz,.tick
+
     call    map_animate_tiles
-    call    player_sleep_timer
     call    player_water_timer
+    call    player_sleep_timer
+
+.tick:
+    ld      a,[gameTimerHalf]
+    inc     a
+    and     %00000001
+    ld      [gameTimerHalf],a
+
     call    screen_timer
     ret
 

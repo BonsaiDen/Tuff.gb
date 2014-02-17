@@ -48,7 +48,6 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     cp      127 ; a > 127
     jr      nc,.repeat
 
-
     ; copy X bytes
 .copy:
     push    bc ; store end of data
