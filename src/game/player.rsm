@@ -722,19 +722,20 @@ player_jump:
     cp      1
     jp      nz,.no_ground
 
-    ; land jump force
-    ld      a,PLAYER_JUMP_LAND
+    ; land jump force 
+    ld      a,PLAYER_JUMP_FORCE
+    ld      [playerJumpForce],a
+    ld      a,PLAYER_GRAVITY_INTERVAL
     jp      .jump
 
     ; water jump force
 .jump_water:
-    ld      a,PLAYER_JUMP_WATER
+    ld      a,PLAYER_JUMP_FORCE
+    ld      [playerJumpForce],a
+    ld      a,7
 
     ; if we are, set the initial jump force and reset the gravity ticker
 .jump:
-    ld      [playerJumpForce],a
-
-    ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
     jp      .still_pressed
 
