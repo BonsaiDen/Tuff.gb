@@ -4,6 +4,7 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
     ld      a,h ; high byte
     cp      b
     jp      nz,.token
+
     ld      a,l ; low byte
     cp      c 
     ; ret     z ; l == c TODO maybe required
@@ -75,6 +76,8 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
 
 .match:
 
+    push    hl
+
     ; 2 byte match offset (little endian)
     ld      a,[de]
     ld      [coreLZ4matchOffset+1],a
@@ -88,7 +91,6 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
     and     $f ; get match length (4 + [a] bytes)
 
     ; store initial match length into hl
-    push    hl
     add     4
     ld      b,0
     ld      c,a
@@ -120,25 +122,21 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
     push    de
 
     ; de -= coreLZ4matchOffset 
-    push    bc
-
-    ld      a,[coreLZ4matchOffset+1]
-    ld      c,a
     ld      a,[coreLZ4matchOffset]
-    ld      b,a
+    ld      d,a
+    ld      a,[coreLZ4matchOffset+1]
+    ld      e,a
 
     ; subtract low byte
     ld      a,l
     and     a ; clear carry
-    sbc     c
+    sbc     e
     ld      e,a
 
     ; subtract high byte
     ld      a,h
-    sbc     b
+    sbc     d
     ld      d,a
-
-    pop     bc
 
     ; while hl < bc do [hl++] = [de++]
 .copy_match_loop:
