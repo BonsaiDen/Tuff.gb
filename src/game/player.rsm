@@ -63,6 +63,7 @@ player_reset:
     ld      [playerWallSlideDir],a
     ld      [playerWallSlideTick],a
     ld      [playerWallJumpPressed],a
+    ld      [playerWallJumpTick],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -910,6 +911,11 @@ player_increase_fall:
 ; Movement --------------------------------------------------------------------
 player_accelerate:
 
+    ld      a,[playerWallJumpTick]
+    cp      0
+    ret     nz
+
+    ; if both directions are pressed at the same time ignore input
     ld      a,[coreInput]
     and     %00110000
     cp      %00110000
@@ -1169,11 +1175,16 @@ player_slide_wall:
     cp     0
     jp     nz,.wall_jump_speed
     
-    ; check if on ground
+    ; check if on ground / in water
     ld     a,[playerOnGround]
     cp     1
     jp     z,.on_ground
     
+    ; check if on ground
+    ld     a,[playerInWater]
+    cp     1
+    jp     z,.on_ground
+
     ; check if falling
     ld     a,[playerFallSpeed]
     cp     1
@@ -1200,7 +1211,7 @@ player_slide_wall:
 
     ; if pressing against a wall and not sliding and 
     ; directionWall != slideDirection init slide
-    ; TODO only allow slide if dir = 0 or after wall jump
+    ; only allow slide if dir = 0 or after wall jump
     ; in case of wall jump, still do not allow the same wall to be used again
     ld     a,[playerWallSlideDir]
     cp     b

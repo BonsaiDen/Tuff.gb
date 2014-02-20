@@ -35,7 +35,7 @@ PLAYER_HEIGHT              EQU 13
 PLAYER_SLIDE_DURATION      EQU 60 ; in frames
 PLAYER_SLIDE_SLOWDOWN      EQU 3 ; only apply fall speed every X other ticks while sliding
 PLAYER_WALL_JUMP_WINDOW    EQU 4
-PLAYER_WALL_JUMP_DURATION  EQU 5
+PLAYER_WALL_JUMP_DURATION  EQU 10
 
 
 ; Variables -------------------------------------------------------------------
@@ -63,6 +63,7 @@ playerWallJumpWindow:DB ; number of ticks left in which a wall jump can be start
 playerWallJumpDir:   DB ; direction of the wall from which the player jumped of
 playerWallJumpTick:  DB ; ticks left during which the player movement will be forced into the direction of the wall jump
 playerWallJumpPressed: DB
+playerWallJumpRest:  DB ; frames left until movement input is recognized again after a wall jump
 
 ; Gravity and Jumping
 playerFallSpeed:     DB ; current fall speed per frame
