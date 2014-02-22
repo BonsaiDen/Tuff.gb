@@ -244,6 +244,11 @@ player_water_update:
 
 .not_initial:
 
+    ; ignore water physics while pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jp      nz,.pounding     
+
     ; prevent sleep and reset fall speed
     ld      a,0
     ld      [playerSleepTick],a
@@ -256,7 +261,7 @@ player_water_update:
     
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]
-    cp      35; check if we're done
+    cp      PLAYER_WATER_OFFSET_MAX; check if we're done
     jr      z,.water_hit_done
 
     ld      a,[playerWaterTick]
@@ -295,6 +300,9 @@ player_water_update:
     ld      a,[playerY] 
     add     b
     ld      [playerYOffset],a
+    ret
+
+.pounding:
     ret
 
 
@@ -1554,6 +1562,11 @@ player_pound:
     ld      a,PLAYER_GRAVITY_MAX_POUND
     ld      [playerFallSpeed],a
 
+    ; check if we hit water
+    ld      a,[playerInWater]
+    cp      1
+    jp      z,.water
+
     ; check if we hit ground
     ld      a,[playerOnGround]
     cp      1
@@ -1580,6 +1593,40 @@ player_pound:
     ld      [playerIsPounding],a
     ret
 
+.water:
+
+    ld      a,[playerWaterTick]
+    cp      25
+    jp      nc,.water_end
+
+    ; slow down after the first 5 frames
+    cp      5
+    jp      c,.water_next
+    ld      a,1
+    ld      [playerFallSpeed],a
+
+.water_next:
+    ld      a,[playerWaterTick]
+    inc     a
+    ld      [playerWaterTick],a
+    ret
+
+.water_end:
+
+    ; skip water offset 
+    ld      a,PLAYER_WATER_OFFSET_MAX
+    ld      [playerWaterTick],a
+
+    ; switch to end mode
+    ld      a,2
+    ld      [playerIsPounding],a
+
+    ld      a,PLAYER_POUND_DELAY_END
+    ld      [playerPoundTick],a
+
+    ld      a,PLAYER_ANIMATION_POUND_END
+    ld      [playerAnimation],a
+    ret
 
 .end:
     
