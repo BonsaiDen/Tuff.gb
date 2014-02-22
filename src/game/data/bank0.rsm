@@ -73,6 +73,14 @@ DataSpriteAnimation:
     DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $20,$ff,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
+    ; Start Pound
+    DB $00, $00,$01,$00,$01, $02,$01,$02,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $06,$06,$06,$06, $06,$06,$06,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+    ; Stop Pound
+    DB $00, $02,$01,$02,$01, $00,$01,$00,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $04,$04,$04,$04, $04,$04,$04,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
 
     ; Entity ------------------------------------------------------------------
 

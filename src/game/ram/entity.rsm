@@ -6,7 +6,7 @@ ENTITY_BG_SPRITE_INDEX  EQU 11  ; start indexes to use for entity sprites that a
 ENTITY_FG_SPRITE_INDEX  EQU 6 ; start indexes to use for entity sprites that are in the foreground
 ENTITY_SPRITE_ROWS      EQU 8 ; how many entity sprite rows are contained in the sprite map data
 
-ENTITY_ANIMATION_OFFSET EQU 11
+ENTITY_ANIMATION_OFFSET EQU 13
 ENTITY_ANIMATION_SAVE   EQU 0
 ENTITY_ANIMATION_GLOW   EQU 1
 

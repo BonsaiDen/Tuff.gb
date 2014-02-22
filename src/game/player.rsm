@@ -4,7 +4,7 @@ SECTION "PlayerLogic",ROM0
 player_init:
 
     ; Position 
-    ld      a,8
+    ld      a,24
     ld      [playerX],a
     ld      a,48
     ld      [playerY],a
@@ -41,6 +41,8 @@ player_reset:
     ; Gravity
     ld      a,1
     ld      [playerGravityTick],a
+    ld      a,PLAYER_GRAVITY_MAX
+    ld      [playerGravityMax],a
 
     ld      a,0
     ld      [playerJumpForce],a
@@ -105,14 +107,24 @@ player_update:
 
     ; control / animation
 .control:
+
+    ; ignore when pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jp      nz,.pounding
+
     call    player_accelerate
     call    player_decelerate
     call    player_move
 
-    ; check for hazard
+.pounding:
+
+    ; check for hazard (checked before gravity so we actually overlap a few pixels)
     ld      a,[mapCollisionFlag]
     cp      4
     jr      z,player_dissolve
+
+    call    player_pound
 
     ; Jumping / Falling
     call    player_gravity
@@ -692,6 +704,10 @@ player_gravity:
     ret    z
 
     ; set fall animation
+    ld      a,[playerIsPounding]
+    cp      0
+    ret     nz
+
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
     ret
@@ -899,8 +915,10 @@ player_increase_fall:
     ret     nz
 
     ; otherwise increase it until we reach the maximum
+    ld      a,[playerGravityMax]
+    ld      b,a
     ld      a,[playerFallSpeed]
-    cp      PLAYER_GRAVITY_MAX
+    cp      b
     ret     z
 
     inc     a
@@ -1464,6 +1482,117 @@ player_animate:
     ret
 
 
+; Player Pounding -------------------------------------------------------------
+player_pound:
+
+    ; check if already pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jp      nz,.delay
+
+    ; check if falling for at least 3 frames
+    ld      a,[playerFallFrames]
+    cp      3
+    ret     c
+
+    ; check for B button
+    ld      a,[coreInput]
+    and     %00000010
+    cp      %00000010
+    ret     nz
+
+    ; set pounding and animation
+    ld      a,1
+    ld      [playerIsPounding],a
+
+    ld      a,PLAYER_ANIMATION_POUND_START
+    ld      [playerAnimation],a
+
+    ld      a,PLAYER_POUND_DELAY_START
+    ld      [playerPoundTick],a
+
+    ; reset movement speed
+    ld      a,0
+    ld      [playerSpeedRight],a
+    ld      [playerSpeedLeft],a
+    ld      [playerFallSpeed],a
+
+    ; reset gravity tick
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+
+    ; set new gravity max
+    ld      a,PLAYER_GRAVITY_MAX_POUND
+    ld      [playerGravityMax],a
+
+    ret     
+    
+    ; delay the start / stop animation
+.delay:
+    
+    ld      a,[playerPoundTick]
+    cp      0
+    jp      z,.pounding
+    dec     a
+    ld      [playerPoundTick],a
+
+    ; disable gravity during delay
+    ld      a,0
+    ld      [playerFallSpeed],a
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+
+    ret
+
+.pounding:
+    
+    ld      a,[playerIsPounding]
+    cp      2
+    jp      z,.end
+
+    ; set fall speed
+    ld      a,PLAYER_GRAVITY_MAX_POUND
+    ld      [playerFallSpeed],a
+
+    ; check if we hit ground
+    ld      a,[playerOnGround]
+    cp      1
+    ret     nz; return if not
+
+    ; TODO check for breakable blocks etc.
+
+    ; If we hit ground shake screen, delay and then disable pounding
+    ld      a,10
+    call    screen_shake
+
+    ld      a,PLAYER_POUND_DELAY_END
+    ld      [playerPoundTick],a
+
+    ld      a,PLAYER_ANIMATION_POUND_END
+    ld      [playerAnimation],a
+
+    ; no more falling
+    ld      a,0
+    ld      [playerFallSpeed],a
+
+    ; switch to end mode
+    ld      a,2
+    ld      [playerIsPounding],a
+    ret
+
+
+.end:
+    
+    ; unset pound
+    ld      a,0
+    ld      [playerIsPounding],a
+
+    ; reset gravity max
+    ld      a,PLAYER_GRAVITY_MAX
+    ld      [playerGravityMax],a
+    ret
+
+
 ; Sleep Timer -----------------------------------------------------------------
 player_sleep:
 
@@ -1516,6 +1645,8 @@ playerAnimationRowMap:
     DB 7; DISSOLVE  
     DB 2; SURFACE   
     DB 0; SLIDE     
+    DB 5; POUND START
+    DB 5; POUND STOP
 
 player_update_sprite_row:
 

@@ -10,6 +10,7 @@ PLAYER_JUMP_SCREEN_BOOST   EQU 2
 PLAYER_FALL_MAX            EQU 3
 PLAYER_SPEED_MAX           EQU 1
 PLAYER_GRAVITY_MAX         EQU 2
+PLAYER_GRAVITY_MAX_POUND   EQU 3
 
 PLAYER_GRAVITY_INTERVAL    EQU 10
 
@@ -17,17 +18,19 @@ PLAYER_SLEEP_WAIT          EQU 255 ; ticks of 60ms timer = ~15.81 seconds
 PLAYER_SPRITE_INDEX        EQU 10
 
 PLAYER_SPRITE_ROWS         EQU 8 
-PLAYER_ANIMATION_IDLE      EQU 0
-PLAYER_ANIMATION_WALKING   EQU 1
-PLAYER_ANIMATION_SLEEP     EQU 2
-PLAYER_ANIMATION_PUSHING   EQU 3
-PLAYER_ANIMATION_JUMP      EQU 4
-PLAYER_ANIMATION_FALL      EQU 5
-PLAYER_ANIMATION_RUNNING   EQU 6
-PLAYER_ANIMATION_SWIMMING  EQU 7
-PLAYER_ANIMATION_DISSOLVE  EQU 8
-PLAYER_ANIMATION_SURFACE   EQU 9
-PLAYER_ANIMATION_SLIDE     EQU 10
+PLAYER_ANIMATION_IDLE        EQU 0
+PLAYER_ANIMATION_WALKING     EQU 1
+PLAYER_ANIMATION_SLEEP       EQU 2
+PLAYER_ANIMATION_PUSHING     EQU 3
+PLAYER_ANIMATION_JUMP        EQU 4
+PLAYER_ANIMATION_FALL        EQU 5
+PLAYER_ANIMATION_RUNNING     EQU 6
+PLAYER_ANIMATION_SWIMMING    EQU 7
+PLAYER_ANIMATION_DISSOLVE    EQU 8
+PLAYER_ANIMATION_SURFACE     EQU 9
+PLAYER_ANIMATION_SLIDE       EQU 10
+PLAYER_ANIMATION_POUND_START EQU 11
+PLAYER_ANIMATION_POUND_END   EQU 12
 
 PLAYER_HALF_WIDTH          EQU 7
 PLAYER_HEIGHT              EQU 13
@@ -35,7 +38,10 @@ PLAYER_HEIGHT              EQU 13
 PLAYER_SLIDE_DURATION      EQU 60 ; in frames
 PLAYER_SLIDE_SLOWDOWN      EQU 3 ; only apply fall speed every X other ticks while sliding
 PLAYER_WALL_JUMP_WINDOW    EQU 4
-PLAYER_WALL_JUMP_DURATION  EQU 10
+PLAYER_WALL_JUMP_DURATION  EQU 12
+
+PLAYER_POUND_DELAY_START   EQU 45
+PLAYER_POUND_DELAY_END     EQU 37
 
 
 ; Variables -------------------------------------------------------------------
@@ -56,6 +62,12 @@ playerDirection:     DB
 playerDirectionLast: DB
 playerDirectionWall: DB
 
+
+; Pounding
+playerIsPounding:    DB
+playerPoundTick:     DB
+
+
 ; Wall Sliding
 playerWallSlideDir:  DB ; direction of the wall which the player is/was sliding on
 playerWallSlideTick: DB ; number of ticks the player is sliding down the wall
@@ -70,14 +82,17 @@ playerFallSpeed:     DB ; current fall speed per frame
 playerFallFrames:    DB ; number of frames the player is falling (max 255)
 
 playerGravityTick:   DB ; ticker for applying gravity
+playerGravityMax:    DB ; maximum gravity per tick
 playerJumpPressed:   DB ; whether the jump button is still continously pressed
 playerOnGround:      DB ; is the player on ground
 playerJumpForce:     DB ; current jump force per frame
 
+; Water and Swimming
 playerInWater:       DB ; is the player in water?
 playerWaterHitDone:  DB ; whether the intitial splash hit is done
 playerWaterTick:     DB ; player water offset ticker
 playerWaterHitDepth: DB ; value to check how deep the player should splash into the water
 
+; Dissolving
 playerDissolveTick:  DB ; tick for when the player is dissolving
 
