@@ -138,11 +138,9 @@ player_update:
     call    player_scroll_map
     call    player_sleep
 
-
     ; y position for sprite
     ld      a,[playerY]
     ld      [playerYOffset],a
-
 
     ; check for water
     ld      a,[playerY]
@@ -152,13 +150,12 @@ player_update:
     ld      b,a
     call    map_get_collision
 
-
     ; check if the pixel still lies in water
     ld      a,[mapCollisionFlag]
     cp      2 
-    jr      z,.water
+    jr      z,.swimming
     cp      3
-    jr      z,.water
+    jr      z,.under_water
     cp      4
     jr      z,player_dissolve
 
@@ -166,8 +163,18 @@ player_update:
 .land:
     ld      a,0
     ld      [playerInWater],a
+    ld      [playerUnderWater],a
     ld      [playerWaterHitDone],a
     jp      .update
+
+.under_water:
+    ld      a,1
+    ld      [playerUnderWater],a
+    jp      .water
+
+.swimming:
+    ld      a,0
+    ld      [playerUnderWater],a
 
 .water:
     call    player_water_update
@@ -247,7 +254,7 @@ player_water_update:
     ; ignore water physics while pounding
     ld      a,[playerIsPounding]
     cp      0
-    jp      nz,.pounding     
+    ret     nz
 
     ; prevent sleep and reset fall speed
     ld      a,0
@@ -302,10 +309,6 @@ player_water_update:
     ld      [playerYOffset],a
     ret
 
-.pounding:
-    ret
-
-
 .water_hit_done:
     ld      a,1
     ld      [playerWaterHitDone],a
@@ -344,7 +347,6 @@ player_water_update:
 
 player_water_timer:
 
-
     ; check if in water
     ld      a,[playerInWater]
     cp      0
@@ -361,6 +363,7 @@ player_water_timer:
     inc     a
     cp      16
     jp      nz,.done
+    jp      c,.done
     ld      a,0
 
 .done:
@@ -1524,6 +1527,7 @@ player_pound:
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ld      [playerFallSpeed],a
+    ld      [playerWaterTick],a
 
     ; reset gravity tick
     ld      a,PLAYER_GRAVITY_INTERVAL
@@ -1594,7 +1598,6 @@ player_pound:
     ret
 
 .water:
-
     ld      a,[playerWaterTick]
     cp      25
     jp      nc,.water_end
@@ -1614,7 +1617,18 @@ player_pound:
 .water_end:
 
     ; skip water offset 
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.under_water
+
     ld      a,PLAYER_WATER_OFFSET_MAX
+    jp      .water_end_set
+
+.under_water:
+    ld      a,15
+    jp      .water_end_set
+
+.water_end_set:
     ld      [playerWaterTick],a
 
     ; switch to end mode
@@ -1645,7 +1659,7 @@ player_sleep:
 
     ; in case no button is pressed decrease the sleep ticker 
     ld      a,[coreInput]
-    and     %00110001
+    and     %00110011
     jp      nz,.active
 
     ; also check whether we're on the ground

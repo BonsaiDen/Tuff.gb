@@ -90,6 +90,7 @@ playerJumpForce:     DB ; current jump force per frame
 
 ; Water and Swimming
 playerInWater:       DB ; is the player in water?
+playerUnderWater:    DB ; is the player in water?
 playerWaterHitDone:  DB ; whether the intitial splash hit is done
 playerWaterTick:     DB ; player water offset ticker
 playerWaterHitDepth: DB ; value to check how deep the player should splash into the water
