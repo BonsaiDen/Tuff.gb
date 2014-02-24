@@ -308,8 +308,7 @@ map_draw_room:
     ld      de,$9800
     ld      bc,512
     call    core_vram_cpy
-    call    sprite_copy_oam
-
+    ;call    sprite_copy_oam
     ret
 
 

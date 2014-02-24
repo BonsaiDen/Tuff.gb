@@ -6,7 +6,7 @@ player_init:
     ; Position 
     ld      a,24
     ld      [playerX],a
-    ld      a,48
+    ld      a,20
     ld      [playerY],a
 
     ; Direction
@@ -122,8 +122,9 @@ player_update:
     ; check for hazard (checked before gravity so we actually overlap a few pixels)
     ld      a,[mapCollisionFlag]
     cp      4
-    jr      z,player_dissolve
+    jp      z,player_dissolve
 
+    ; pounding logic
     call    player_pound
 
     ; Jumping / Falling
@@ -133,7 +134,7 @@ player_update:
     ; check for hazard
     ld      a,[mapCollisionFlag]
     cp      4
-    jr      z,player_dissolve
+    jp      z,player_dissolve
 
     call    player_scroll_map
     call    player_sleep
@@ -157,7 +158,16 @@ player_update:
     cp      3
     jr      z,.under_water
     cp      4
-    jr      z,player_dissolve
+    jp      z,player_dissolve
+
+    ; check for under water again
+    ld      a,[playerY]
+    ld      c,a
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    cp      3
+    jr      z,.under_water
 
     ; reset water variables when on land
 .land:
@@ -178,6 +188,24 @@ player_update:
 
 .water:
     call    player_water_update
+
+    ; swim animation
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      nz,.update
+
+    ; do not overwrite pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jp      nz,.update
+
+    ld      a,[coreInput]
+    and     %00000011
+    cp      0
+    jp      nz,.update
+
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
 
     ; animation / other logic
 .update:
@@ -237,7 +265,7 @@ player_water_update:
     ; check for the intitial frame on whic we hit the water
     ld      a,[playerInWater]
     cp      0
-    jp      nz,.not_initial;
+    jp      nz,.not_initial
 
     ; save speed
     ld      a,[playerFallFrames]
@@ -259,9 +287,32 @@ player_water_update:
     ; prevent sleep and reset fall speed
     ld      a,0
     ld      [playerSleepTick],a
+
+    ; swim downwards
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      nz,.stop_fall
+
+    ; check button
+    ld      a,[coreInput]
+    and     %00000010
+    cp      %00000010
+    jp      nz,.stop_fall
+
+    ; animation and speed
+    ld      a,PLAYER_ANIMATION_FALL
+    ld      [playerAnimation],a
+
+    ld      a,PLAYER_JUMP_SWIM
+    ld      [playerFallSpeed],a
+    jp      .offset
+
+.stop_fall:
+    ld      a,0
     ld      [playerFallSpeed],a
 
     ; check swimming offset or initial hit offset
+.offset:
     ld      a,[playerWaterHitDone]
     cp      1
     jp      z,.animate_water
@@ -369,7 +420,6 @@ player_water_timer:
 .done:
     ld      [playerWaterTick],a
     ret
-
 
 
 ; Player Collisions -----------------------------------------------------------
@@ -645,9 +695,14 @@ player_scroll_map:
     jp      nc,.check_down
 
     ; add a boost to the jump to we can reach a platform or something
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.up_water
+
     ld      a,PLAYER_JUMP_SCREEN_BOOST
     ld      [playerJumpForce],a
 
+.up_water:
     ld      a,125
     ld      [playerY],a
 
@@ -740,6 +795,11 @@ player_jump:
     ld      a,1
     ld      [playerJumpPressed],a
 
+    ; under water movement
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.jump_swim
+
     ; check if we're in water (and the splash offset is done)
     ld      a,[playerWaterHitDone]
     cp      1
@@ -761,6 +821,15 @@ player_jump:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,7
+    jr      .jump
+
+.jump_swim:
+    ld      a,PLAYER_ANIMATION_JUMP
+    ld      [playerAnimation],a
+
+    ld      a,PLAYER_JUMP_SWIM
+    ld      [playerJumpForce],a
+    ld      a,2
 
     ; if we are, set the initial jump force and reset the gravity ticker
 .jump:
@@ -834,6 +903,11 @@ player_jump:
 
 player_decrease_jump:
 
+    ; check if under water
+    ld      a,[playerUnderWater]
+    cp      1
+    ret     z
+
     ; check whether the jump button is still pressed;
     ; if not we decrease the jump force more quickly
     ld      a,[playerJumpPressed]
@@ -846,6 +920,7 @@ player_decrease_jump:
     ret     z ; do nothing in case jump is already 0
 
     ; normal decrease -1
+    ld      a,[playerJumpForce]
     dec     a
     ld      [playerJumpForce],a
 
@@ -1512,6 +1587,15 @@ player_pound:
     cp      %00000010
     ret     nz
 
+    ; check if under water or swimming
+    ld      a,[playerUnderWater]
+    cp      1
+    ret     z
+
+    ld      a,[playerInWater]
+    cp      1
+    ret     z
+
     ; set pounding and animation
     ld      a,1
     ld      [playerIsPounding],a
@@ -1640,6 +1724,7 @@ player_pound:
 
     ld      a,PLAYER_ANIMATION_POUND_END
     ld      [playerAnimation],a
+
     ret
 
 .end:
