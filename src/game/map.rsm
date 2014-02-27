@@ -386,10 +386,6 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
 ; Animation -------------------------------------------------------------------
 map_animate_tiles:
 
-    ld      a,[mapAnimationTick]
-    cp      1
-    jp      nz,.next
-
     ; check if there are any tile animations
     ld      a,TILE_ANIMATION_COUNT
     cp      0
@@ -404,6 +400,39 @@ map_animate_tiles:
     ld      d,0
     ld      hl,mapAnimationIndexes
 .animate:
+
+    ; TODO check what animations are used in the current room and limit
+    ; the updates?
+    push    hl
+    push    de
+
+    ; load current delay value
+    ld      hl,mapAnimationDelay
+    ld      e,d
+    ld      d,0
+    add     hl,de
+    ld      a,[hl] ; delay for the current tile
+
+    ; check if we hit zero delay
+    cp      0
+    jp      nz,.delay ; if not decrease delay and animate the tile
+
+    ; otherwise reset the delay and animate
+    pop     de
+    push    de
+    push    hl
+    ld      hl,DataTileAnimationDelay
+    ld      e,d
+    ld      d,0
+    add     hl,de
+    ld      a,[hl]
+    pop     hl
+
+    ; restore delay
+    ld      [hl],a
+
+    pop     de
+    pop     hl
 
     ; update current tile animation index
     ld      a,[hl]
@@ -460,7 +489,13 @@ map_animate_tiles:
     ld      b,0
     ld      c,16
     call    core_vram_cpy
+    jp      .next
 
+.delay:
+    dec     a
+    ld      [hl],a
+
+.next:
     pop     de
     pop     hl
     ; end of vram update
@@ -478,10 +513,5 @@ map_animate_tiles:
     pop     de
     pop     hl
 
-.next:
-    ld      a,[mapAnimationTick]
-    inc     a
-    and     %00000001 ; modulo 1
-    ld      [mapAnimationTick],a
     ret
 

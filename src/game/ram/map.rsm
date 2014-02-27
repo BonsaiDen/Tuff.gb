@@ -24,9 +24,11 @@ mapCollisionFlag:           DB ; flag that gets set by the map collision check
 
 
 ; Tile Animations -------------------------------------------------------------
-TILE_ANIMATION_COUNT        EQU 10
+TILE_ANIMATION_COUNT        EQU 11
 mapAnimationTick            DB
 mapAnimationIndexes         DS TILE_ANIMATION_COUNT
+mapAnimationDelay           DS TILE_ANIMATION_COUNT
+mapAnimationUsed            DS TILE_ANIMATION_COUNT
 
 
 ; Tile Animation RAM Buffer ---------------------------------------------------
