@@ -6,7 +6,7 @@ player_init:
     ; Position 
     ld      a,24
     ld      [playerX],a
-    ld      a,20
+    ld      a,50
     ld      [playerY],a
 
     ; Direction
@@ -702,6 +702,9 @@ player_scroll_map:
     ld      a,PLAYER_JUMP_SCREEN_BOOST
     ld      [playerJumpForce],a
 
+    ld      a,PLAYER_GRAVITY_INTERVAL / 2
+    ld      [playerGravityTick],a
+
 .up_water:
     ld      a,125
     ld      [playerY],a
@@ -722,6 +725,9 @@ player_scroll_map:
     ld      [playerY],a
     call    player_set_position
     call    map_scroll_down
+
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
 
 .done:
     ret
