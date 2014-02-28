@@ -6,6 +6,7 @@ screenFadeIndex:    DB
 
 screenFlashMode:    DB
 screenFlashIndex:   DB
+screenFlashColor:   DB
 
 screenShakeTicks:   DB
 

@@ -76,25 +76,6 @@ screen_shake_timer:
 
 
 ; Screen Fading ---------------------------------------------------------------
-screenBGFadeMask:
-    DB      %11100100
-    DB      %11100101
-    DB      %11101010
-    DB      %11111111
-
-screenSpriteFadeMask0:
-    DB      %11010000 
-    DB      %11100100 
-    DB      %11101000 
-    DB      %11111100 
-
-screenSpriteFadeMask1:
-    DB      %10010000 
-    DB      %11100100 
-    DB      %11101000 
-    DB      %11111100 
-
-
 screen_fade_out:
     ld      a,1
     ld      [screenFadeMode],a
@@ -124,18 +105,18 @@ screen_fade_timer:
     ld      c,a
     
     ; bg mask
-    ld      hl,screenBGFadeMask
+    ld      hl,screenFadePaletteBG
     add     hl,bc
     ld      a,[hl]
     ld      [rBGP],a
 
     ; sprite mask
-    ld      hl,screenSpriteFadeMask0
+    ld      hl,screenFadePaletteSprite0
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP0],a
 
-    ld      hl,screenSpriteFadeMask1
+    ld      hl,screenFadePaletteSprite1
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP1],a
@@ -169,56 +150,44 @@ screen_fade_timer:
 
 
 ; Screen Flashing -------------------------------------------------------------
-screenBGFlashMask:
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %01010100
-    DB      %01010100
-    DB      %01010100
-    DB      %10100100
-    DB      %10100100
-    DB      %11100100
-
-
-screenSpriteFlashMask0:
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %01010000 
-    DB      %01010000 
-    DB      %01010000 
-    DB      %10010000 
-    DB      %10010000 
-    DB      %11010000 
-
-screenSpriteFlashMask1:
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %01010000 
-    DB      %01010000 
-    DB      %01010000 
-    DB      %10010000 
-    DB      %10010000 
-    DB      %10010000 
-
-
-screen_flash:
+screen_flash_light:
     push    af
     push    hl
     push    bc
     ld      a,1
     ld      [screenFlashMode],a
+    ld      a,0
+    ld      [screenFlashColor],a
+    ld      [screenFlashIndex],a
+    call    screen_flash_timer
+    pop     bc
+    pop     hl
+    pop     af
+    ret
+
+screen_flash_fast_light:
+    push    af
+    push    hl
+    push    bc
+    ld      a,1
+    ld      [screenFlashMode],a
+    ld      a,0
+    ld      [screenFlashColor],a
+    ld      a,2
+    ld      [screenFlashIndex],a
+    call    screen_flash_timer
+    pop     bc
+    pop     hl
+    pop     af
+    ret
+
+screen_flash_dark:
+    push    af
+    push    hl
+    push    bc
+    ld      a,1
+    ld      [screenFlashMode],a
+    ld      [screenFlashColor],a
     ld      a,0
     ld      [screenFlashIndex],a
     call    screen_flash_timer
@@ -227,14 +196,14 @@ screen_flash:
     pop     af
     ret
 
-
-screen_flash_short:
+screen_flash_fast_dark:
     push    af
     push    hl
     push    bc
     ld      a,1
     ld      [screenFlashMode],a
-    ld      a,3
+    ld      [screenFlashColor],a
+    ld      a,2
     ld      [screenFlashIndex],a
     call    screen_flash_timer
     pop     bc
@@ -254,27 +223,54 @@ screen_flash_timer:
     ld      a,[screenFlashIndex]
     ld      b,0
     ld      c,a
+
+    ; color
+    ld      a,[screenFlashColor]
+    cp      1
+    jp      z,.dark
     
     ; bg mask
-    ld      hl,screenBGFlashMask
+    ld      hl,screenFlashLightPaletteBG
     add     hl,bc
     ld      a,[hl]
     ld      [rBGP],a
 
     ; sprite mask
-    ld      hl,screenSpriteFlashMask0
+    ld      hl,screenFlashLightPaletteSprite0
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP0],a
 
-    ld      hl,screenSpriteFlashMask1
+    ld      hl,screenFlashLightPaletteSprite1
     add     hl,bc
     ld      a,[hl]
     ld      [rOBP1],a
+    jp      .update
+
+.dark:
+    ; bg mask
+    ld      hl,screenFlashDarkPaletteBG
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rBGP],a
+
+    ; sprite mask
+    ld      hl,screenFlashDarkPaletteSprite0
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP0],a
+
+    ld      hl,screenFlashDarkPaletteSprite1
+    add     hl,bc
+    ld      a,[hl]
+    ld      [rOBP1],a
+    jp      .update
+
+.update:
 
     ; update
     ld      a,[screenFlashIndex]
-    cp      11
+    cp      10
     jp      z,.complete
     inc     a
     ld      [screenFlashIndex],a
@@ -284,4 +280,123 @@ screen_flash_timer:
     ld      a,0
     ld      [screenFlashMode],a
     ret
+
+
+; Palette Data ----------------------------------------------------------------
+screenFadePaletteBG:
+    DB      %11100100
+    DB      %11100101
+    DB      %11101010
+    DB      %11111111
+
+screenFadePaletteSprite0:
+    DB      %11010000 
+    DB      %11100100 
+    DB      %11101000 
+    DB      %11111100 
+
+screenFadePaletteSprite1:
+    DB      %10010000 
+    DB      %11100100 
+    DB      %11101000 
+    DB      %11111100 
+
+
+; Flash Light
+screenFlashLightPaletteBG:
+
+    DB      %10100100
+    DB      %01010100
+    DB      %01010000
+
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+
+    DB      %01010000
+    DB      %01010100
+    DB      %10100100
+    DB      %11100100
+
+screenFlashLightPaletteSprite0:
+
+    DB      %10010000 
+    DB      %01010000 
+    DB      %01010000 
+
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+
+    DB      %01010000 
+    DB      %01010000 
+    DB      %10010000 
+    DB      %11010000 
+
+screenFlashLightPaletteSprite1:
+
+    DB      %10010000 
+    DB      %01010000 
+    DB      %01010000 
+
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+    DB      %00000000
+
+    DB      %01010000 
+    DB      %01010000 
+    DB      %10010000 
+    DB      %10010000 
+
+; Flash Dark
+screenFlashDarkPaletteBG:
+
+    DB      %11110101
+    DB      %11111010
+
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+
+    DB      %11111010
+    DB      %11110101
+    DB      %11100100
+
+screenFlashDarkPaletteSprite0:
+
+    DB      %11100100 
+    DB      %11101000 
+
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+
+    DB      %11101000 
+    DB      %11100100 
+    DB      %11010000 
+
+screenFlashDarkPaletteSprite1:
+
+    DB      %10100100 
+    DB      %11101000 
+
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+    DB      %11111111
+
+    DB      %11100100 
+    DB      %10100100 
+    DB      %10010000 
 
