@@ -1,0 +1,85 @@
+; Tileset ---------------------------------------------------------------------
+
+; hl = sprite map, c = row index, b = target row in ram, de = target base in ram, a = table index size
+map_load_sprite_row: ; load a compress sprite row into vram
+
+    push    bc
+    push    de
+    push    hl
+    push    af
+
+    ; get offset into entity sprite row index (offset + spriterow * 2)
+    ; hl is the base of the data
+    ld      d,0
+    ld      e,c ; offset into sprite row data
+    sla     e ; x 2
+    add     hl,de ; = table offset pointer
+    ld      a,[hli]; high byte of offset into compressed sprite row data
+    ld      d,a
+    ld      a,[hl]; low byte of offset into compressed sprite row data
+    ld      e,a; de = offset into sprite row data (after table)
+    pop     af ; restore map index size
+    pop     hl ; restore base offset
+    add     hl,de
+    ld      d,0
+    ld      e,a ; add map index offset
+    add     hl,de ; add index, hl is now pointing at the compressed row data
+
+    pop     de ; restore target pointer
+    ld      a,d ; add offset for row (in 256 byte steps, 4 = 16x16 tiles)
+    add     b
+    ld      d,a
+    
+    ; end pointer de + 256 bytes
+    ld      b,d
+    ld      c,e
+    inc     b; 256 bytes
+    call    core_unpack_raw_vram ; unpack sprite row
+
+    pop     bc
+
+    ret
+
+
+; hl = sprite map, c = row index, b = target row in ram, de = target base in ram, a = table index size
+map_load_sprite_row_ram: ; load a sprite row from memory into vram
+
+    push    bc
+    push    de
+
+    ; offset to the target row
+    ld      d,c ; skip row index * 256 bytesd
+    ld      e,0 ; skip table index size
+    add     hl,de ; = table offset pointer
+
+    pop     de ; restore target pointer
+    ld      a,d ; add offset for row (in 256 byte steps, four 16x16 tiles)
+    add     b
+    ld      d,a
+    
+    ; end pointer de + 256 bytes
+    ld      bc,256
+    call    core_vram_cpy
+    pop     bc
+
+    ret
+
+
+map_load_tileset: ; hl = destination, de = source
+
+    ; copy tiles to character data
+    ld      hl,$8800
+    ld      a,h
+    add     16; 4096 bytes
+    ld      b,a
+    ld      c,l
+    call    lz4_decode_block
+
+    ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
+    ld      hl,$9400
+    ld      de,TILE_ANIMATION_BUFFER
+    ld      bc,1024
+    call    core_mem_cpy
+
+    ret
+

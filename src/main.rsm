@@ -32,6 +32,7 @@ INCLUDE     "game/player.rsm"
 INCLUDE     "game/save.rsm"
 INCLUDE     "game/sprite.rsm"
 INCLUDE     "game/screen.rsm"
+INCLUDE     "game/tileset.rsm"
 
 
 ; Main Game -------------------------------------------------------------------
