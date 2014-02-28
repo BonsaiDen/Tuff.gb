@@ -81,6 +81,10 @@ DataSpriteAnimation:
     DB $00, $02,$01,$02,$01, $00,$01,$00,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     DB $fd, $04,$04,$04,$04, $04,$04,$04,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
+    ; Player Landing
+    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+    DB $fd, $09,$05,$04,$03, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
 
     ; Entity ------------------------------------------------------------------
 
@@ -232,7 +236,7 @@ entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = 
 
     ; save game
     call    save_store_player
-    call    screen_flash_short
+    call    screen_flash_light
 
 .done:
     jp      _entity_update_handler_ret

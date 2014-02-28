@@ -18,7 +18,8 @@ PLAYER_GRAVITY_INTERVAL      EQU 10
 PLAYER_SLEEP_WAIT            EQU 255 ; ticks of 60ms timer = ~15.81 seconds
 PLAYER_SPRITE_INDEX          EQU 10
 
-PLAYER_SPRITE_ROWS           EQU 8 
+PLAYER_SPRITE_ROWS           EQU 9
+
 PLAYER_ANIMATION_IDLE        EQU 0
 PLAYER_ANIMATION_WALKING     EQU 1
 PLAYER_ANIMATION_SLEEP       EQU 2
@@ -32,6 +33,7 @@ PLAYER_ANIMATION_SURFACE     EQU 9
 PLAYER_ANIMATION_SLIDE       EQU 10
 PLAYER_ANIMATION_POUND_START EQU 11
 PLAYER_ANIMATION_POUND_END   EQU 12
+PLAYER_ANIMATION_LANDING     EQU 13
 
 PLAYER_HALF_WIDTH            EQU 7
 PLAYER_HEIGHT                EQU 13
@@ -82,6 +84,7 @@ playerWallJumpRest:  DB ; frames left until movement input is recognized again a
 ; Gravity and Jumping
 playerFallSpeed:     DB ; current fall speed per frame
 playerFallFrames:    DB ; number of frames the player is falling (max 255)
+playerLandingFrames: DB ; number of frames for which the controls should be delayed after landing on ground
 
 playerGravityTick:   DB ; ticker for applying gravity
 playerGravityMax:    DB ; maximum gravity per tick
