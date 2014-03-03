@@ -6,7 +6,7 @@ player_init:
     ; Position 
     ld      a,24
     ld      [playerX],a
-    ld      a,32
+    ld      a,62
     ld      [playerY],a
 
     ; Direction
@@ -48,6 +48,10 @@ player_reset:
     ld      [playerJumpForce],a
     ld      [playerJumpPressed],a
     ld      [playerFallSpeed],a
+    ld      [playerUnderWater],a
+    ld      [playerWasUnderWater],a
+    ld      [playerIsPounding],a
+    ld      [playerInWater],a
 
     ld      a,1
     ld      [playerOnGround],a
@@ -59,6 +63,7 @@ player_reset:
     ld      [playerDecTick],a
     ld      [playerMoveTick],a
     ld      [playerLandingFrames],a
+    ld      [playerWaterTick],a
 
     ; Sliding
     ld      a,0
@@ -144,31 +149,33 @@ player_update:
     ld      a,[playerY]
     ld      [playerYOffset],a
 
-    ; check for water
+    ; check for deep water (diving)
     ld      a,[playerY]
-    sub     6
+    ld      c,a
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      3
+    jr      z,.under_water
+
+    ; now check for shallow water (swimming)
+    ld      a,[playerY]
+    sub     5
     ld      c,a
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
 
-    ; check if the pixel still lies in water
     ld      a,[mapCollisionFlag]
-    cp      2 
-    jr      z,.swimming
     cp      3
     jr      z,.under_water
+    cp      2 
+    jr      z,.water
+
+    ; hazards!
     cp      4
     jp      z,player_dissolve
-
-    ; check for under water again
-    ld      a,[playerY]
-    ld      c,a
-    ld      a,[playerX]
-    ld      b,a
-    call    map_get_collision
-    cp      3
-    jr      z,.under_water
 
     ; reset water variables when on land
 .land:
@@ -181,11 +188,8 @@ player_update:
 .under_water:
     ld      a,1
     ld      [playerUnderWater],a
+    ld      [playerWasUnderWater],a
     jp      .water
-
-.swimming:
-    ld      a,0
-    ld      [playerUnderWater],a
 
 .water:
     call    player_water_update
@@ -263,7 +267,7 @@ playerWaterHitOffsetTable:
 
 player_water_update:
 
-    ; check for the intitial frame on whic we hit the water
+    ; check for the intitial frame on which we hit the water
     ld      a,[playerInWater]
     cp      0
     jp      nz,.not_initial
@@ -277,6 +281,17 @@ player_water_update:
 
     ld      a,0
     ld      [playerFallFrames],a
+
+    ; check if we were previously under water, if so skip water offset
+    ld      a,[playerWasUnderWater]
+    cp      1
+    jp      nz,.not_initial
+
+    ld      a,PLAYER_WATER_OFFSET_MAX 
+    ld      [playerWaterTick],a
+
+    ld      a,0
+    ld      [playerWasUnderWater],a
 
 .not_initial:
 
@@ -757,16 +772,29 @@ player_gravity:
     ; reset ticker
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
-
+            
 .no_tick:
 
-    call   player_fall
-    call   player_jump
+    ; if under water half movement speed by 2
+    ld      a,[playerWasUnderWater]
+    cp      0
+    jp      z,.move
+
+    ld      a,[playerGravityTick]
+    and     %00000001
+    cp      0
+    jp      nz,.delay_move
+
+.move:
+    call    player_fall
+    call    player_jump
+
+.delay_move:
 
     ; if jump force > 0 set jump animation
-    ld     a,[playerJumpForce]
-    cp     0
-    jp     z,.no_jump
+    ld      a,[playerJumpForce]
+    cp      0
+    jp      z,.no_jump
 
     ; set jump animation
     ld      a,PLAYER_ANIMATION_JUMP
@@ -784,6 +812,12 @@ player_gravity:
     ld      a,[playerIsPounding]
     cp      0
     ret     nz
+
+    ; skip the animation when under water
+    ; otherwise pressing against a ceiling will result in flicker
+    ld      a,[playerUnderWater]
+    cp      1
+    ret     z
 
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
@@ -836,16 +870,15 @@ player_jump:
 .jump_water:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
-    ld      a,7
+    ld      a,0; unset under water flag when jumping out of water
+    ld      [playerWasUnderWater],a
+    ld      a,6 ; setup gravity tick delay so we do not jump as high as normally
     jr      .jump
 
 .jump_swim:
-    ld      a,PLAYER_ANIMATION_JUMP
-    ld      [playerAnimation],a
-
     ld      a,PLAYER_JUMP_SWIM
     ld      [playerJumpForce],a
-    ld      a,2
+    ld      a,2 ; setup gravity tick delay
 
     ; if we are, set the initial jump force and reset the gravity ticker
 .jump:
