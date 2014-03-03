@@ -29,6 +29,8 @@ core_unpack_vram: ; HL = source, DE = target
 
 core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 
+    di
+
     ; check if we reached or passed the end of the data uncompressed data 
     ; (de >= bc)
     ld      a,d
@@ -38,8 +40,8 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; check low byte
     ld      a,e
     cp      c 
-    ret     z ; c == e
-    ret     nc ; c > e
+    jp      z,.done ; c == e
+    jp      nc,.done ; c > e
 
 .next:
 
@@ -57,14 +59,12 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 .copy_loop:
 
     ; copy start
-    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
 
     ld      a,[hli] ; load byte to copy
     ld      [de],a
-    ei
     ; copy end
 
     inc     de
@@ -96,7 +96,6 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 .repeat_loop:
 
     ; set start
-    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
@@ -104,7 +103,6 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; while count > 0 inc de
     ld      a,c
     ld      [de],a
-    ei
     ; set end
 
     inc     de
@@ -114,5 +112,9 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; next instruction
     pop     bc ; restore end of data
     jp      core_unpack_raw_vram
+
+.done:
+    ei
+    ret
 
 
