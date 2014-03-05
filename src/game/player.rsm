@@ -149,16 +149,6 @@ player_update:
     ld      a,[playerY]
     ld      [playerYOffset],a
 
-    ; check for deep water (diving)
-    ld      a,[playerY]
-    ld      c,a
-    ld      a,[playerX]
-    ld      b,a
-    call    map_get_collision
-    ld      a,[mapCollisionFlag]
-    cp      3
-    jr      z,.under_water
-
     ; now check for shallow water (swimming)
     ld      a,[playerY]
     sub     5
@@ -170,10 +160,36 @@ player_update:
     ld      a,[mapCollisionFlag]
     cp      3
     jr      z,.under_water
+
+    ; check if swimming
     cp      2 
     jr      z,.water
 
-    ; hazards!
+    ; check if was diving
+    ld      a,[playerWasUnderWater]
+    cp      1
+    jp      nz,.check_diving
+
+    ; detect surfacing
+    ld      a,0
+    ld      [playerUnderWater],a
+    ld      [playerInWater],a
+    jp      .water
+
+
+    ; check for deep water (diving)
+.check_diving:
+    ld      a,[playerY]
+    ld      c,a
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      3
+    jr      z,.under_water
+
+
+.check_hazard:
     cp      4
     jp      z,player_dissolve
 
@@ -204,6 +220,25 @@ player_update:
     cp      0
     jp      nz,.update
 
+    ; set swim animation when moving underwater
+    ld      a,[coreInput]
+    and     %00110000
+    cp      0
+    jp      z,.water_idle
+
+    ; dont set animation when moving up / down
+    ld      a,[coreInput]
+    and     %00000011
+    cp      0
+    jp      nz,.water_idle
+
+    ld      a,PLAYER_ANIMATION_SWIMMING
+    ld      [playerAnimation],a
+
+    jp      .update
+
+    ; set idle animation in case neither a / b is pressed
+.water_idle:
     ld      a,[coreInput]
     and     %00000011
     cp      0
@@ -287,11 +322,25 @@ player_water_update:
     cp      1
     jp      nz,.not_initial
 
-    ld      a,PLAYER_WATER_OFFSET_MAX 
+    ; if we are surfacing skip the offset, and correct the player y position
+    ld      a,7
     ld      [playerWaterTick],a
+
+    ld      a,1
+    ld      [playerWaterHitDone],a
+    ld      [playerGravityTick],a
 
     ld      a,0
     ld      [playerWasUnderWater],a
+    ld      [playerUnderWater],a
+    ld      [playerJumpForce],a
+
+    ; correct y position
+    ld      a,[playerY]
+    and     %11111000
+    add     5
+    ld      [playerY],a
+
 
 .not_initial:
 
@@ -304,10 +353,10 @@ player_water_update:
     ld      a,0
     ld      [playerSleepTick],a
 
-    ; swim downwards
-    ld      a,[playerUnderWater]
-    cp      1
-    jp      nz,.stop_fall
+    ; swim downwards / dive in
+    ;ld      a,[playerUnderWater]
+    ;cp      1
+    ;jp      nz,.stop_fall
 
     ; check button
     ld      a,[coreInput]
@@ -386,8 +435,9 @@ player_water_update:
 
     ; swimming offset
 .animate_water:
-    ld      a,[playerWaterTick]
 
+    ; load y offset from table
+    ld      a,[playerWaterTick]
     ld      hl,playerWaterSwimOffsetTable
     ld      b,0
     ld      c,a
@@ -445,9 +495,20 @@ player_water_timer:
 ; jp       nz, .collided 
 player_collision_up: 
 
+    ; different height when diving
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.diving
+    ld      e,PLAYER_HEIGHT
+    jp      .check
+
+.diving:
+    ld      e,PLAYER_HEIGHT + 2
+
+.check:
     ; middle
     ld      a,[playerY]
-    sub     PLAYER_HEIGHT
+    sub     e
     ld      c,a
 
     ld      a,[playerX]
@@ -457,7 +518,7 @@ player_collision_up:
 
     ; right half 
     ld      a,[playerY]
-    sub     PLAYER_HEIGHT
+    sub     e
     ld      c,a
 
     ld      a,[playerX]
@@ -468,7 +529,7 @@ player_collision_up:
 
     ; left half 
     ld      a,[playerY]
-    sub     PLAYER_HEIGHT
+    sub     e
     ld      c,a
 
     ld      a,[playerX]
@@ -481,8 +542,21 @@ player_collision_up:
 
 player_collision_down: 
 
+    ; different height when diving
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.diving
+    ld      e,0
+    jp      .check
+
+.diving:
+    ld      e,2
+
+.check:
+
     ; middle
     ld      a,[playerY]
+    add     e
     ld      c,a
 
     ld      a,[playerX]
@@ -492,6 +566,7 @@ player_collision_down:
 
     ; right half 
     ld      a,[playerY]
+    add     e
     ld      c,a
 
     ld      a,[playerX]
@@ -502,6 +577,7 @@ player_collision_down:
 
     ; left half 
     ld      a,[playerY]
+    add     e
     ld      c,a
 
     ld      a,[playerX]
