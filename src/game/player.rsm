@@ -1353,6 +1353,9 @@ player_move:
 .pushing_right:
     call    player_collision_right_all
     jp      z,.idle_right
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.idle_right
     ld      a,PLAYER_ANIMATION_PUSHING
     ld      [playerAnimation],a
     jp      .move_left
@@ -1395,6 +1398,9 @@ player_move:
 .pushing_left:
     call    player_collision_left_all
     jp      z,.idle_left
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.idle_left
     ld      a,PLAYER_ANIMATION_PUSHING
     ld      [playerAnimation],a
     jp      .moved
