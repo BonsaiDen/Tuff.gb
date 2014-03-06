@@ -353,10 +353,12 @@ player_water_update:
     ld      a,0
     ld      [playerSleepTick],a
 
-    ; swim downwards / dive in
-    ;ld      a,[playerUnderWater]
-    ;cp      1
-    ;jp      nz,.stop_fall
+    ; check if water hit done
+    ; TODO allow for direct diving
+    ; but fix offset glitches
+    ld      a,[playerWaterHitDone]
+    cp      1
+    jp      nz,.stop_fall
 
     ; check button
     ld      a,[coreInput]
