@@ -516,7 +516,8 @@ player_collision_up:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; right half 
     ld      a,[playerY]
@@ -527,7 +528,8 @@ player_collision_up:
     add     PLAYER_HALF_WIDTH - 3
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; left half 
     ld      a,[playerY]
@@ -538,7 +540,6 @@ player_collision_up:
     sub     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-
     ret
 
 
@@ -564,7 +565,8 @@ player_collision_down:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; right half 
     ld      a,[playerY]
@@ -575,7 +577,8 @@ player_collision_down:
     add     PLAYER_HALF_WIDTH - 3
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; left half 
     ld      a,[playerY]
@@ -601,7 +604,8 @@ player_collision_left:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; upper half 
     ld      a,[playerY]
@@ -612,7 +616,8 @@ player_collision_left:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; lower half 
     ld      a,[playerY]
@@ -637,7 +642,8 @@ player_collision_right:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; upper half 
     ld      a,[playerY]
@@ -648,7 +654,8 @@ player_collision_right:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    ret     nz
+    cp      1
+    ret     z
 
     ; lower half 
     ld      a,[playerY]
@@ -675,7 +682,8 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
+    cp      0
+    ret     z
 
     ; upper half 
     ld      a,[playerY]
@@ -686,7 +694,8 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
+    cp      0
+    ret     z
 
     ; lower half 
     ld      a,[playerY]
@@ -697,15 +706,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
-    
-    ; set collision flag
-    or      1 ; set nz
     ret
-
-.no_collision:
-    cp      a ; set z
-    ret     
 
 
 player_collision_right_all:
@@ -719,7 +720,8 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
+    cp      0
+    ret     z
 
     ; upper half 
     ld      a,[playerY]
@@ -730,7 +732,8 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
+    cp      0
+    ret     z
 
     ; lower half 
     ld      a,[playerY]
@@ -741,15 +744,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    jr      z,.no_collision
-
-    ; set collision flag
-    or      1 ; set nz
     ret
-
-.no_collision:
-    cp      a ; set z
-    ret     
 
 
 ; Handle Map Scrolling --------------------------------------------------------
@@ -1013,14 +1008,16 @@ player_jump:
     
     ; check collision at current top pixel
     call    player_collision_up
-    jp      nz,.collision
+    cp      1
+    jp      z,.collision
 
     ld      a,[playerY]
     dec     a
 
     ; check again with new top pixel
     call    player_collision_up
-    jp      nz,.collision
+    cp      1
+    jp      z,.collision
 
     ; finally set new top pixel
     ld      a,[playerY]
@@ -1092,7 +1089,8 @@ player_fall:
 
     ; check for downward collision
     call    player_collision_down
-    jr      nz,.collision ; unlikely jump, thus jr and not jp
+    cp      1
+    jr      z,.collision ; unlikely jump, thus jr and not jp
 
     ; reset ground state
     ld      a,0
@@ -1340,6 +1338,7 @@ player_move:
 .loop_right:
 
     call    player_collision_right
+    cp      0
     jp      z,.not_blocked_right
 
     ; set wall flag
@@ -1354,6 +1353,7 @@ player_move:
 
 .pushing_right:
     call    player_collision_right_all
+    cp      0
     jp      z,.idle_right
     ld      a,[playerOnGround]
     cp      1
@@ -1385,6 +1385,7 @@ player_move:
 .loop_left:
 
     call    player_collision_left
+    cp      0
     jp      z,.not_blocked_left
 
     ; set wall flag
@@ -1399,6 +1400,7 @@ player_move:
 
 .pushing_left:
     call    player_collision_left_all
+    cp      0
     jp      z,.idle_left
     ld      a,[playerOnGround]
     cp      1
@@ -1524,12 +1526,14 @@ player_slide_wall:
 
 .slide_left:
     call    player_collision_left_all
+    cp      0
     ret     z
     call    player_slide_wall_init
     ret
 
 .slide_right:
     call    player_collision_right_all
+    cp      0
     ret     z
     call    player_slide_wall_init
     ret

@@ -309,17 +309,16 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if 
     ; everything that is not solid has no collision
 .no_collision:
     ld      [mapCollisionFlag],a
-    cp      a ; set z
+    ld      a,0
     ret
 
 .collision:
-    or      1 ; set nz
+    ld      a,1
     ret
 
 .off_screen:
     ld      a,0
     ld      [mapCollisionFlag],a
-    cp      a ; set z
     ret
 
 
