@@ -41,30 +41,6 @@ map_load_sprite_row: ; load a compress sprite row into vram
     ret
 
 
-; hl = sprite map, c = row index, b = target row in ram, de = target base in ram, a = table index size
-map_load_sprite_row_ram: ; load a sprite row from memory into vram
-
-    push    bc
-    push    de
-
-    ; offset to the target row
-    ld      d,c ; skip row index * 256 bytesd
-    ld      e,0 ; skip table index size
-    add     hl,de ; = table offset pointer
-
-    pop     de ; restore target pointer
-    ld      a,d ; add offset for row (in 256 byte steps, four 16x16 tiles)
-    add     b
-    ld      d,a
-    
-    ; end pointer de + 256 bytes
-    ld      bc,256
-    call    core_vram_cpy
-    pop     bc
-
-    ret
-
-
 map_load_tileset: ; hl = destination, de = source
 
     ; copy tiles to character data

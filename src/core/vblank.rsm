@@ -12,6 +12,8 @@ core_vblank_handler:
     ld      a,1
     ld      [coreVBlankDone],a
 
+    call    player_animation_update
+
     pop     hl
     pop     de
     pop     bc

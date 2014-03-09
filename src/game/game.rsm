@@ -32,8 +32,8 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ld      b,5
-    ld      c,2
+    ld      b,4
+    ld      c,1
     call    map_set_room
 
     ; Hud
