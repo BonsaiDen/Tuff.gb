@@ -253,7 +253,7 @@ map_draw_room:
 
 
 ; Collision Detection ---------------------------------------------------------
-map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> z if no collision, nz if collision
+map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1 if collision, 0 = no collision
 
     ; check for the bottom end of the screen
     ; if we index into the ram beyond this area we will read invalid data
