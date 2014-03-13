@@ -34,7 +34,7 @@ map_load_sprite_row: ; load a compress sprite row into vram
     ld      b,d
     ld      c,e
     inc     b; 256 bytes
-    call    core_unpack_raw_vram ; unpack sprite row
+    call    core_unpack_raw; unpack sprite row
 
     pop     bc
 

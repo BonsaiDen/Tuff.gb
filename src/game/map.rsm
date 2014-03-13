@@ -119,13 +119,14 @@ map_set_room: ; b = x, c = y
     ; unpack the data
     ld      de,mapRoomUnpackBuffer
     ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
-    call    core_unpack_raw_vram
+    call    core_unpack_raw
 
     ; un/load entities
     call    entity_store
 
     ; draw the room
-    call    map_draw_room
+    ld      a,1
+    ld      [mapRoomUpdate],a
 
     pop     bc
     pop     de
@@ -137,6 +138,14 @@ map_set_room: ; b = x, c = y
 
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
+    
+    ; 
+    ld      a,[mapRoomUpdate]
+    cp      0
+    ret     z
+
+    ld      a,0
+    ld      [mapRoomUpdate],a
 
     ; setup sprites first to reduce flicker
     call    entity_load
@@ -247,8 +256,8 @@ map_draw_room:
     ld      hl,$C400
     ld      de,$9800
     ld      bc,512
-    call    core_vram_cpy
-    ;call    sprite_copy_oam
+    call    core_vram_cpy_vblank
+
     ret
 
 

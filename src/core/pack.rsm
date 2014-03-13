@@ -1,35 +1,5 @@
 ; Data Unpacking Routines -----------------------------------------------------
-core_unpack_vram: ; HL = source, DE = target
-    push    hl; store source address
-
-    ; load uncompressed size from packed data
-    ld      a,[hl]
-    inc     hl
-    ld      b,a
-
-    ld      a,[hl]
-    ld      c,a
-
-    ; bc = de + size
-    ld      h,d
-    ld      l,e
-    add     hl,bc
-    ld      b,h
-    ld      c,l
-
-    pop     hl ; restore source address
-
-    ; skip size word again
-    inc     hl
-    inc     hl
-
-    call    core_unpack_raw_vram
-    ret
-
-
-core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
-
-    di
+core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; check if we reached or passed the end of the data uncompressed data 
     ; (de >= bc)
@@ -73,7 +43,7 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; next instruction
     pop     bc ; restore end of data
-    jp      core_unpack_raw_vram
+    jp      core_unpack_raw
 
 
     ; repeat X bytes
@@ -111,10 +81,8 @@ core_unpack_raw_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; next instruction
     pop     bc ; restore end of data
-    jp      core_unpack_raw_vram
+    jp      core_unpack_raw
 
 .done:
-    ei
     ret
-
 

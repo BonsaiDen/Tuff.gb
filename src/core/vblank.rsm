@@ -7,12 +7,25 @@ core_vblank_handler:
     push    de
     push    hl
 
-    call    $ff80 ; call the DMA code for transfering sprite data to OAM
+    ; Invoke game vblank handler
+    call    game_vblank
 
+    ; call the DMA code for transfering sprite data to OAM
+    call    $ff80 
+
+    ; Palette Updates
+    ld      a,[corePaletteBG]
+    ld      [rBGP],a
+
+    ld      a,[corePaletteSprite0]
+    ld      [rOBP0],a
+
+    ld      a,[corePaletteSprite1]
+    ld      [rOBP1],a
+
+    ; Set vblank flag
     ld      a,1
     ld      [coreVBlankDone],a
-
-    call    player_animation_update
 
     pop     hl
     pop     de

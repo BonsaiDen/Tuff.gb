@@ -108,7 +108,7 @@ screen_fade_timer:
     ld      hl,screenFadePaletteBG
     add     hl,bc
     ld      a,[hl]
-    ld      [rBGP],a
+    ld      [corePaletteBG],a
 
     ; sprite mask
     ld      hl,screenFadePaletteSprite0
@@ -119,7 +119,7 @@ screen_fade_timer:
     ld      hl,screenFadePaletteSprite1
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP1],a
+    ld      [corePaletteSprite1],a
 
     ; fade mode
     ld      a,[screenFadeMode]
@@ -233,18 +233,18 @@ screen_flash_timer:
     ld      hl,screenFlashLightPaletteBG
     add     hl,bc
     ld      a,[hl]
-    ld      [rBGP],a
+    ld      [corePaletteBG],a
 
     ; sprite mask
     ld      hl,screenFlashLightPaletteSprite0
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP0],a
+    ld      [corePaletteSprite0],a
 
     ld      hl,screenFlashLightPaletteSprite1
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP1],a
+    ld      [corePaletteSprite1],a
     jp      .update
 
 .dark:
@@ -252,18 +252,18 @@ screen_flash_timer:
     ld      hl,screenFlashDarkPaletteBG
     add     hl,bc
     ld      a,[hl]
-    ld      [rBGP],a
+    ld      [corePaletteBG],a
 
     ; sprite mask
     ld      hl,screenFlashDarkPaletteSprite0
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP0],a
+    ld      [corePaletteSprite0],a
 
     ld      hl,screenFlashDarkPaletteSprite1
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP1],a
+    ld      [corePaletteSprite1],a
     jp      .update
 
 .update:

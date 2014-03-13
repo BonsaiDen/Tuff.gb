@@ -82,3 +82,22 @@ core_vram_cpy: ; hl = source, de = dest, bc = bytecount
     ei
 	ret
 
+
+core_vram_cpy_vblank: ; hl = source, de = dest, bc = bytecount
+	inc	    b
+	inc	    c
+	jp	    .skip
+.loop:
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,[hl+]
+	ld	    [de],a
+	inc	    de
+.skip:
+    dec	    c
+	jr	    nz,.loop
+	dec	    b
+	jr	    nz,.loop
+	ret
+
