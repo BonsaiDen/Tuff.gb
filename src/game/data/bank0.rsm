@@ -116,7 +116,7 @@ DataTileAnimationDelay:
     DB $04
 
     ; Torch
-    DB $05
+    DB $04
 
     ; Lava Bottom
     DB $04
