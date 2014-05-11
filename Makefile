@@ -5,6 +5,7 @@ rom: convert
 	@rgbfix -v -p 0 build/game.gb
 	@node stat build/game.map
 	@cp  build/game.gb tools/emu/roms/tuff.gb
+	@cp  build/game.gb tools/emu/web/roms/tuff.gb
 
 convert:
 	@mkdir -p data/bin
@@ -23,3 +24,6 @@ clean:
 	rm -rf build
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 	
+tiled:
+	~/Sources/tiled-qt-0.9.1/build/bin/tiled &
+
