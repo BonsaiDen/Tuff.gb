@@ -137,18 +137,10 @@ map_set_room: ; b = x, c = y
 
 
 ; Core Map Draw Routine -------------------------------------------------------
-map_draw_room:
+map_load_room:
     
-    ; 
-    ld      a,[mapRoomUpdate]
-    cp      0
-    ret     z
-
     ld      a,0
     ld      [mapRoomUpdate],a
-
-    ; setup sprites first to reduce flicker
-    call    entity_load
 
     ; target is the screen buffer
     ld      hl,$C400

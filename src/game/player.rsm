@@ -359,8 +359,6 @@ player_water_update:
     ld      [playerSleepTick],a
 
     ; check if water hit done
-    ; TODO allow for direct diving
-    ; but fix offset glitches
     ld      a,[playerWaterHitDone]
     cp      1
     jp      nz,.stop_fall

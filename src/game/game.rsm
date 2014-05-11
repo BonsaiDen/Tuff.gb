@@ -78,12 +78,6 @@ game_loop_one_half:
     call    entity_update
 
     ret
-
-
-game_vblank:
-    call    player_animation_update
-    call    map_draw_room
-    ret
  
 
 ; Timer -----------------------------------------------------------------------
