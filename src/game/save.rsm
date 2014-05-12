@@ -41,6 +41,11 @@ save_load_from_sram:
     cp      $56
     jp      nz,.load
 
+    ; version
+    ld      a,[hli]
+    cp      GAME_SAVE_VERSION
+    jp      nz,.load
+
     ; save data
     ld      a,[hli]
     ld      [playerX],a
@@ -79,7 +84,7 @@ save_load_from_sram:
 
 save_store_to_sram:
 
-    ; writing $0A anywhere into the $1000-1FFFF range will enable external ram
+    ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
     ld      hl,$0000 
     ld      [hl],$0A 
 
@@ -97,6 +102,10 @@ save_store_to_sram:
     ld      [hli],a
 
     ld      a,$56
+    ld      [hli],a
+
+    ; game version
+    ld      a,GAME_SAVE_VERSION
     ld      [hli],a
 
     ; write the actual save data
@@ -130,7 +139,7 @@ save_calculate_sum: ; checksum byte -> a
     ; must be in external RAM mode
     ; start at $A001, exluding the checksum byte at $A000
     ld      hl,$A001
-    ld      b,8; 7 bytes of data
+    ld      b,9; save data bytes
     ld      c,0; checksum data
 
 .next:

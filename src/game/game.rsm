@@ -25,6 +25,13 @@ game_init:
     ld      de,DataTileImg
     call    map_load_tileset
 
+    ; Player
+    call    player_init
+
+    ; Map
+    ld      a,$5f
+    call    map_init
+
     ; Default Starting Position
     ld      a,24
     ld      [playerX],a
@@ -37,13 +44,6 @@ game_init:
 
     ld      a,0
     ld      [mapRoomY],a
-
-    ; Player
-    call    player_init
-
-    ; Map
-    ld      a,$5f
-    call    map_init
 
     ; Load from SRAM or 
     call    save_restore_player
