@@ -33,6 +33,23 @@ player_init:
     ; Load initial sprite data
     call    player_animation_update
 
+    ; Abilities
+    ld      a,1
+    ld      [playerCanJump],a
+
+    ld      a,1
+    ld      [playerCanWallJump],a
+
+    ld      a,1
+    ld      [playerCanSwim],a
+
+    ld      a,1
+    ld      [playerCanDive],a
+
+    ; TODO if we cannot dive, we need to move the player upwards after a pound
+    ld      a,1
+    ld      [playerCanPound],a
+
     ret
 
 
@@ -208,6 +225,12 @@ player_update:
     jp      .water
 
 .water:
+
+    ; check ability
+    ld      a,[playerCanSwim]
+    cp      0
+    jp      z,player_dissolve
+
     call    player_water_update
 
     ; swim animation
@@ -363,7 +386,12 @@ player_water_update:
     cp      1
     jp      nz,.stop_fall
 
-    ; check button
+    ; check ability
+    ld      a,[playerCanDive]
+    cp      0
+    jp      z,.stop_fall
+
+    ; check button for diving
     ld      a,[coreInput]
     and     %00000010
     cp      %00000010
@@ -916,6 +944,11 @@ player_gravity:
 
 
 player_jump:
+
+    ; check ability
+    ld      a,[playerCanJump]
+    cp      0
+    ret     z
 
     ; check for landing frames
     ld      a,[playerLandingFrames]
@@ -1470,6 +1503,13 @@ player_move:
 ; Wall Sliding / Jumping Logic ------------------------------------------------
 player_slide_wall:
 
+    ; check ability
+    ld      a,[playerCanWallJump]
+    cp      0
+    ret     z
+
+    ; if we're still in the ground hit animation where the player can't move
+    ; disable and wall sliding
     ld      a,[playerLandingFrames]
     cp      0
     ret     nz
@@ -1809,6 +1849,11 @@ player_animate:
 
 ; Player Pounding -------------------------------------------------------------
 player_pound:
+
+    ; check ability
+    ld      a,[playerCanPound]
+    cp      0
+    ret     z
 
     ; check if already pounding
     ld      a,[playerIsPounding]
