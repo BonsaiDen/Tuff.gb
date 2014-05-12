@@ -25,6 +25,19 @@ game_init:
     ld      de,DataTileImg
     call    map_load_tileset
 
+    ; Default Starting Position
+    ld      a,24
+    ld      [playerX],a
+
+    ld      a,62
+    ld      [playerY],a
+
+    ld      a,2
+    ld      [mapRoomX],a
+
+    ld      a,0
+    ld      [mapRoomY],a
+
     ; Player
     call    player_init
 
@@ -32,21 +45,17 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ld      b,2
-    ld      c,0
-    call    map_set_room
+    ; Load from SRAM or 
+    call    save_restore_player
 
     ; Hud
     call    game_hud
-
-    ; Setup Initial Spawn Location
-    call    save_store_player
 
     ; Sound
     ld      hl,$FF25
     ld      [hl],%11111111 ; output all channels to both speakers
     inc     hl
-    ld      [hl],%00000000 ; dis-able sound
+    ld      [hl],%00000000 ; dis-able sound for the time being, saving battery
 
     ret
 
@@ -61,7 +70,7 @@ game_loop:
     jp      nz,.next
     ld      a,8
     call    screen_flash_fast_dark
-    call    save_reset_player
+    call    save_restore_player
     ;call    screen_shake
 
 .next:

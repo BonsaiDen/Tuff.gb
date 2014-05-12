@@ -107,7 +107,7 @@ player_update:
     ld      [playerDissolveTick],a
 
     call    screen_flash_fast_light
-    call    save_reset_player
+    call    save_restore_player
     ret
 
 

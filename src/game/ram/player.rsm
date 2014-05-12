@@ -103,3 +103,11 @@ playerWaterHitDepth: DB ; value to check how deep the player should splash into 
 ; Dissolving
 playerDissolveTick:  DB ; tick for when the player is dissolving
 
+; Power Up States
+; TODO check for these in the game code
+playerCanJump:       DB
+playerCanWallJump:   DB
+playerCanSwim:       DB
+playerCanDive:       DB
+playerCanPound:      DB
+

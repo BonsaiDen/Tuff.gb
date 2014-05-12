@@ -5,9 +5,9 @@ INCLUDE     "core/include/rom.inc"
 ; Catridge Information --------------------------------------------------------
 CART_NAME       EQUS       "Tuff"
 CART_LICENSEE   EQUS       "BD"
-CART_TYPE       EQU        ROM_NOMBC
+CART_TYPE       EQU        ROM_MBC1_RAM_BAT
 CART_ROM_SIZE   EQU        ROM_SIZE_32KBYTE
-CART_RAM_SIZE   EQU        RAM_SIZE_0KBIT
+CART_RAM_SIZE   EQU        RAM_SIZE_64KBIT
 CART_DEST       EQU        ROM_DEST_OTHER
 
 
@@ -20,7 +20,6 @@ INCLUDE     "game/ram/sprite.rsm"
 INCLUDE     "game/ram/map.rsm"
 INCLUDE     "game/ram/game.rsm"
 INCLUDE     "game/ram/screen.rsm"
-INCLUDE     "game/ram/save.rsm"
 INCLUDE     "game/ram/player.rsm"
 INCLUDE     "game/ram/entity.rsm"
 

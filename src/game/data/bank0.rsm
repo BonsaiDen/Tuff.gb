@@ -235,7 +235,7 @@ entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = 
     jp      nz,.done
 
     ; save game
-    call    save_store_player
+    call    save_set_player
     call    screen_flash_light
 
 .done:

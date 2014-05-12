@@ -1,38 +1,147 @@
 SECTION "SaveLogic",ROM0
 
+
 ; Saving / Loading ------------------------------------------------------------
-save_store_player:
-
-    ; Room
-    ld      a,[mapRoomX]
-    ld      [saveRoomX],a
-    ld      a,[mapRoomY]
-    ld      [saveRoomY],a
-
-    ; Player
-    ld      a,[playerX]
-    ld      [savePlayerX],a
-    ld      a,[playerY]
-    ld      [savePlayerY],a
-
+save_restore_player:
+    call    save_load_from_sram
     ret
-            
 
-save_reset_player:
 
-    ld      a,[saveRoomX]
+save_set_player:
+    call    save_store_to_sram
+    ret
+
+
+; SRAM Handling Routines ------------------------------------------------------
+save_load_from_sram:
+
+    ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
+    ld      hl,$0000 
+    ld      [hl],$0A 
+
+    ; get checksum and compare
+    call    save_calculate_sum
     ld      b,a
-    ld      a,[saveRoomY]
+
+    ld      hl,$A000 
+    ld      a,[hli]
+    cp      b
+    jp      nz,.load
+
+    ; check header
+    ld      a,[hli]
+    cp      $12
+    jp      nz,.load
+
+    ld      a,[hli]
+    cp      $34
+    jp      nz,.load
+
+    ld      a,[hli]
+    cp      $56
+    jp      nz,.load
+
+    ; save data
+    ld      a,[hli]
+    ld      [playerX],a
+
+    ld      a,[hli]
+    ld      [playerY],a
+
+    ld      a,[hli]
+    ld      [mapRoomX],a
+
+    ld      a,[hli]
+    ld      [mapRoomY],a
+
+    ld      a,[hli]
+    ld      [playerDirection],a
+
+    jp      .load
+
+.load:
+
+    ld      a,[mapRoomX]
+    ld      b,a
+    ld      a,[mapRoomY]
     ld      c,a
 
     call    map_set_room
-
     call    player_reset
 
-    ld      a,[savePlayerX]
-    ld      [playerX],a
-    ld      a,[savePlayerY]
-    ld      [playerY],a
+.end:
+    ; disable external RAM
+    ld      hl,$0000 
+    ld      [hl],$00
 
+    ret
+
+
+save_store_to_sram:
+
+    ; writing $0A anywhere into the $1000-1FFFF range will enable external ram
+    ld      hl,$0000 
+    ld      [hl],$0A 
+
+    ld      hl,$A000 
+    
+    ; checksum of the save data bytes starting from $A001
+    ld      a,$00
+    ld      [hli],a
+
+    ; header prefix
+    ld      a,$12
+    ld      [hli],a
+
+    ld      a,$34
+    ld      [hli],a
+
+    ld      a,$56
+    ld      [hli],a
+
+    ; write the actual save data
+    ld      a,[playerX]
+    ld      [hli],a
+
+    ld      a,[playerY]
+    ld      [hli],a
+
+    ld      a,[mapRoomX]
+    ld      [hli],a
+
+    ld      a,[mapRoomY]
+    ld      [hli],a
+
+    ld      a,[playerDirection]
+    ld      [hli],a
+
+    ; checksum
+    call    save_calculate_sum
+    ld      hl,$A000 
+    ld      [hl],a
+
+    ; disable external RAM
+    ld      hl,$0000 
+    ld      [hl],$00
+
+    ret
+
+save_calculate_sum: ; checksum byte -> a
+    ; must be in external RAM mode
+    ; start at $A001, exluding the checksum byte at $A000
+    ld      hl,$A001
+    ld      b,8; 7 bytes of data
+    ld      c,0; checksum data
+
+.next:
+    ld      a,[hli]
+    add     c
+    ld      c,a
+    dec     b
+    ld      a,b
+    cp      0
+    jp      nz,.next
+    
+    ld      a,c
     ret
 
