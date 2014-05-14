@@ -11,14 +11,29 @@
 ;* Cart related
 ;*
 ;***************************************************************************
-ROM_NOMBC         EQU 0
-ROM_MBC1          EQU 1
-ROM_MBC1_RAM      EQU 2
-ROM_MBC1_RAM_BAT  EQU 3
-ROM_MBC2          EQU 5
-ROM_MBC2_BAT      EQU 6
-ROM_NOMBC_RAM     EQU 8
-ROM_NOMBC_RAM_BAT EQU 9
+ROM_NOMBC                 EQU 0
+ROM_MBC1                  EQU 1
+ROM_MBC1_RAM              EQU 2
+ROM_MBC1_RAM_BAT          EQU 3
+ROM_MBC2                  EQU 5
+ROM_MBC2_BAT              EQU 6
+ROM_NOMBC_RAM             EQU 8
+ROM_NOMBC_RAM_BAT         EQU 9
+ROM_MMM01                 EQU 11
+ROM_MMM01_RAM             EQU 12
+ROM_MMM01_RAM_BAT         EQU 13
+ROM_MBC3_TIMER_BAT        EQU 15
+ROM_MBC3_TIMER_RAM_BAT    EQU 16
+ROM_MBC3                  EQU 17
+ROM_MBC3_RAM              EQU 18
+ROM_MBC3_RAM_BAT          EQU 19
+ROM_MBC4                  EQU 21
+ROM_MBC4_RAM              EQU 22
+ROM_MBC4_RAM_BAT          EQU 23
+ROM_MBC5                  EQU 25
+ROM_MBC5_RAM              EQU 26
+ROM_MBC5_RAM_BAT          EQU 27
+
 
 ROM_SIZE_256KBIT  EQU 0
 ROM_SIZE_512KBIT  EQU 1
