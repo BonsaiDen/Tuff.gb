@@ -1,5 +1,10 @@
 SECTION "SaveLogic",ROM0
 
+; Constants -------------------------------------------------------------------
+SAVE_HEADER_SIZE    EQU 3
+SAVE_VERSION_SIZE   EQU 1
+SAVE_DATA_SIZE      EQU 5
+
 
 ; Saving / Loading ------------------------------------------------------------
 save_restore_player:
@@ -135,16 +140,17 @@ save_store_to_sram:
 
     ret
 
+
 save_calculate_sum: ; checksum byte -> a
     ; must be in external RAM mode
     ; start at $A001, exluding the checksum byte at $A000
     ld      hl,$A001
-    ld      b,9; save data bytes
+    ld      b,SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_DATA_SIZE; save data bytes
     ld      c,0; checksum data
 
 .next:
     ld      a,[hli]
-    add     c
+    xor     c
     ld      c,a
     dec     b
     ld      a,b
