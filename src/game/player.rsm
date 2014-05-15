@@ -1583,9 +1583,11 @@ player_slide_wall:
 
 .sliding:
 
+
     ; if sliding for more than X frames end slide
     cp      PLAYER_SLIDE_DURATION
     jp      z,.sliding_done
+
 
     ; otherwise continue sliding
     inc     a
@@ -1594,6 +1596,7 @@ player_slide_wall:
     ; set animation
     ld      a,PLAYER_ANIMATION_SLIDE
     ld      [playerAnimation],a
+
     ret
 
 
@@ -1902,7 +1905,8 @@ player_pound:
     ld      [playerFallSpeed],a
     ld      [playerWaterTick],a
     ld      [playerJumpForce],a
-
+    ld      [playerDirectionWall],a
+    ld      [playerWallSlideTick],a
 
     ; reset gravity tick
     ld      a,PLAYER_GRAVITY_INTERVAL
