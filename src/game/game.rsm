@@ -32,19 +32,6 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ; Default Starting Position
-    ld      a,24
-    ld      [playerX],a
-
-    ld      a,62
-    ld      [playerY],a
-
-    ld      a,2
-    ld      [mapRoomX],a
-
-    ld      a,0
-    ld      [mapRoomY],a
-
     ; Load from SRAM or 
     call    save_restore_player
 

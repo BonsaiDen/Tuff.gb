@@ -31,25 +31,31 @@ save_load_from_sram:
     ld      hl,$A000 
     ld      a,[hli]
     cp      b
-    jp      nz,.load
+    jp      nz,.defaults
 
     ; check header
     ld      a,[hli]
     cp      $12
-    jp      nz,.load
+    jp      nz,.defaults
 
     ld      a,[hli]
     cp      $34
-    jp      nz,.load
+    jp      nz,.defaults
 
     ld      a,[hli]
     cp      $56
-    jp      nz,.load
+    jp      nz,.defaults
 
     ; version
     ld      a,[hli]
     cp      GAME_SAVE_VERSION
     jp      nz,.load
+
+    ; ignore save state when start button is being pressed during powerup
+    ld      a,[coreInput]
+    and     %00001100
+    cp      %00001100
+    jp      z,.defaults
 
     ; save data
     ld      a,[hli]
@@ -68,6 +74,20 @@ save_load_from_sram:
     ld      [playerDirection],a
 
     jp      .load
+
+.defaults:
+    
+    ld      a,24
+    ld      [playerX],a
+
+    ld      a,62
+    ld      [playerY],a
+
+    ld      a,2
+    ld      [mapRoomX],a
+
+    ld      a,0
+    ld      [mapRoomY],a
 
 .load:
 
@@ -145,7 +165,7 @@ save_calculate_sum: ; checksum byte -> a
     ; must be in external RAM mode
     ; start at $A001, exluding the checksum byte at $A000
     ld      hl,$A001
-    ld      b,SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_DATA_SIZE; save data bytes
+    ld      b,SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_DATA_SIZE
     ld      c,0; checksum data
 
 .next:
