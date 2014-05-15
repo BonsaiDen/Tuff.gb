@@ -1,8 +1,5 @@
 SECTION "GameRam",WRAM0[$C3D0]
 
-; Constants -------------------------------------------------------------------
-GAME_SAVE_VERSION   EQU 1 ; version for save header checksum
-
 
 ; Screen State ----------------------------------------------------------------
 gameFadeMode:       DB

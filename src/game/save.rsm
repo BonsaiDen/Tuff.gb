@@ -4,6 +4,7 @@ SECTION "SaveLogic",ROM0
 SAVE_HEADER_SIZE    EQU 3
 SAVE_VERSION_SIZE   EQU 1
 SAVE_DATA_SIZE      EQU 5
+SAVE_GAME_VERSION   EQU 1
 
 
 ; Saving / Loading ------------------------------------------------------------
@@ -48,8 +49,8 @@ save_load_from_sram:
 
     ; version
     ld      a,[hli]
-    cp      GAME_SAVE_VERSION
-    jp      nz,.load
+    cp      SAVE_GAME_VERSION
+    jp      nz,.defaults
 
     ; ignore save state when start button is being pressed during powerup
     ld      a,[coreInput]
@@ -80,13 +81,13 @@ save_load_from_sram:
     ld      a,24
     ld      [playerX],a
 
-    ld      a,62
+    ld      a,48
     ld      [playerY],a
 
-    ld      a,2
+    ld      a,7
     ld      [mapRoomX],a
 
-    ld      a,0
+    ld      a,2
     ld      [mapRoomY],a
 
 .load:
@@ -130,7 +131,7 @@ save_store_to_sram:
     ld      [hli],a
 
     ; game version
-    ld      a,GAME_SAVE_VERSION
+    ld      a,SAVE_GAME_VERSION
     ld      [hli],a
 
     ; write the actual save data
