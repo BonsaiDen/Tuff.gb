@@ -46,7 +46,6 @@ player_init:
     ld      a,1
     ld      [playerCanDive],a
 
-    ; TODO if we cannot dive, we need to move the player upwards after a pound
     ld      a,1
     ld      [playerCanPound],a
 
@@ -186,6 +185,11 @@ player_update:
     ld      a,[playerWasUnderWater]
     cp      1
     jp      nz,.check_diving
+
+    ; ignore surface checks when at the very bottom of the screen
+    ld      a,[playerY]
+    cp      124; we get placed at 125 after upwards screen transition while in water
+    jp      nc,.water
 
     ; detect surfacing
     ld      a,0
@@ -846,7 +850,6 @@ player_scroll_map:
 
     call    player_set_position
     call    map_scroll_up
-
     jp      .done
 
 
@@ -856,7 +859,7 @@ player_scroll_map:
     cp      126 ; 
     jp      c,.done
 
-    ld      a,3
+    ld      a,6
     ld      [playerY],a
     call    player_set_position
     call    map_scroll_down
@@ -1977,11 +1980,23 @@ player_pound:
     ret
 
 .water:
+    ld      a,[playerCanDive]
+    cp      1
+    jp      z,.can_dive
+
+    ; if the player cant dive we exit early
+    ld      a,[playerInWater]
+    cp      1
+    jp      z,.water_end ; TODO fix y offset
+    jp      .water_slow
+
+.can_dive:
     ld      a,[playerWaterTick]
     cp      25
     jp      nc,.water_end
 
     ; slow down after the first 5 frames
+.water_slow:
     cp      5
     jp      c,.water_next
     ld      a,1
