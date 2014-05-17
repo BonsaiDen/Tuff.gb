@@ -7,6 +7,8 @@ SOUND_PLAYER_LAND EQU 2
 SOUND_PLAYER_LAND_HARD EQU 3
 SOUND_BG_WATERFALL EQU 4
 SOUND_PLAYER_DEATH_LAVA EQU 5
+SOUND_GAME_SAVE_FLASH EQU 6
+
 
 ; Flag for halting the advancement of active sounds during force update -------
 soundForceUpdate:       DB

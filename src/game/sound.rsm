@@ -4,6 +4,9 @@ SECTION "SoundLogic",ROM0
 ; Sound Control ---------------------------------------------------------------
 sound_enable:
     ld      a,%11111111
+    ld      [$ff24],a 
+
+    ld      a,%11111111
     ld      [$ff25],a ; output all channels to both speakers
     ld      a,%10000000
     ld      [$ff26],a ; enable sound circuits
