@@ -14,9 +14,31 @@ In case you're trying to get started with your own DMG game, you might find a lo
 
 ## How to compile
 
-Get https://github.com/bentley/rgbds/ and then run `make`.
+1. Install [rgbgs](https://github.com/bentley/rgbds), it is the assembler that is being used
+2. Get [Node.js](https://nodejs.org), it is used for graphics conversion and other tooling
+3. Make sure you got `make` installed 
+4. Run `make`
 
 You'll find the assembled ROM under `build/main.gb`, it should play in a GameBoy Emulator of your choice.
+
+
+## Emulators for Development
+
+I found that [Gambatte](https://github.com/sinamas/gambatte) and [bgb](http://bgb.bircd.org/) are by far the best emulators for developing 
+as they have a big focus on accuracy, especially *bgb* comes with a great, 
+built-in debugger, vram viewer and other goodies. 
+
+For the web, [GameBoy Online](https://github.com/grantgalitz/GameBoy-Online) is by far the best of the available JavaScript based 
+emulators out there.
+
+For video recording [mednafen] will be the emulator of choice, you can record a 
+uncompressed gameplay video along with audio like so:
+
+    mednafen -qtrecord "game_raw.mov" -qtrecord.vcodec raw -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 game.gb
+
+> Note: Beware, this is completely uncompressed and even at a resolution of a mere 
+> `160x144`, this results in about ~150mb for ~30 seconds of video. Refer to the 
+> mednafen docs for some other encoding options.
 
 
 # License
