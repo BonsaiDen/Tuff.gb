@@ -10,6 +10,8 @@ core_init:
     ld      [coreHalfTickSwitch],a
     ld      [coreTimer],a
     ld      [coreInput],a
+    ld      [coreInputOn],a
+    ld      [coreInputOff],a
 
     ld      sp,$FFFF        ; init stack pointer
     call    core_screen_off ; Disable Screen
