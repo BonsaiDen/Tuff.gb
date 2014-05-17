@@ -31,7 +31,7 @@ built-in debugger, vram viewer and other goodies.
 For the web, [GameBoy Online](https://github.com/grantgalitz/GameBoy-Online) is by far the best of the available JavaScript based 
 emulators out there.
 
-For video recording [mednafen] will be the emulator of choice, you can record a 
+For video recording [mednafen](http://mednafen.sourceforge.net/) will be the emulator of choice, you can record a 
 uncompressed gameplay video along with audio like so:
 
     mednafen -qtrecord "game_raw.mov" -qtrecord.vcodec raw -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 game.gb
