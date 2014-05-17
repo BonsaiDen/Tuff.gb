@@ -84,10 +84,10 @@ save_load_from_sram:
     ld      a,48
     ld      [playerY],a
 
-    ld      a,7
+    ld      a,2
     ld      [mapRoomX],a
 
-    ld      a,2
+    ld      a,0
     ld      [mapRoomY],a
 
 .load:

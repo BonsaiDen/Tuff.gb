@@ -2,13 +2,20 @@ SECTION "SoundRam",WRAM0[$CA90]
 
 
 ; Constants -------------------------------------------------------------------
-SOUND_EFFECT_COUNT      EQU 4
+SOUND_PLAYER_JUMP EQU 1
+SOUND_PLAYER_LAND EQU 2
+SOUND_PLAYER_LAND_HARD EQU 3
+SOUND_BG_WATERFALL EQU 4
+SOUND_PLAYER_DEATH_LAVA EQU 5
+
+; Flag for halting the advancement of active sounds during force update -------
+soundForceUpdate:       DB
 
 
 ; Sound State Buffer ----------------------------------------------------------
-SoundEffectQueue        DS 32; maximum of 4 active sounds, 8 bytes per sound
+SoundEffectQueue:       DS 32; maximum of 4 active sounds, 8 bytes per sound
                              ; ID,Mode,Length,Channel,Priority,X,X,X
 
-SoundChannelState       DS 16; 4 byte per channel
-                             ; sound ID, active priority, reload flag, not used
+SoundChannelState:      DS 16; 4 byte per channel
+                             ; sound ID, active priority, action flag, not used
 

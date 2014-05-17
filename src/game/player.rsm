@@ -976,7 +976,7 @@ player_jump:
     ld      a,[playerOnGround]
     cp      0
     jp      z,.no_sound
-    ld      a,1
+    ld      a,SOUND_PLAYER_JUMP
     call    sound_play
 .no_sound:
 
@@ -1170,7 +1170,7 @@ player_fall:
     ; check how long we've been falling
     ld      a,[playerFallFrames]
     cp      50
-    jp      c,.done
+    jp      c,.normal
 
     ; if we'be been falling for more than 30 frames play a landing animation
     ; and delay further movement
@@ -1180,6 +1180,15 @@ player_fall:
     ; set ground and play landing animation
     ld      a,PLAYER_ANIMATION_LANDING
     ld      [playerAnimation],a
+
+    ld      a,SOUND_PLAYER_LAND_HARD
+    call    sound_play
+
+    jp      .done
+
+.normal:
+    ld      a,SOUND_PLAYER_LAND
+    call    sound_play
 
 .done:
     ld      a,0

@@ -40,8 +40,6 @@ game_init:
 
     ; Sound setup
     call    sound_enable
-    ;ld      a,4
-    ;call    sound_play
 
     ret
 
@@ -56,11 +54,24 @@ game_loop:
     and     %00001000
     cp      %00001000
     jp      nz,.next
-    ld      a,8
-    call    screen_flash_fast_dark
-    call    save_restore_player
+    ld      a,SOUND_PLAYER_DEATH_LAVA
+    call    sound_play
+
+    ;ld      a,8
+    ;call    screen_flash_fast_dark
+    ;call    save_restore_player
 
 .next:
+
+
+    ; debug save restore
+    ld      a,[coreInputOn]
+    and     %00000100
+    cp      %00000100
+    ret     nz
+    ld      a,SOUND_BG_WATERFALL
+    call    sound_stop
+
     ret
 
 

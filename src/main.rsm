@@ -22,6 +22,7 @@ INCLUDE     "game/ram/game.rsm"
 INCLUDE     "game/ram/screen.rsm"
 INCLUDE     "game/ram/player.rsm"
 INCLUDE     "game/ram/entity.rsm"
+INCLUDE     "game/ram/sound.rsm"
 
 
 ; Modules ---------------------------------------------------------------------
@@ -31,6 +32,7 @@ INCLUDE     "game/player.rsm"
 INCLUDE     "game/save.rsm"
 INCLUDE     "game/sprite.rsm"
 INCLUDE     "game/screen.rsm"
+INCLUDE     "game/sound.rsm"
 INCLUDE     "game/tileset.rsm"
 
 
