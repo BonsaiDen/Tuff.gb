@@ -387,7 +387,8 @@ sound_update_apply: ; hl = SoundEffectQueue address of sound
     ; set channel sound ID (hl = SoundEffectQueue, de = SoundChannelState)
     ld      a,[hli]
     ld      [de],a ; set sound id
-    inc     hl; skip mode
+    ld      a,[hli]; store mode
+    ld      c,a
     inc     hl; skip length
     inc     hl; skip channel
 
@@ -399,6 +400,11 @@ sound_update_apply: ; hl = SoundEffectQueue address of sound
     ; set action flag to reload
     inc     de
     ld      a,1
+    ld      [de],a
+    inc     de
+
+    ; store mode to channel data
+    ld      a,c
     ld      [de],a
 
     ret
@@ -432,8 +438,13 @@ sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
 
     ; clear action flag
     ld      a,0
-    ld      [hl],a
+    ld      [hli],a
 
+    ; load initial sound mode
+    ld      a,[hl]
+    ld      c,a
+
+    ; load channel number
     ld      a,b
     cp      1
     jp      z,.clear_channel_1
@@ -451,7 +462,6 @@ sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
     ld      [$ff11],a
     ld      [$ff12],a
     ld      [$ff13],a
-    ld      a,%00000000
     ld      [$ff14],a
     ret
 
@@ -463,13 +473,19 @@ sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
 
 .clear_channel_4: 
 
+    ; if the original sound mode was set to loop fade out the sound
+    ; otherwise do nothing
+    ld      a,c
+    cp      2
+    ret     nz
+
     ; limit frames to play
-    ld      a,$20
+    ld      a,$40
     ld      [$ff20],a
 
     ; set to dec envelope
     ld      hl,$ff21
-    res     3,[hl]
+    ld      [hl],%11110000
 
     ; set to limited play mode
     ld      a,%01000000
