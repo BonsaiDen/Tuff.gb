@@ -38,11 +38,10 @@ game_init:
     ; Hud
     call    game_hud
 
-    ; Sound
-    ld      hl,$FF25
-    ld      [hl],%11111111 ; output all channels to both speakers
-    inc     hl
-    ld      [hl],%00000000 ; dis-able sound for the time being, saving battery
+    ; Sound setup
+    call    sound_enable
+    ;ld      a,4
+    ;call    sound_play
 
     ret
 
@@ -50,7 +49,9 @@ game_init:
 ; Main Loop -------------------------------------------------------------------
 game_loop:
     call    sprite_animate_all
+    call    sound_update
 
+    ; debug save restore
     ld      a,[coreInputOn]
     and     %00001000
     cp      %00001000
@@ -58,7 +59,6 @@ game_loop:
     ld      a,8
     call    screen_flash_fast_dark
     call    save_restore_player
-    ;call    screen_shake
 
 .next:
     ret

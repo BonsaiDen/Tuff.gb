@@ -1,0 +1,544 @@
+SECTION "SoundLogic",ROM0
+
+
+; Sound Control ---------------------------------------------------------------
+sound_enable:
+    ld      a,%11111111
+    ld      [$ff25],a ; output all channels to both speakers
+    ld      a,%10000000
+    ld      [$ff26],a ; enable sound circuits
+    ret
+
+sound_disable:
+    ld      a,%00000000
+    ld      [$ff25],a ; output all channels to both speakers
+    ld      [$ff26],a ; dis-able sound circuits
+    ret
+
+sound_play: ; a = sound ID to play
+    push    af
+    push    hl
+    push    de
+    push    bc
+
+    ; store sound to play
+    ld      b,a
+
+    ; check if the sound is already in the queue, if so do nothing
+    ld      hl,SoundEffectQueue
+    ld      a,[hl]
+    cp      b
+    jp      z,.done
+            
+    ld      hl,SoundEffectQueue + 8
+    ld      a,[hl]
+    cp      b
+    jp      z,.done
+
+    ld      hl,SoundEffectQueue + 16
+    ld      a,[hl]
+    cp      b
+    jp      z,.done
+
+    ld      hl,SoundEffectQueue + 24
+    ld      a,[hl]
+    cp      b
+    jp      z,.done
+
+
+    ; if the sound is not yet in the queue, find a free spot to put it in
+    ld      hl,SoundEffectQueue
+    ld      a,[hl] 
+    cp      0 
+    jp      nz,.spot2 ; if the spot is not empty check the next one
+
+    call    sound_play_instance
+    jp      .done
+
+.spot2:
+
+    ld      hl,SoundEffectQueue + 8
+    ld      a,[hl] 
+    cp      0 
+    jp      nz,.spot3 ; if the spot is not empty check the next one
+
+    call    sound_play_instance
+    jp      .done
+
+.spot3:
+
+    ld      hl,SoundEffectQueue + 16
+    ld      a,[hl] 
+    cp      0 
+    jp      nz,.spot4 ; if the spot is not empty check the next one
+
+    call    sound_play_instance
+    jp      .done
+
+
+.spot4:
+
+    ld      hl,SoundEffectQueue + 24
+    ld      a,[hl] 
+    cp      0 
+    jp      nz,.done ; if the spot is not empty check the next one
+
+    call    sound_play_instance
+    jp      .done
+
+.done:
+    ; TODO somehow flag this so we don't decrease sound the duration here
+    call    sound_update
+
+    pop     bc
+    pop     de
+    pop     hl
+    pop     af
+    ret
+
+
+sound_stop: ; a = sound ID to stop
+    push    af
+    push    hl
+    push    de
+    push    bc
+
+    ld      b,a
+
+    ld      hl,SoundEffectQueue
+    call    sound_stop_instance
+
+    ld      hl,SoundEffectQueue + 8
+    call    sound_stop_instance
+
+    ld      hl,SoundEffectQueue + 16
+    call    sound_stop_instance
+
+    ld      hl,SoundEffectQueue + 24
+    call    sound_stop_instance
+
+    ; TODO somehow flag this so we don't decrease sound the duration here
+    call    sound_update;
+
+    pop     bc
+    pop     de
+    pop     hl
+    pop     af
+
+    ret
+
+
+
+; Internals -------------------------------------------------------------------
+sound_play_instance: ; hl = SoundEffectQueue, b = sound id to play
+
+    ; set sound id for the queue spot
+    ld      a,b
+    ld      [hli],a
+
+    ; set up queue spot data with the sound effect data
+    call    sound_get_effect_data; de now points to the sound data
+
+    ; mode
+    ld      a,[de]
+    ld      b,a; mode and priority are combined 
+    and     %00000011
+    ld      [hli],a
+    inc     de
+
+    ; length
+    ld      a,[de]
+    ld      [hli],a
+    inc     de
+
+    ; channel
+    ld      a,[de]
+    ld      [hli],a
+    inc     de
+
+    ; priortiy
+    ld      a,b
+    and     %11111100
+    srl     a
+    srl     a
+    ld      [hl],a
+
+    ret
+
+
+sound_stop_instance: ; hl = SoundEffectQueue, b = sound id to stop
+
+    ; check if the queue spot sound id matches the sound id to stop
+    ld      a,[hl] 
+    cp      b
+    ret     nz
+
+    ; clear the mode flag of the sound effect queue entry
+    inc     hl ; skip id
+    ld      a,0
+    ld      [hl],a
+
+    ret
+
+
+
+sound_update:
+    push    hl
+    push    de
+    push    bc
+
+
+    ; update the state of all queued sounds
+    ld      hl,SoundEffectQueue
+    call    sound_update_state
+
+    ld      hl,SoundEffectQueue + 8
+    call    sound_update_state
+
+    ld      hl,SoundEffectQueue + 16
+    call    sound_update_state
+
+    ld      hl,SoundEffectQueue + 24
+    call    sound_update_state
+
+
+    ; apply the queued sounds to the channels
+    ld      hl,SoundEffectQueue
+    call    sound_update_apply
+
+    ld      hl,SoundEffectQueue + 8
+    call    sound_update_apply
+
+    ld      hl,SoundEffectQueue + 16
+    call    sound_update_apply
+
+    ld      hl,SoundEffectQueue + 24
+    call    sound_update_apply
+
+
+    ; clean up empty sounds channles
+    ld      hl,SoundChannelState
+    ld      a,1
+    call    sound_update_channel
+
+    ld      hl,SoundChannelState + 4
+    ld      a,2
+    call    sound_update_channel
+
+    ld      hl,SoundChannelState + 8
+    ld      a,2
+    call    sound_update_channel
+
+    ld      hl,SoundChannelState + 12
+    ld      a,3
+    call    sound_update_channel
+
+    ld      hl,SoundChannelState + 16
+    ld      a,4
+    call    sound_update_channel
+
+    pop     bc
+    pop     de
+    pop     hl
+
+    ret
+
+
+; Individual sound and channel updaters ---------------------------------------
+sound_update_state: ; hl = SoundEffectQueue address of sound
+    
+    ld      a,[hli]; store sound id into b
+    ld      b,a
+
+    ; check mode
+    ld      a,[hli]
+    cp      2
+    jp      z,.looping
+    cp      1
+    jp      z,.playing
+    cp      0
+    jp      z,.stopped
+
+    ; this should normally not happen 
+    ret
+
+.looping:
+    ; do nothing
+    ret
+
+.playing:
+    ld      a,[hl] ; load sound length
+    dec     a ; decrease
+    ld      [hl],a; store
+    cp      0
+    ret     nz; do nothing if length > 0
+
+    ; otherwise disable the sound
+    dec     hl; go back to the mode byte
+    ld      [hl],0
+    inc     hl; go to length
+
+.stopped:
+    inc     hl; skip length
+    ld      a,[hl]; load target channel of the sound effect and store it
+    
+    ; check to see if the target channel is currently playing this effect
+    call    sound_get_channel
+    ld      a,[de]
+    cp      b
+    jp      nz,.clear
+
+    ; if the match up, clear the channel sound id
+    ld      a,0
+    ld      [de],a
+    
+    ; set the sound ID of the current queue spot to 0 to clear it
+.clear:
+    dec     hl; back to length
+    dec     hl; back to mode
+    dec     hl; back to id
+    ld      [hl],0
+    ret
+
+
+
+sound_update_apply: ; hl = SoundEffectQueue address of sound
+
+    ld      a,[hl]
+    cp      0
+    ret     z; return if the sound is not active
+
+    ; check if the channel is available
+    call    sound_get_channel
+    ld      a,[de]
+    cp      0
+    jp      nz,.in_use
+    jp      .set_channel
+
+.in_use:
+    ; if the sound is already playing on the target channel do nothing
+    ld      a,[hl]
+    ld      b,a
+    ld      a,[de]
+    cp      b
+    ret     z
+
+    ; if it is used check if the current sound effect's priority is higher
+    ; than the one that is currently playing on the channel
+
+    inc     hl; skip id
+    inc     hl; skip mode
+    inc     hl; skip length
+    inc     hl; skip channel
+
+    ; load priority of the current sound effect
+    ld      a,[hl]
+    ld      b,a
+
+    ; load priority of the sound that is currently on the channel
+    inc     de
+    ld      a,[de]
+    
+    cp      b
+    ret     z; do nothing if b == a
+    ret     nc; do nothing if b < a
+
+    ; if the priority of the current sound effect is higher set it on the channel
+    dec     de; back to channel sound id
+    dec     hl; back to channel
+    dec     hl; back to length
+    dec     hl; back to mode
+    dec     hl; back to id
+            
+
+.set_channel:
+
+    ; set channel sound ID
+    ld      a,[hli]
+    ld      [de],a ; set sound id
+    inc     hl; skip mode
+    inc     hl; skip length
+    inc     hl; skip channel
+
+    ; set priority
+    inc     de
+    ld      a,[hl]
+    ld      [de],a
+
+    ; set reload flag
+    inc     de
+    ld      a,1
+    ld      [de],a
+
+    ret
+    
+
+
+sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
+
+    ld      b,a ; store channel number
+    ld      a,[hli] ; load active sound ID
+
+    cp      0 ; if there is no active sound id on the channel clear it
+    jp      z,.clear_channel
+    
+    inc     hl ; skip priority
+    ld      a,[hl] ; load reload flag
+    cp      1
+    jp      z,.load_channel
+    
+    ret
+
+
+; channel clearing ------------------------------------------------------------
+.clear_channel:
+    ld      a,b
+    cp      1
+    jp      z,.clear_channel_1
+    cp      2
+    jp      z,.clear_channel_2
+    cp      3
+    jp      z,.clear_channel_3
+    cp      4
+    jp      z,.clear_channel_4
+    ret
+
+.clear_channel_1:
+    ld      a,0
+    ld      [$ff10],a
+    ld      [$ff11],a
+    ld      [$ff12],a
+    ld      [$ff13],a
+    ld      a,%01000000
+    ld      [$ff14],a
+    ret
+
+.clear_channel_2:
+    ret
+
+.clear_channel_3:
+    ret
+
+.clear_channel_4:
+    ld      a,0
+    ld      [$ff20],a
+    ld      [$ff21],a
+    ld      [$ff22],a
+    ld      a,%01000000
+    ld      [$ff23],a
+    ret
+
+
+; channel loading -------------------------------------------------------------
+.load_channel:
+
+    ; reset load flag
+    ld      a,0
+    ld      [hl],a
+
+    ; get sound effect data pointer
+    call    sound_get_effect_data; de now points to the sound configuration data
+
+    ; skip channel config data
+    ld      a,[de]; store loop mode
+    and     %00000011
+    ld      c,a
+    inc     de; skip mode / priority
+    inc     de; skip length
+    inc     de; skip channel
+    ld      h,d
+    ld      l,e
+
+    ; set specific channel
+    ld      a,b
+    cp      1
+    jp      z,.load_channel_1
+    cp      2  
+    jp      z,.load_channel_2
+    cp      3  
+    jp      z,.load_channel_3
+    cp      4  
+    jp      z,.load_channel_4
+    ret
+
+.load_channel_1:
+    ; FF10
+    ld      a,[hli]
+    ld      [$ff10],a
+
+    ; FF11
+    ld      a,[hli]
+    ld      [$ff11],a
+
+    ; FF12
+    ld      a,[hli]
+    ld      [$ff12],a
+
+    ; FF13
+    ld      a,[hli]
+    ld      [$ff13],a
+
+    ; FF14
+    ld      a,[hl]
+    ld      [$ff14],a
+    ret
+
+.load_channel_2:
+    ret
+
+.load_channel_3:
+    ret
+
+.load_channel_4:
+
+    ; FF20
+    ld      a,[hli]
+    ld      [$ff20],a
+
+    ; FF21
+    ld      a,[hli]
+    ld      [$ff21],a
+
+    ; FF22
+    ld      a,[hli]
+    ld      [$ff22],a
+
+    ; FF23
+    ld      a,[hli]
+    ld      [$ff23],a
+
+    ret
+
+
+; Helpers ----------------------------------------------------------------------
+sound_get_effect_data: ; b = sound id to get -> de = data pointer
+
+    push    hl
+    push    bc
+    dec     b; switch to 0 based indexing and multiply by 8 to get the offset
+    ld      h,b
+    ld      e,8
+    call    math_mul8b
+    
+    ; combine with the base address and move to de register
+    ld      de,SoundDefinitions
+    add     hl,de
+    ld      d,h
+    ld      e,l
+
+    pop     bc
+    pop     hl
+    ret
+
+sound_get_channel; a = sound channel id, de -> address of SoundChannelState
+    push    hl
+    dec     a; convert to 0 based indexing
+    ld      h,a
+    ld      l,4
+    ld      de,SoundChannelState
+    add     hl,de
+    ld      h,d
+    ld      l,e
+    pop     hl
+    ret
+

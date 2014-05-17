@@ -1,0 +1,14 @@
+SECTION "SoundRam",WRAM0[$CA90]
+
+
+; Constants -------------------------------------------------------------------
+SOUND_EFFECT_COUNT      EQU 4
+
+
+; Sound State Buffer ----------------------------------------------------------
+SoundEffectQueue        DS 32; maximum of 4 active sounds, 8 bytes per sound
+                             ; ID,Mode,Length,Channel,Priority,X,X,X
+
+SoundChannelState       DS 16; 4 byte per channel
+                             ; sound ID, active priority, reload flag, not used
+

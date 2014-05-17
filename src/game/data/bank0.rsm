@@ -155,6 +155,40 @@ DataTileAnimation:
     DB $e8,$e9,$ea,$eb
 
 
+; Sound Data ------------------------------------------------------------------
+ENV: MACRO; envelope macro
+DB $00
+ENDM
+
+SWP: MACRO; sweep macro
+DB $00
+ENDM
+
+SHF: MACRO; shift frequency macro
+DB $00
+ENDM
+
+
+SoundDefinitions:
+    
+    ; Mode / Priority [PPPPPPMM]
+    ; Length in Frames
+    ; Channel
+    ; custom channel data
+
+    ; jump3
+    DB $09,$0d,$01,$36,$89,$b3,$00,$c6
+
+    ; land_real
+    DB $09,$0f,$04,$00,$f1,$34,$80,$ff
+
+    ; land_hard
+    DB $09,$0e,$04,$00,$e1,$70,$80,$ff
+
+    ; waterfall
+    DB $06,$00,$04,$00,$4c,$43,$80,$ff
+
+
 ; Entity Data -----------------------------------------------------------------
 EntityDefinitions:
     

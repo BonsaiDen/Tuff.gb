@@ -972,6 +972,14 @@ player_jump:
     ld      a,1
     ld      [playerJumpPressed],a
 
+    ; play jump sound
+    ld      a,[playerOnGround]
+    cp      0
+    jp      z,.no_sound
+    ld      a,1
+    call    sound_play
+.no_sound:
+
     ; under water movement
     ld      a,[playerUnderWater]
     cp      1
