@@ -159,24 +159,7 @@ DataTileAnimation:
 SoundDefinitions:
     
     ; Mode / Priority [PPPPPPMM],  Length in Frames, Channel,  custom channel data
-
-    ; PLAYER_JUMP
-    DB $09,$0d,$01,$36,$8c,$b3,$00,$c6
-
-    ; PLAYER_LAND
-    DB $09,$04,$04,$00,$41,$6a,$80,$ff
-
-    ; PLAYER_LAND_HARD
-    DB $09,$04,$04,$00,$41,$5d,$80,$ff
-
-    ; BG_WATERFALL
-    DB $06,$00,$04,$00,$4c,$34,$80,$ff
-
-    ; PLAYER_DEATH_LAVA
-    DB $09,$34,$04,$00,$b5,$8b,$80,$ff
-
-    ; GAME_SAVE_FLASH
-    DB $0d,$25,$04,$00,$d3,$17,$80,$ff
+    INCLUDE     "../data/bin/sounds.data.rsm"
 
 
 ; Entity Data -----------------------------------------------------------------

@@ -1,0 +1,70 @@
+[{
+    "id": "PLAYER_JUMP",
+    "channel": 1,
+    "priority": 2,
+    "sweepShifts": 6,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 12,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 11,
+    "frequency": 1536
+}, {
+    "id": "PLAYER_LAND",
+    "channel": 4,
+    "priority": 2,
+    "soundLength": 0,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 4,
+    "freqRatio": 2,
+    "polyStep": 1,
+    "shiftFreq": 6
+}, {
+    "id": "PLAYER_LAND_HARD",
+    "channel": 4,
+    "priority": 2,
+    "soundLength": 0,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 4,
+    "freqRatio": 5,
+    "polyStep": 1,
+    "shiftFreq": 5
+}, {
+    "id": "BG_WATERFALL",
+    "channel": 4,
+    "priority": 1,
+    "looping": true,
+    "soundLength": 0,
+    "envStepTime": 4,
+    "envStepDir": 1,
+    "envInitVol": 4,
+    "freqRatio": 4,
+    "polyStep": 0,
+    "shiftFreq": 3
+}, {
+    "id": "PLAYER_DEATH_LAVA",
+    "channel": 4,
+    "priority": 2,
+    "soundLength": 0,
+    "envStepTime": 5,
+    "envStepDir": 0,
+    "envInitVol": 11,
+    "freqRatio": 3,
+    "polyStep": 1,
+    "shiftFreq": 8
+}, {
+    "id": "GAME_SAVE_FLASH",
+    "channel": 4,
+    "priority": 3,
+    "soundLength": 0,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 13,
+    "freqRatio": 7,
+    "polyStep": 0,
+    "shiftFreq": 1
+}]

@@ -721,6 +721,129 @@ var Convert = {
             console.error(('[col] Error: ' + err).red);
         });
 
+    },
+
+    Sounds: function(file) {
+
+        return IO.load(file).then(function(sounds) {
+
+            var result = {
+                data: '',
+                defs: ''
+            };
+
+            sounds.forEach(function(s, index) {
+
+                var bytes = [
+                    (s.priority << 2) | (s.envStepDir === 0 ? 1 : 2), // rising envelope means loop
+                    0,
+                    s.channel
+                ];
+
+                if (s.channel === 1) {
+
+                    // convert sound length into frames
+                    bytes[1] = s.looping ? 0 : Math.ceil((64 - s.soundLength) * (1 / 256) / (1 / 60));
+
+                    // TODO support 0 lengths along with
+
+                    // FF10
+                    bytes.push(
+                        ((s.sweepTime << 4) & 112) +
+                        ((s.sweepDir << 3) & 8) +
+                        (s.sweepShifts & 7)
+                    );
+
+                    // FF11
+                    bytes.push(
+                        ((s.dutyCycle << 6) & 192) +
+                        (s.soundLength & 63)
+                    );
+
+                    // FF12 envelop
+                    bytes.push(
+                        ((s.envInitVol << 4) & 240) +
+                        ((s.envStepDir << 3) & 8) +
+                        (s.envStepTime & 7)
+                    );
+
+                    // FF 13 low frequency
+                    bytes.push(s.frequency & 0xff);
+
+                    // FF 14
+                    bytes.push(
+                        128 | 64 | ((s.frequency >> 8) & 0x07)
+                    );
+
+                } else if (s.channel === 4) {
+
+                    // convert sound length into frames
+                    if (s.soundLength) {
+                        bytes[1] = s.looping ? 0 : Math.ceil((64 - s.soundLength) * (1 / 256) / (1 / 60));
+
+                    // calculate frame length from envelope
+                    } else if (!s.looping) {
+                        // TODO support rising envelopes
+                        // Length of each decrease step
+                        // after this many seconds the volume will drop by one
+                        var stepLength = s.envStepTime * (1 / 64);
+                        // number of seconds it takes to reduce the sound to zero converted to frames
+                        bytes[1] = Math.ceil((stepLength * s.envInitVol) / (1 / 60));
+
+                    } else {
+                        bytes[1] = 0;
+                    }
+
+                    // FF20 sound length
+                    bytes.push(s.soundLength & 63);
+
+                    // FF21 envelop
+                    bytes.push(
+                        ((s.envInitVol << 4) & 240) +
+                        ((s.envStepDir << 3) & 8) +
+                        (s.envStepTime & 7)
+                    );
+
+                    // FF22 polynomial counter
+                    bytes.push(
+                        ((s.shiftFreq << 4) & 240) +
+                        ((s.polyStep << 3) & 8) +
+                        (s.freqRatio & 7)
+                    );
+
+                    // FF23
+                    bytes.push(128 | (s.soundLength > 0 ? 64 : 0));
+
+                    // padding
+                    bytes.push(255);
+
+                }
+
+                result.data += '    ; ' + s.id + '\n    DB ' + bytes.map(function(b) {
+                    var s = b.toString('16');
+                    return '$' + (s.length === 1 ? '0' + s : s);
+
+                }).join(',') + '\n\n';
+
+                result.defs += 'SOUND_' + s.id + ' EQU ' + (index + 1) + '\n';
+
+            });
+
+            return result;
+
+        }).then(function(data) {
+            return Promise.all([
+                IO.saveAs('data.rsm', file, data.data),
+                IO.saveAs('def.rsm', file, data.defs)
+            ]);
+
+        }).then(function() {
+            console.log('[snd] Done!');
+
+        }).error(function(err) {
+            console.error(('[snd] Error: ' + err).red);
+        });
+
     }
 
 };
@@ -737,6 +860,7 @@ Promise.all([
     Convert.TileRowMap('player.ch.png'),
     Convert.TileRowMap('entities.ch.png'),
     Convert.Collision('tiles.col.png'),
+    Convert.Sounds('sounds.json'),
     Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
         return Convert.Map('main.map.json');
     })
