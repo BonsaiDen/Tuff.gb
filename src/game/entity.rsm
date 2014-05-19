@@ -170,7 +170,7 @@ entity_load:
     ; call custom load handler
     ld      a,l
     dec     a; convert into 0 based offset
-    ld      hl,entityLoadHandler
+    ld      hl,DataEntityLoadHandlerTable
     add     a,a  ; multiply entity type by 4
     add     a,a
     add     a,l ; add a to hl
@@ -317,7 +317,7 @@ entity_update_loop:
     ; invoke custom entity update handler
     ld      a,l
     dec     a; convert into 0 based offset
-    ld      hl,entityUpdateHandler
+    ld      hl,DataEntityUpdateHandlerTable
     add     a,a  ; multiply entity type by 4
     add     a,a
     add     a,l ; add a to hl

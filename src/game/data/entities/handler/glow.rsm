@@ -1,0 +1,11 @@
+entity_handler_load_glow:
+    ld      a,c
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
+    call    sprite_animation_set
+    call    sprite_animation_start
+    ret
+    
+
+entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
+    ret
+

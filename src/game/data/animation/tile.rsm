@@ -1,0 +1,27 @@
+; animations for the tiles c0 - ff
+
+; Water Top
+DB $c0,$c1,$c2,$c3
+
+; Water
+DB $c4,$c5,$c6,$c7
+
+; Waterfall
+DB $c8,$c9,$ca,$cb
+DB $cc,$cd,$ce,$cf
+DB $dc,$dd,$de,$df
+
+; Lava Top
+DB $d0,$d1,$d2,$d3
+DB $d4,$d5,$d6,$d7
+
+; Torch
+DB $d8,$d9,$da,$db
+
+; Lava Bottom
+DB $e0,$e1,$e2,$e3
+DB $e4,$e5,$e6,$e7
+
+; Electricity
+DB $e8,$e9,$ea,$eb
+

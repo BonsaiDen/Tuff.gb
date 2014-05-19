@@ -4,7 +4,7 @@ SECTION "Bank0 Data",ROM0[$2000]
 DataBlockDef: 
     INCBIN  "../data/bin/blocks.def.bin" ; $0400 bytes (1kb)
 
-DataTileCol: ; @2400 for collision checks
+DataTileCol: ; placed specifically @ 0x2400 for collision checks
     INCBIN  "../data/bin/tiles.col.bin"; 256 byte
 
 DataTileImg:
@@ -16,250 +16,18 @@ DataPlayerImg:
 DataEntityRows:
     INCBIN  "../data/bin/entities.ch.bin" 
 
-
-; Sprite Animations -----------------------------------------------------------
 DataSpriteAnimation:
-
-    ; Each Animation takes 32 bytes
-    ; The first 16 are the tile indexes (which are 16x16)
-    ; The other 16 bytes are frame lengths, each frame is 16ms long.
-    ; FF FD and FE are special values for frame lengths which are used to control
-    ; the animation behavior. FF means STOP, FE means loop, FD means bounce
-
-
-    ; Player ------------------------------------------------------------------
-
-    ; Idle
-    DB $00, $00,$01,$00,$01, $00,$01,$00,$02, $00,$00, $ff,$ff,$ff,$ff,$ff
-    DB $ff, $68,$0C,$C3,$0A, $08,$0A,$C0,$2f, $38,$fe, $ff,$ff,$ff,$ff,$ff
-
-    ; Walking
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $04,$05,$04,$06, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Sleeping
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $ff, $25,$2A,$25,$2A, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Wall Pushing
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $0B,$0D,$0B,$0D, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Jumping 
-    DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Falling / Diving down
-    DB $00, $02,$01,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $02,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Running
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $02,$03,$02,$03, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Swimming
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $06,$0B,$06,$0B, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-        
-    ; Dissolving 
-    DB $00, $00,$01,$02,$03, $04,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
-    DB $fd, $05,$04,$03,$02, $02,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
-
-    ; Swimming to the Surface
-    DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Wall Sliding
-    DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $20,$ff,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Start Pound
-    DB $00, $00,$01,$00,$01, $02,$01,$02,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $06,$06,$06,$06, $06,$06,$06,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Stop Pound
-    DB $00, $02,$01,$02,$01, $00,$01,$00,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $04,$04,$04,$04, $04,$04,$04,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-    ; Player Landing
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $09,$05,$04,$03, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-
-    ; Entity ------------------------------------------------------------------
-
-    ; Save Point
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $09,$09,$09,$09, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    
-    ; Glow Flicker
-    DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-    DB $fd, $02,$02,$02,$02, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-
-; Tile Animations -------------------------------------------------------------
-DataTileAnimationDelay:
-
-    ; Water Top
-    DB $03
-
-    ; Water
-    DB $03
-
-    ; Waterfall
-    DB $03
-    DB $03
-    DB $03
-
-    ; Lava Top
-    DB $04
-    DB $04
-
-    ; Torch
-    DB $04
-
-    ; Lava Bottom
-    DB $04
-    DB $04
-
-    ; Electricity
-    DB $00
+    INCLUDE "game/data/animation/sprite.rsm"
 
 DataTileAnimation:
+    INCLUDE "game/data/animation/tile.rsm"
 
-    ; tiles c0 - ff
+DataTileAnimationDelay:
+    INCLUDE "game/data/animation/tiledelay.rsm"
 
-    ; Water Top
-    DB $c0,$c1,$c2,$c3
-
-    ; Water
-    DB $c4,$c5,$c6,$c7
-
-    ; Waterfall
-    DB $c8,$c9,$ca,$cb
-    DB $cc,$cd,$ce,$cf
-    DB $dc,$dd,$de,$df
-
-    ; Lava Top
-    DB $d0,$d1,$d2,$d3
-    DB $d4,$d5,$d6,$d7
-
-    ; Torch
-    DB $d8,$d9,$da,$db
-
-    ; Lava Bottom
-    DB $e0,$e1,$e2,$e3
-    DB $e4,$e5,$e6,$e7
-
-    ; Electricity
-    DB $e8,$e9,$ea,$eb
-
-
-; Sound Data ------------------------------------------------------------------
-DataSoundDefinitions:
-    
-    ; Mode / Priority [PPPPPPMM],  Length in Frames, Channel,  custom channel data
-    INCLUDE     "../data/bin/sounds.data.rsm"
-
-
-; Entity Data -----------------------------------------------------------------
 DataEntityDefinitions:
-    
-    ; [BG/FG] [PALETTE] [TILEROW] 
-    DB      %00000000,$00,$00,$00, $00,$00,$00,$00
-    DB      %01000001,$00,$00,$00, $00,$00,$00,$00
-    DB      %11000010,$00,$00,$00, $00,$00,$00,$00
+    INCLUDE "game/data/entities/entities.rsm"
 
-
-; Entity Handler Table --------------------------------------------------------
-entityLoadHandler:
-    jp      entity_handler_load_save
-    nop
-
-    jp      entity_handler_load_save
-    nop
-
-    jp      entity_handler_load_glow
-    nop
-
-            
-entityUpdateHandler:
-    jp      entity_handler_update_save
-    nop
-
-    jp      entity_handler_update_save
-    nop
-
-    jp      entity_handler_update
-    nop
-
-
-; Entity Handler --------------------------------------------------------------
-entity_handler_load_save: ; generic, b = entity index, c = sprite index
-    ld      a,c
-    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
-    call    sprite_animation_set
-    call    sprite_animation_start
-    ret
-
-
-entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = screen data
-
-    inc     de; skip type
-    inc     de; skip flags
-    inc     de; skip direction
-
-    ; check player y === save y
-    ld      a,[de] ; y
-    ld      b,a
-    ld      a,[playerY]
-    cp      b
-    jp      nz,.done
-
-    ; check player x > save x - 8 and player x < save x + 8
-    inc     de
-
-    ; check right edge
-    ld      a,[de] ; x
-    add     7 
-    ld      b,a
-    ld      a,[playerX]
-    cp      b
-    jp      nc,.done; edge > player
-
-    ; check left edge
-    ld      a,[de] ; x
-    sub     6 
-    ld      b,a
-    ld      a,[playerX]
-    cp      b
-    jp      c,.done; edge < player
-
-    ; check down press
-    ld      a,[coreInputOn]
-    and     %10000000
-    cp      %10000000
-    jp      nz,.done
-
-    ; save game
-    call    save_store_to_sram
-    call    screen_flash_light
-    ld      a,SOUND_GAME_SAVE_FLASH
-    call    sound_play
-
-
-.done:
-    ret
-
-
-entity_handler_load_glow:
-    ld      a,c
-    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
-    call    sprite_animation_set
-    call    sprite_animation_start
-    ret
-    
-
-entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
-    ret
+DataSoundDefinitions:
+    INCLUDE     "../data/bin/sounds.data.rsm"
 
