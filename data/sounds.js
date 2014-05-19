@@ -1,0 +1,131 @@
+module.exports = [{
+    "id": "PLAYER_JUMP",
+    "channel": 1,
+    "priority": 2,
+    "sweepShifts": 6,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 12,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 11,
+    "frequency": 1536
+
+}, {
+    "id": "PLAYER_LAND",
+    "channel": 4,
+    "priority": 1,
+    "soundLength": 0,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 4,
+    "freqRatio": 2,
+    "polyStep": 1,
+    "shiftFreq": 6
+
+}, {
+    "id": "PLAYER_LAND_HARD",
+    "channel": 4,
+    "priority": 1,
+    "soundLength": 0,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 6,
+    "freqRatio": 1,
+    "polyStep": 1,
+    "shiftFreq": 7
+
+}, {
+    "id": "BG_WATERFALL",
+    "channel": 4,
+    "priority": 2,
+    "looping": true,
+    "soundLength": 0,
+    "envStepTime": 4,
+    "envStepDir": 1,
+    "envInitVol": 6,
+    "freqRatio": 4,
+    "polyStep": 0,
+    "shiftFreq": 2
+
+}, {
+    "id": "PLAYER_DEATH_LAVA",
+    "channel": 4,
+    "priority": 10,
+    "soundLength": 0,
+    "envStepTime": 5,
+    "envStepDir": 0,
+    "envInitVol": 11,
+    "freqRatio": 3,
+    "polyStep": 1,
+    "shiftFreq": 8
+
+}, {
+    "id": "PLAYER_DEATH_ELECTRIC",
+    "channel": 1,
+    "priority": 10,
+    "sweepShifts": 4,
+    "sweepDir": 1,
+    "sweepTime": 3,
+    "soundLength": 1,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x07D0
+
+}, {
+    "id": "GAME_SAVE_FLASH",
+    "channel": 1,
+    "priority": 3,
+    "sweepShifts": 5,
+    "sweepDir": 0,
+    "sweepTime": 7,
+    "soundLength": 0,
+    "dutyCycle": 0,
+    "envStepTime": 7,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x0650
+
+}, {
+    "id": "GAME_SAVE_RESTORE_FLASH",
+    "channel": 1,
+    "priority": 3,
+    "sweepShifts": 5,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 2,
+    "dutyCycle": 3,
+    "envStepTime": 2,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x0450
+
+}, {
+    "id": "PLAYER_WALL_JUMP",
+    "channel": 1,
+    "priority": 2,
+    "sweepShifts": 6,
+    "sweepDir": 0,
+    "sweepTime": 4,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 0x000B,
+    "frequency": 0x0630
+
+}, {
+    "id": "PLAYER_LAND_POUND",
+    "channel": 4,
+    "priority": 3,
+    "soundLength": 0,
+    "envStepTime": 7,
+    "envStepDir": 0,
+    "envInitVol": 9,
+    "freqRatio": 2,
+    "polyStep": 0,
+    "shiftFreq": 7
+}];

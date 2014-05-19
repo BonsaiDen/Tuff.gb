@@ -64,6 +64,9 @@ var IO = {
 
         } else if ((/\.json$/).test(file)) {
             return IO.loadJSON(file);
+
+        } else if ((/\.js$/).test(file)) {
+            return Promise.fulfilled(require(file));
         }
 
     },
@@ -848,6 +851,186 @@ var Convert = {
 
 };
 
+// Reverse Convert the Tile Defs from the binary and the tilesheet ------------
+var Reverse = {
+
+    TileDef: function() {
+
+        // Convert the binary block definitions back into png image
+        // This is useful for when editing the tileset graphics directly
+        // Since you'd need to update all blocks in the block def png by hand
+        return fs.readFileAsync('data/bin/blocks.def.bin').then(function(buffer) {
+
+            var grid = Reverse.makeArray(32, 32),
+                offsets = [],
+                blocks = new Array(buffer.length);
+
+            for(var i = 0, l = buffer.length; i < l; i++) {
+                blocks[i] = buffer[i];
+            }
+
+            while(blocks.length) {
+                offsets.push(blocks.splice(0, 256));
+            }
+
+            var width = 16,
+                height = 16;
+
+            for(var y = 0; y < height; y++) {
+                for(var x = 0; x < width; x++) {
+
+                    var index = width * y + x,
+                        tiles = [
+                            offsets[0][index],
+                            offsets[1][index],
+                            offsets[2][index],
+                            offsets[3][index]
+                        ];
+
+                    grid[y * 2][x * 2] = tiles[0];
+                    grid[y * 2 + 1][x * 2] = tiles[2];
+                    grid[y * 2][x * 2 + 1] = tiles[1];
+                    grid[y * 2 + 1][x * 2 + 1] = tiles[3];
+
+                }
+            }
+
+            return Reverse.createImage(grid);
+
+        });
+
+    },
+
+    makeArray: function(width, height) {
+
+        var array = [];
+        for(var y = 0; y < height; y++) {
+
+            var sub = [];
+            for(var x = 0; x < width; x++) {
+                sub.push(0);
+            }
+
+            array.push(sub);
+
+        }
+
+        return array;
+
+    },
+
+    tileFromImageBlock: function(img, blockX, blockY) {
+
+       var rows = [];
+       for(var py = 0; py < 8; py++) {
+
+            var line = [];
+            for(var px = 0; px < 8; px++) {
+
+                var i = ((img.width * (blockY * 8 + py)) + blockX * 8 + px) << 2,
+                    r = img.data[i],
+                    g = img.data[i + 1],
+                    b = img.data[i + 2];
+
+                line.push(r, g, b, 255);
+
+            }
+
+            rows.push(line);
+
+        }
+
+        return rows;
+
+    },
+
+    loadImage: function(file) {
+
+        var deffered = Promise.pending();
+        fs.createReadStream(file).pipe(new PNG({
+            filterType: 4
+
+        })).on('parsed', function() {
+
+            if (this.height % 8 !== 0 || this.width % 8 !== 0) {
+                deffered.reject(new Error('[image] Error: Image size is not a multiple of 8x8px!'));
+
+            } else {
+
+                console.log(
+                    '[image] Loaded image with %sx%s pixels (%sx%s tiles, %s bytes as tileset)',
+                    this.width,
+                    this.height,
+                    this.width / 8,
+                    this.height / 8,
+                    this.width * this.height / 4
+                );
+
+                deffered.fulfill(this);
+
+            }
+
+        });
+
+        return deffered.promise;
+
+    },
+
+    createImage: function(grid) {
+
+        var name = 'tiles.bg.png',
+            out = 'blocks.def.png';
+
+        return Reverse.loadImage(path.join(IO._source, name)).then(function(img) {
+
+            var tiles = [],
+                x, y;
+
+            for(y = 0; y < img.height / 8; y++) {
+                for(x = 0; x < img.width / 8; x++) {
+                    tiles.push(Reverse.tileFromImageBlock(img, x, y));
+                }
+            }
+
+            var raw = [];
+
+            console.log(raw.length, tiles.length);
+
+            for(y = 0; y < 32 * 8; y++) {
+                for(x = 0; x < 32; x++) {
+                    var t = tiles[grid[~~(y / 8)][x]];
+                    raw.push.apply(raw, t[y % 8]);
+                }
+            }
+
+            console.log(raw.length);
+
+            var image = new PNG({
+                width: 32 * 8,
+                height: 32 * 8
+            });
+
+            image.data = raw;
+
+            var output = new Buffer([]);
+            image.on('data', function(chunk) {
+                output = Buffer.concat([output, chunk]);
+            });
+
+            image.on('end', function() {
+                fs.writeFile(path.join(IO._source, out), output);
+            });
+
+            image.pack();
+
+            return null;
+
+        });
+
+    }
+
+};
+
 
 // Setup Paths ----------------------------------------------------------------
 IO.setSource(path.join(process.cwd(), process.argv[2]));
@@ -855,21 +1038,28 @@ IO.setDest(path.join(process.cwd(), process.argv[3]));
 
 
 // Convert --------------------------------------------------------------------
-Promise.all([
-    Convert.Tileset('tiles.bg.png'),
-    Convert.TileRowMap('player.ch.png'),
-    Convert.TileRowMap('entities.ch.png'),
-    Convert.Collision('tiles.col.png'),
-    Convert.Sounds('sounds.json'),
-    Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
-        return Convert.Map('main.map.json');
-    })
+if (process.argv[4] === '-reverse') {
+    Reverse.TileDef();
 
-]).then(function() {
-    console.log('Complete!');
+} else {
 
-}).error(function(err) {
-    console.error(err.toString().red);
-    process.exit(1);
-});
+    Promise.all([
+        Convert.Tileset('tiles.bg.png'),
+        Convert.TileRowMap('player.ch.png'),
+        Convert.TileRowMap('entities.ch.png'),
+        Convert.Collision('tiles.col.png'),
+        Convert.Sounds('sounds.js'),
+        Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
+            return Convert.Map('main.map.json');
+        })
+
+    ]).then(function() {
+        console.log('Complete!');
+
+    }).error(function(err) {
+        console.error(err.toString().red);
+        process.exit(1);
+    });
+
+}
 
