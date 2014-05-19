@@ -128,4 +128,47 @@ module.exports = [{
     "freqRatio": 2,
     "polyStep": 0,
     "shiftFreq": 7
+
+}, {
+    "id": "PLAYER_POUND_UP_HIGH",
+    "channel": 1,
+    "priority": 5,
+    "sweepShifts": 4,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 7,
+    "dutyCycle": 2,
+    "envStepTime": 4,
+    "envStepDir": 0,
+    "envInitVol": 0x000F,
+    "frequency": 0x0390
+
+}, {
+    "id": "PLAYER_POUND_UP_MED",
+    "channel": 1,
+    "priority": 4,
+    "sweepShifts": 4,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 7,
+    "dutyCycle": 2,
+    "envStepTime": 4,
+    "envStepDir": 0,
+    "envInitVol": 0x000F,
+    "frequency": 0x0310
+
+}, {
+    "id": "PLAYER_POUND_UP_LOW",
+    "channel": 1,
+    "priority": 3,
+    "sweepShifts": 4,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 7,
+    "dutyCycle": 2,
+    "envStepTime": 4,
+    "envStepDir": 0,
+    "envInitVol": 0x000F,
+    "frequency": 0x0230
 }];
+

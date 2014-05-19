@@ -966,6 +966,11 @@ player_jump:
     cp      0
     ret     nz
 
+    ; Prevent very high jumps during pound end animation
+    ld      a,[playerIsPounding]
+    cp      0
+    ret     nz
+
     ; see if the jump button has been pressed
     ld      a,[coreInput]
     and     %00000001
@@ -1952,9 +1957,45 @@ player_pound:
 
     ret     
     
+
     ; delay the start / stop animation
 .delay:
     
+    ; check if we're at the start and play the pounding up sound
+    ld      a,[playerIsPounding]
+    cp      1
+    jp      nz,.skip_sound
+
+    ; for the first 3 ticks play a sound each time
+    ld      a,[playerPoundTick]
+    ld      b,a
+    ld      a,PLAYER_POUND_DELAY_START
+    sub     b
+    ld      b,a
+    cp      0
+    jp      z,.sound_low
+    cp      12
+    jp      z,.sound_med
+    cp      24
+    jp      z,.sound_high
+    jp      .skip_sound
+
+.sound_high:
+    ld      a,SOUND_PLAYER_POUND_UP_HIGH
+    jp      .sound_play
+
+.sound_med:
+    ld      a,SOUND_PLAYER_POUND_UP_MED
+    jp      .sound_play
+
+.sound_low:
+    ld      a,SOUND_PLAYER_POUND_UP_LOW
+
+.sound_play:
+    call    sound_stop
+    call    sound_play
+
+.skip_sound:
     ld      a,[playerPoundTick]
     cp      0
     jp      z,.pounding
