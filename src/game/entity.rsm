@@ -22,14 +22,14 @@ entity_load:
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
     ld      b,0
 
-_entity_load_loop:
+.entity_load_loop:
 
     ; get type / used
     ld      a,[hl]
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
     cp      0
-    jp      z,_entity_load_next ; entity is not set for room
+    jp      z,.entity_load_next ; entity is not set for room
 
     ; init base state
     push    hl
@@ -62,9 +62,9 @@ _entity_load_loop:
     ld      a,[de]
     and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
     cp      128
-    jp      nz,_entity_load_defaults; not stored, load defaults for position
+    jp      nz,.entity_load_defaults; not stored, load defaults for position
 
-_entity_load_stored:
+.entity_load_stored:
     ; store index
     push    hl
     push    de
@@ -89,10 +89,10 @@ _entity_load_stored:
     ; restore index
     pop     de
     pop     hl
-    jp      _entity_load_init
+    jp      .entity_load_init
 
     ; load default data from map buffer
-_entity_load_defaults:
+.entity_load_defaults:
 
     ; store index
     push    hl
@@ -128,7 +128,7 @@ _entity_load_defaults:
     pop     de
     pop     hl
 
-_entity_load_init:
+.entity_load_init:
 
     push    hl
 
@@ -179,9 +179,9 @@ _entity_load_init:
     sub     l
     ld      h,a
     push    bc
-    jp      [hl]
+    call    entity_handler_jump
 
-_entity_load_handler_ret:; return target for load handler
+.entity_load_handler_ret:; return target for load handler
     pop     bc
     pop     de
     ld      l,c
@@ -202,7 +202,7 @@ _entity_load_handler_ret:; return target for load handler
     pop     bc;  restore entity / loop index
     pop     hl
 
-_entity_load_next:
+.entity_load_next:
     inc     de
     inc     de
     inc     hl
@@ -211,7 +211,7 @@ _entity_load_next:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,_entity_load_loop
+    jp      nz,.entity_load_loop
     ret
 
 
@@ -301,7 +301,7 @@ entity_update_loop:
     ; load type / active
     ld      a,[de]
     cp      0
-    jp      z,_entity_update_skip; not active skip
+    jp      z,.entity_update_skip; not active skip
     ld      l,a ; store type
 
     ; get sprite index
@@ -325,11 +325,11 @@ entity_update_loop:
     adc     a,h
     sub     l
     ld      h,a
-    push    bc
-    jp      [hl]
 
-_entity_update_handler_ret: ; update handler return target
+    push    bc
+    call    entity_handler_jump
     pop     bc
+
     pop     de
     pop     hl
 
@@ -352,9 +352,9 @@ _entity_update_handler_ret: ; update handler return target
     inc     de
     inc     de
     inc     de
-    jp      _entity_update_next
+    jp      .entity_update_next
 
-_entity_update_skip:
+.entity_update_skip:
     inc     de
     inc     de
     inc     de
@@ -364,12 +364,17 @@ _entity_update_skip:
     inc     de
     inc     de
 
-_entity_update_next:
+.entity_update_next:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
     jp      nz,entity_update_loop
     ret
+
+
+; we use this indirection trick to be able to return from the called code
+entity_handler_jump:
+    jp      [hl]
 
 
 ; Entity Sprite Handling ------------------------------------------------------
@@ -496,7 +501,7 @@ entity_screen_offset_de: ; b = entity index
 
 entity_defintion: ; a = sprite type
     push    hl
-    ld      hl,EntityDefinitions
+    ld      hl,DataEntityDefinitions
 
     dec     a; convert into zero based index
 

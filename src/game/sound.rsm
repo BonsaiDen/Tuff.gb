@@ -55,7 +55,7 @@ sound_play: ; a = sound ID to play
     cp      0 
     jp      nz,.spot2 ; if the spot is not empty check the next one
 
-    call    sound_play_instance
+    call    _sound_play_instance
     jp      .done
 
 .spot2:
@@ -65,7 +65,7 @@ sound_play: ; a = sound ID to play
     cp      0 
     jp      nz,.spot3 ; if the spot is not empty check the next one
 
-    call    sound_play_instance
+    call    _sound_play_instance
     jp      .done
 
 .spot3:
@@ -75,7 +75,7 @@ sound_play: ; a = sound ID to play
     cp      0 
     jp      nz,.spot4 ; if the spot is not empty check the next one
 
-    call    sound_play_instance
+    call    _sound_play_instance
     jp      .done
 
 
@@ -86,7 +86,7 @@ sound_play: ; a = sound ID to play
     cp      0 
     jp      nz,.done ; if the spot is not empty check the next one
 
-    call    sound_play_instance
+    call    _sound_play_instance
     jp      .done
 
 .done:
@@ -115,16 +115,16 @@ sound_stop: ; a = sound ID to stop
     ld      b,a
 
     ld      hl,SoundEffectQueue
-    call    sound_stop_instance
+    call    _sound_stop_instance
 
     ld      hl,SoundEffectQueue + 8
-    call    sound_stop_instance
+    call    _sound_stop_instance
 
     ld      hl,SoundEffectQueue + 16
-    call    sound_stop_instance
+    call    _sound_stop_instance
 
     ld      hl,SoundEffectQueue + 24
-    call    sound_stop_instance
+    call    _sound_stop_instance
 
     ; force a channel update to reduce delay
     ld      a,1
@@ -141,16 +141,15 @@ sound_stop: ; a = sound ID to stop
     ret
 
 
-
 ; Internals -------------------------------------------------------------------
-sound_play_instance: ; hl = SoundEffectQueue, b = sound id to play
+_sound_play_instance: ; hl = SoundEffectQueue, b = sound id to play
 
     ; set sound id for the queue spot
     ld      a,b
     ld      [hli],a
 
     ; set up queue spot data with the sound effect data
-    call    sound_get_effect_data; de now points to the sound data
+    call    _sound_get_effect_data; de now points to the sound data
 
     ; mode
     ld      a,[de]
@@ -179,8 +178,7 @@ sound_play_instance: ; hl = SoundEffectQueue, b = sound id to play
     ret
 
 
-
-sound_stop_instance: ; hl = SoundEffectQueue, b = sound id to stop
+_sound_stop_instance: ; hl = SoundEffectQueue, b = sound id to stop
 
     ; check if the queue spot sound id matches the sound id to stop
     ld      a,[hl] 
@@ -193,7 +191,6 @@ sound_stop_instance: ; hl = SoundEffectQueue, b = sound id to stop
     ld      [hl],a
 
     ret
-
 
 
 sound_update:
@@ -218,34 +215,34 @@ sound_update:
 
     ; apply the queued sounds to the channels
     ld      hl,SoundEffectQueue
-    call    sound_update_apply
+    call    _sound_update_apply
 
     ld      hl,SoundEffectQueue + 8
-    call    sound_update_apply
+    call    _sound_update_apply
 
     ld      hl,SoundEffectQueue + 16
-    call    sound_update_apply
+    call    _sound_update_apply
 
     ld      hl,SoundEffectQueue + 24
-    call    sound_update_apply
+    call    _sound_update_apply
 
 
     ; clean up empty sounds channles
     ld      hl,SoundChannelState
     ld      a,1
-    call    sound_update_channel
+    call    _sound_update_channel
 
     ld      hl,SoundChannelState + 4
     ld      a,2
-    call    sound_update_channel
+    call    _sound_update_channel
 
     ld      hl,SoundChannelState + 8
     ld      a,3
-    call    sound_update_channel
+    call    _sound_update_channel
 
     ld      hl,SoundChannelState + 12
     ld      a,4
-    call    sound_update_channel
+    call    _sound_update_channel
 
     pop     bc
     pop     de
@@ -300,7 +297,7 @@ sound_update_state: ; hl = SoundEffectQueue address of sound
     ld      a,[hl]; load target channel of the sound effect and store it
     
     ; check to see if the target channel is currently playing this effect
-    call    sound_get_channel
+    call    _sound_get_channel
     ld      a,[de]
     cp      b
     jp      nz,.clear
@@ -322,8 +319,7 @@ sound_update_state: ; hl = SoundEffectQueue address of sound
     ret
 
 
-
-sound_update_apply: ; hl = SoundEffectQueue address of sound
+_sound_update_apply: ; hl = SoundEffectQueue address of sound
 
     ; get the sound id of the current queue spot
     ld      a,[hl]
@@ -336,7 +332,7 @@ sound_update_apply: ; hl = SoundEffectQueue address of sound
     inc     hl; skip length
     ld      a,[hl]
     ld      c,a; store channel ???? FIXME used? Needed?
-    call    sound_get_channel
+    call    _sound_get_channel
     dec     hl
     dec     hl
     dec     hl
@@ -413,8 +409,7 @@ sound_update_apply: ; hl = SoundEffectQueue address of sound
     ret
     
 
-
-sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
+_sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
 
     ld      b,a ; store channel number for clear_channel
     ld      a,[hli] ; load active sound ID
@@ -505,7 +500,7 @@ sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
 
     ; get sound effect data pointer
     ld      b,c ; restore sound id
-    call    sound_get_effect_data; de now points to the sound configuration data
+    call    _sound_get_effect_data; de now points to the sound configuration data
 
     ; skip channel config data
     ld      a,[de]; store loop mode
@@ -581,7 +576,7 @@ sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
 
 
 ; Helpers ----------------------------------------------------------------------
-sound_get_effect_data: ; b = sound id to get -> de = data pointer
+_sound_get_effect_data: ; b = sound id to get -> de = data pointer
 
     push    hl
     push    bc
@@ -591,7 +586,7 @@ sound_get_effect_data: ; b = sound id to get -> de = data pointer
     call    math_mul8b
     
     ; combine with the base address and move to de register
-    ld      de,SoundDefinitions
+    ld      de,DataSoundDefinitions
     add     hl,de
     ld      d,h
     ld      e,l
@@ -600,7 +595,7 @@ sound_get_effect_data: ; b = sound id to get -> de = data pointer
     pop     hl
     ret
 
-sound_get_channel; a = sound channel id, de -> address of SoundChannelState
+_sound_get_channel; a = sound channel id, de -> address of SoundChannelState
     push    hl
     dec     a; switch to 0 based indexing and multiply by 4 to get the offset
     sla     a; x2

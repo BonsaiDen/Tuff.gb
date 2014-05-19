@@ -3,9 +3,9 @@ SECTION "ScreenLogic",ROM0
 
 ; Screen ----------------------------------------------------------------------
 screen_timer:
-    call    screen_flash_timer
-    call    screen_fade_timer
-    call    screen_shake_timer
+    call    _screen_flash_timer
+    call    _screen_fade_timer
+    call    _screen_shake_timer
     ret
 
 
@@ -16,7 +16,7 @@ screen_shake: ; a = duration in seconds / 8
     ret
 
 
-screen_shake_timer:
+_screen_shake_timer:
     ld      a,[screenShakeTicks]
     cp      0
     ret     z
@@ -92,7 +92,7 @@ screen_fade_in:
     ret
 
 
-screen_fade_timer:
+_screen_fade_timer:
 
     ; check if fading
     ld      a,[screenFadeMode]
@@ -159,7 +159,7 @@ screen_flash_light:
     ld      a,0
     ld      [screenFlashColor],a
     ld      [screenFlashIndex],a
-    call    screen_flash_timer
+    call    _screen_flash_timer
     pop     bc
     pop     hl
     pop     af
@@ -175,7 +175,7 @@ screen_flash_fast_light:
     ld      [screenFlashColor],a
     ld      a,2
     ld      [screenFlashIndex],a
-    call    screen_flash_timer
+    call    _screen_flash_timer
     pop     bc
     pop     hl
     pop     af
@@ -190,7 +190,7 @@ screen_flash_dark:
     ld      [screenFlashColor],a
     ld      a,0
     ld      [screenFlashIndex],a
-    call    screen_flash_timer
+    call    _screen_flash_timer
     pop     bc
     pop     hl
     pop     af
@@ -205,14 +205,14 @@ screen_flash_fast_dark:
     ld      [screenFlashColor],a
     ld      a,2
     ld      [screenFlashIndex],a
-    call    screen_flash_timer
+    call    _screen_flash_timer
     pop     bc
     pop     hl
     pop     af
     ret
 
 
-screen_flash_timer:
+_screen_flash_timer:
 
     ; check if fading
     ld      a,[screenFlashMode]

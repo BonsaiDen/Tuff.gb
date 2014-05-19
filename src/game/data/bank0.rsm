@@ -156,14 +156,14 @@ DataTileAnimation:
 
 
 ; Sound Data ------------------------------------------------------------------
-SoundDefinitions:
+DataSoundDefinitions:
     
     ; Mode / Priority [PPPPPPMM],  Length in Frames, Channel,  custom channel data
     INCLUDE     "../data/bin/sounds.data.rsm"
 
 
 ; Entity Data -----------------------------------------------------------------
-EntityDefinitions:
+DataEntityDefinitions:
     
     ; [BG/FG] [PALETTE] [TILEROW] 
     DB      %00000000,$00,$00,$00, $00,$00,$00,$00
@@ -200,7 +200,7 @@ entity_handler_load_save: ; generic, b = entity index, c = sprite index
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
     call    sprite_animation_set
     call    sprite_animation_start
-    jp      _entity_load_handler_ret
+    ret
 
 
 entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = screen data
@@ -242,14 +242,14 @@ entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = 
     jp      nz,.done
 
     ; save game
-    call    save_set_player
+    call    save_store_to_sram
     call    screen_flash_light
     ld      a,SOUND_GAME_SAVE_FLASH
     call    sound_play
 
 
 .done:
-    jp      _entity_update_handler_ret
+    ret
 
 
 entity_handler_load_glow:
@@ -257,9 +257,9 @@ entity_handler_load_glow:
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
     call    sprite_animation_set
     call    sprite_animation_start
-    jp      _entity_load_handler_ret
+    ret
     
 
 entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
-    jp      _entity_update_handler_ret
+    ret
 

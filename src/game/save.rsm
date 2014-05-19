@@ -7,17 +7,6 @@ SAVE_DATA_SIZE      EQU 5
 SAVE_GAME_VERSION   EQU 1
 
 
-; Saving / Loading ------------------------------------------------------------
-save_restore_player:
-    call    save_load_from_sram
-    ret
-
-
-save_set_player:
-    call    save_store_to_sram
-    ret
-
-
 ; SRAM Handling Routines ------------------------------------------------------
 save_load_from_sram:
 
@@ -26,7 +15,7 @@ save_load_from_sram:
     ld      [hl],$0A 
 
     ; get checksum and compare
-    call    save_calculate_sum
+    call    _save_calculate_checksum
     ld      b,a
 
     ld      hl,$A000 
@@ -151,7 +140,7 @@ save_store_to_sram:
     ld      [hli],a
 
     ; checksum
-    call    save_calculate_sum
+    call    _save_calculate_checksum
     ld      hl,$A000 
     ld      [hl],a
 
@@ -162,7 +151,7 @@ save_store_to_sram:
     ret
 
 
-save_calculate_sum: ; checksum byte -> a
+_save_calculate_checksum: ; checksum byte -> a
     ; must be in external RAM mode
     ; start at $A001, exluding the checksum byte at $A000
     ld      hl,$A001

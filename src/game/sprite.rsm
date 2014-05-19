@@ -14,7 +14,7 @@ sprite_animate_all:
 
     ; check if active and animating
     ld      a,b
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     push    af ; store sprite animation flags
     and     %00000101
@@ -57,7 +57,7 @@ sprite_animate_all:
 
     ; Restore flags
     pop     af
-    call    sprite_update_animation
+    call    _sprite_update_animation
     jp      .next_sprite
 
 .skip_sprite:
@@ -71,7 +71,7 @@ sprite_animate_all:
     ret
 
 
-sprite_update_animation: ; a = sprite flags, hl = animation data base offset
+_sprite_update_animation: ; a = sprite flags, hl = animation data base offset
 
     ; load frame timing data
     ld      d,0
@@ -154,7 +154,7 @@ sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     ; store the new animation index
 .update:
     ld      a,b ; sprite index (counter)
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     inc     hl
     ld      [hl],c ; store new frame number
     inc     hl ; skip animation id
@@ -167,7 +167,7 @@ sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
 
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     inc     hl ; skip flags
     inc     hl ; skip skip id
     inc     hl ; go to frames left
@@ -198,7 +198,7 @@ sprite_animation_set: ; a = sprite index, b = animation id
     push    af
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     inc     hl
     ld      [hl],1 ; reset frame 0 and 15 are border frames
     inc     hl
@@ -217,7 +217,7 @@ sprite_animation_start: ; a = sprite index
     push    af
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     or      %00000100 ; set animating
     ld      [hl],a
@@ -237,7 +237,7 @@ sprite_animation_pause: ; a = sprite index
     push    af
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     and     %11111011 ; unset animating
     ld      [hl],a
@@ -252,7 +252,7 @@ sprite_animation_resume: ; a = sprite index
     push    af
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     or      %00000100 ; set animating
     ld      [hl],a
@@ -267,7 +267,7 @@ sprite_animation_stop: ; a = sprite index
     push    af
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     and     %11111011 ; unset animating
     ld      [hl],a
@@ -285,7 +285,7 @@ sprite_animation_forward: ; a = sprite index
 
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     and     %11101111 ; unset backward flag
     ld      [hl],a
@@ -297,7 +297,7 @@ sprite_animation_backward: ; a = sprite index
 
     push    hl
 
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     or      %00010000 ; set backward
     ld      [hl],a
@@ -312,17 +312,17 @@ sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
     push    de
 
     ld      e,a ; store index
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
 
     ld      d,3
-    call    sprite_get_left
+    call    _sprite_get_left
     ld      a,[hl]
     and     %11100000 ; clear palette bit
     or      b
     ld      [hl],a
 
     ld      d,3
-    call    sprite_get_right
+    call    _sprite_get_right
     ld      a,[hl]
     and     %11100000 ; clear palette bit
     or      b
@@ -338,7 +338,7 @@ sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
 sprite_enable: ; a = sprite index
     push    af
     push    hl
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      [hl],1
     pop     hl
     pop     af
@@ -353,7 +353,7 @@ sprite_disable: ; a = sprite index
     ld      e,a ; store sprite index
 
     ; reset all flags
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      [hl],0 
 
     ; reset tile index
@@ -387,7 +387,7 @@ sprite_set_tile_offset: ; a = sprite, b = tile offset
     ; multiple tile offset by 4
     sla     b
     sla     b
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     inc     hl
     inc     hl
     inc     hl
@@ -412,7 +412,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     sla     b
 
     ld      e,a ; store index for get_left / get_right
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     ld      d,a ; store flags
 
@@ -433,7 +433,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
 .mirrored:
 
     ld      d,2
-    call    sprite_get_left
+    call    _sprite_get_left
     ld      [hl],b
     inc     hl
     ld      a,[hl]
@@ -441,7 +441,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     or      %00100000
     ld      [hl],a
 
-    call    sprite_get_right
+    call    _sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
@@ -455,14 +455,14 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
 
 .not_mirrored:
     ld      d,2
-    call    sprite_get_left
+    call    _sprite_get_left
     ld      [hl],b
     inc     hl
     ld      a,[hl]
     and     %11011111
     ld      [hl],a
 
-    call    sprite_get_right
+    call    _sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
@@ -505,19 +505,19 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 
 .no_y_offset:
     ld      a,e
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     and     %00000010
     jp      z,.not_mirrored
 .mirrored:
 
     ld      d,0
-    call    sprite_get_right
+    call    _sprite_get_right
     ld      [hl],c
     inc     hl
     ld      [hl],b
 
-    call    sprite_get_left
+    call    _sprite_get_left
     ld      [hl],c
     inc     hl
     ld      a,b
@@ -528,12 +528,12 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 
 .not_mirrored:
     ld      d,0
-    call    sprite_get_left
+    call    _sprite_get_left
     ld      [hl],c
     inc     hl
     ld      [hl],b
     
-    call    sprite_get_right
+    call    _sprite_get_right
     ld      [hl],c
     ld      a,b
     add     a,8
@@ -551,7 +551,7 @@ sprite_set_mirror: ; a = sprite index
 
     push    af
     push    hl
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     or      %00000010 ; set enabled flag
     ld      [hl],a
@@ -565,7 +565,7 @@ sprite_unset_mirror: ; a = sprite index
 
     push    af
     push    hl
-    call    sprite_meta_offset
+    call    _sprite_meta_offset
     ld      a,[hl]
     and     %11111101 ; unset mirror flag
     ld      [hl],a
@@ -576,7 +576,7 @@ sprite_unset_mirror: ; a = sprite index
 
 
 ; Helper ----------------------------------------------------------------------
-sprite_get_left: ; e = raw index, d = value byte offset
+_sprite_get_left: ; e = raw index, d = value byte offset
     push    de
     ld      hl,spriteData 
     ld      a,e
@@ -591,7 +591,7 @@ sprite_get_left: ; e = raw index, d = value byte offset
     ret
 
 
-sprite_get_right: ; e = raw index, d = value byte offset
+_sprite_get_right: ; e = raw index, d = value byte offset
     push    de
     ld      hl,spriteData 
     ld      a,e
@@ -607,7 +607,7 @@ sprite_get_right: ; e = raw index, d = value byte offset
     ret
 
 
-sprite_meta_offset: ; a = sprite index -> hl = offset
+_sprite_meta_offset: ; a = sprite index -> hl = offset
     push    de
     ld      hl,spriteMeta
     ld      d,0
@@ -617,13 +617,5 @@ sprite_meta_offset: ; a = sprite index -> hl = offset
     ld      e,a
     add     hl,de
     pop     de
-    ret
-
-
-sprite_copy_oam:
-    ld       hl,spriteData
-    ld       de,$FE00
-    ld       bc,160
-    call     core_vram_cpy
     ret
 

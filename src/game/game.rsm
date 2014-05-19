@@ -33,13 +33,16 @@ game_init:
     call    map_init
 
     ; Load from SRAM or 
-    call    save_restore_player
+    call    save_load_from_sram
 
     ; Hud
     call    game_hud
 
     ; Sound setup
     call    sound_enable
+
+    ;ld      a,SOUND_BG_WATERFALL
+    ;call    sound_play
 
     ret
 
