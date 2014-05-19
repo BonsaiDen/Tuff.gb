@@ -17,6 +17,9 @@ core_vblank_handler:
     ld      a,[corePaletteSprite1]
     ld      [rOBP1],a
 
+
+    ; game specific code ------------------------------------------------------
+
     ; check if we need to load a new room if so set up the new entities
     ; before we copy to OAM
     ld      a,[mapRoomUpdate]
@@ -37,6 +40,8 @@ core_vblank_handler:
     ld      a,[mapRoomUpdate]
     cp      1
     call    z,map_load_room
+
+    ; end of game specific code -----------------------------------------------
 
     pop     hl
     pop     de

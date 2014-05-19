@@ -69,6 +69,7 @@ core_init:
     ld      [$ff23],a
 
     ; Run init code and the loop once so we don't have a blank frame on powerup
+    call    core_input
     call    game_init
     call    game_loop
 

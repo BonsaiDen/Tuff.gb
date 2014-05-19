@@ -17,9 +17,7 @@ core_loop:
     jp      nz,core_loop_wait_one_half
 
     ; Fetch Joypad State
-    jp      core_input
-core_loop_after_input:
-
+    call    core_input
     call    game_loop_one_half
 
     ; every other tick we switch the delay between 0 or 1 to 
