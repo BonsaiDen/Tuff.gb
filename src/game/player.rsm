@@ -253,13 +253,13 @@ player_update:
 
     ; set swim animation when moving underwater
     ld      a,[coreInput]
-    and     %00110000
+    and     BUTTON_LEFT | BUTTON_RIGHT
     cp      0
     jp      z,.water_idle
 
     ; dont set animation when moving up / down
     ld      a,[coreInput]
-    and     %00000011
+    and     BUTTON_A | BUTTON_B
     cp      0
     jp      nz,.water_idle
 
@@ -276,7 +276,7 @@ player_update:
     ; set idle animation in case neither a / b is pressed
 .water_idle:
     ld      a,[coreInput]
-    and     %00000011
+    and     BUTTON_A | BUTTON_B
     cp      0
     jp      nz,.update
 
@@ -405,8 +405,8 @@ player_water_update:
 
     ; check button for diving
     ld      a,[coreInput]
-    and     %00000010
-    cp      %00000010
+    and     BUTTON_B
+    cp      BUTTON_B
     jp      nz,.stop_fall
 
     ; animation and speed
@@ -973,7 +973,7 @@ player_jump:
 
     ; see if the jump button has been pressed
     ld      a,[coreInput]
-    and     %00000001
+    and     BUTTON_A
     jp      z,.not_pressed
 
     ; check if the player is continuosly pressing the button
@@ -1256,19 +1256,19 @@ player_accelerate:
 
     ; if both directions are pressed at the same time ignore input
     ld      a,[coreInput]
-    and     %00110000
-    cp      %00110000
+    and     BUTTON_LEFT | BUTTON_RIGHT
+    cp      BUTTON_LEFT | BUTTON_RIGHT
     ret     z
 
     ; check which direction is pressed
     ld      a,[coreInput]
-    and     %00100000
-    cp      %00100000
+    and     BUTTON_LEFT
+    cp      BUTTON_LEFT
     jp      z,.acc_left
 
     ld      a,[coreInput]
-    and     %00010000
-    cp      %00010000
+    and     BUTTON_RIGHT
+    cp      BUTTON_RIGHT
     jp      z,.acc_right
 
     ret ; not moving in any direction
@@ -1318,7 +1318,7 @@ player_decelerate:
 
     ; check if right direction is still pressed
     ld      a,[coreInput]
-    and     %00010000
+    and     BUTTON_RIGHT
     jp      nz,.decrease_left
 
     ; right
@@ -1332,7 +1332,7 @@ player_decelerate:
 
     ; check if left direction is still pressed
     ld      a,[coreInput]
-    and     %00100000
+    and     BUTTON_LEFT
     jp      nz,.no_decrease
 
     ; left
@@ -1706,7 +1706,7 @@ player_slide_wall:
 
     ; check if jump button got pressed
     ld      a,[coreInput]
-    and     %00000001
+    and     BUTTON_A
     ret     z
 
     ; set up jump force and reset fall speed
@@ -1914,8 +1914,8 @@ player_pound:
 
     ; check for B button
     ld      a,[coreInputOn]
-    and     %00000010
-    cp      %00000010
+    and     BUTTON_B
+    cp      BUTTON_B
     ret     nz
 
     ; check if under water or swimming
@@ -2131,7 +2131,7 @@ player_sleep:
 
     ; in case no button is pressed decrease the sleep ticker 
     ld      a,[coreInput]
-    and     %00110011
+    and     BUTTON_A | BUTTON_B | BUTTON_LEFT | BUTTON_RIGHT
     jp      nz,.active
 
     ; also check whether we're on the ground
