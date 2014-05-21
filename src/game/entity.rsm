@@ -7,22 +7,18 @@ entity_load:
     ; clear tile row mapping
     call    entity_reset_tile_row_mapping
 
-    ; calculate offfset into stored state buffer (based on CURRENT room)
-    ld      de,entityStoredState 
-    ld      a,[mapRoomX]
-    ld      h,a
+    ; calculate offset into stored state buffer (based on CURRENT room)
     ld      a,[mapRoomY]
-    ld      e,a
-    call    math_mul8b
-    inc     hl ; *= 2
-    ld      d,h
-    ld      e,l
+    ld      b,a
+    ld      a,[mapRoomX]
+    call    _entity_store_offset; returns the address for the entity in DE
 
     ; get offset for entity map data
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
     ld      b,0
 
 .entity_load_loop:
+    push    de ; store entity stored state pointer
 
     ; get type / used
     ld      a,[hl]
@@ -33,7 +29,7 @@ entity_load:
 
     ; init base state
     push    hl
-    call    entity_screen_offset_hl
+    call    _entity_screen_offset_hl
 
     ; set type
     ld      a,c
@@ -70,7 +66,7 @@ entity_load:
     push    de
 
     ; get entity screen offset for b into hl
-    call    entity_screen_offset_hl
+    call    _entity_screen_offset_hl
     inc     hl ; skip type
     inc     hl ; skip flags
     inc     hl ; skip direction
@@ -99,7 +95,7 @@ entity_load:
     push    de
     
     ; get entity screen offset for b into hl
-    call    entity_screen_offset_de
+    call    _entity_screen_offset_de
     inc     de ; skip type
     inc     de ; skip flags
     inc     de ; skip direction
@@ -143,7 +139,7 @@ entity_load:
     ; Get palette flag
     push    bc
     ld      a,l; load type
-    call    entity_defintion
+    call    _entity_defintion
     and     %01000000
     srl     a
     srl     a
@@ -153,7 +149,7 @@ entity_load:
     pop     bc
 
     ; get screen entity offset
-    call    entity_screen_offset_de
+    call    _entity_screen_offset_de
     push    bc
     push    de
 
@@ -161,7 +157,7 @@ entity_load:
     ; load entity sprite data into one of the available sprite row slots
     ; in the upper half of the sprite memory
     ld      a,[de] ; load type
-    call    entity_load_tile_row ; -> a = tile offset
+    call    _entity_load_tile_row ; -> a = tile offset
     ld      b,a ; load tile offset 
     ld      a,c ; load sprite index
     call    sprite_set_tile_offset
@@ -178,11 +174,11 @@ entity_load:
     adc     a,h
     sub     l
     ld      h,a
-    push    bc
-    call    entity_handler_jump
 
-.entity_load_handler_ret:; return target for load handler
+    push    bc
+    call    _entity_handler_jump
     pop     bc
+
     pop     de
     ld      l,c
 
@@ -203,6 +199,7 @@ entity_load:
     pop     hl
 
 .entity_load_next:
+    pop     de; store entity stored state pointer
     inc     de
     inc     de
     inc     hl
@@ -217,19 +214,13 @@ entity_load:
 
 
 ; Store the entity state into RAM based on the type handler -------------------
-; Also reset the entity sprite and screen data --------------------------------
 entity_store:
 
     ; calculate offfset into stored state buffer (based on LAST room)
-    ld      de,entityStoredState 
-    ld      a,[mapRoomLastX]
-    ld      h,a
     ld      a,[mapRoomLastY]
-    ld      e,a
-    call    math_mul8b
-    inc     hl ; *= 2
-    ld      d,h
-    ld      e,l
+    ld      b,a
+    ld      a,[mapRoomLastX]
+    call    _entity_store_offset; returns the address for the entity in DE
 
     ld      hl,entityScreenState
     ld      b,0
@@ -238,16 +229,6 @@ entity_store:
     ld      a,[hl]
     cp      0
     jp      z,.skip; not loaded
-
-    ; disable sprite 
-    call    entity_sprite_offset
-    add     a,b; offset + entity index
-    call    sprite_disable
-    ;call    sprite_unset_mirror
-
-    ; unset type
-    ld      a,0
-    ld      [hl],a
 
     ; hl = screen state, de = stored state
     inc     hl ; skip type [0]
@@ -290,6 +271,49 @@ entity_store:
     ret
 
 
+; Reset the entity screen state
+entity_reset:
+    ld      hl,entityScreenState
+    ld      b,0
+
+.loop:
+    ld      a,[hl]
+    cp      0
+    jp      z,.skip; not loaded
+
+    ; disable sprite 
+    call    entity_sprite_offset
+    add     a,b; offset + entity index
+    call    sprite_disable
+    ;call    sprite_unset_mirror
+
+    ; unset type
+    ld      a,0
+    ld      [hl],a
+
+    ; TODO unset these too?
+    inc     hl
+    inc     hl
+    inc     hl
+    jp      .next
+
+.skip:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
+.next:
+    inc     b
+    ld      a,b
+    cp      ENTITY_PER_ROOM
+    jp      nz,.loop
+    ret
+
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
@@ -327,7 +351,7 @@ entity_update_loop:
     ld      h,a
 
     push    bc
-    call    entity_handler_jump
+    call    _entity_handler_jump
     pop     bc
 
     pop     de
@@ -373,14 +397,14 @@ entity_update_loop:
 
 
 ; we use this indirection trick to be able to return from the called code
-entity_handler_jump:
+_entity_handler_jump:
     jp      [hl]
 
 
 ; Entity Sprite Handling ------------------------------------------------------
 ; -----------------------------------------------------------------------------
 entity_sprite_offset: ; a = sprite type -> a = background offset
-    call    entity_defintion
+    call    _entity_defintion
     and     %10000000
     cp      %10000000
     jp      z,.foreground
@@ -402,13 +426,13 @@ entity_reset_tile_row_mapping:
     ret
 
 
-entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
+_entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
 
     push    de
     push    hl
     push    bc
 
-    call    entity_defintion
+    call    _entity_defintion
     and     %00111111 ; mask tile source row
     ld      c,a ; store tile row into c
     
@@ -464,7 +488,7 @@ entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
 
 
 ; Helper ----------------------------------------------------------------------
-entity_screen_offset_hl: ; b = entity index
+_entity_screen_offset_hl: ; b = entity index
     push    bc
 
     ld      c,b
@@ -479,7 +503,7 @@ entity_screen_offset_hl: ; b = entity index
     ret
 
 
-entity_screen_offset_de: ; b = entity index
+_entity_screen_offset_de: ; b = entity index
     push    hl
     push    bc
 
@@ -499,7 +523,7 @@ entity_screen_offset_de: ; b = entity index
     ret
 
 
-entity_defintion: ; a = sprite type
+_entity_defintion: ; a = sprite type
     push    hl
     ld      hl,DataEntityDefinitions
 
@@ -520,5 +544,35 @@ entity_defintion: ; a = sprite type
     ; load definition
     ld      a,[hl]
     pop     hl
+    ret
+
+
+_entity_store_offset: ; a = room x, b = room y
+
+    inc     a ; convert to 1 based indexing
+    ld      h,a
+
+    ld      a,b
+    inc     a ; convert to 1 based indexing
+    ld      e,a
+
+    ; get room number index into hl
+    call    math_mul8b ; hl = h * e 
+    dec     hl; convert back to zero based indexing for the room number
+
+    ; multiply by 8 (4 entites per room with 2 bytes each)
+    ld      b,h
+    ld      c,l
+    ld      d,0
+    ld      e,8
+    call    math_mul16b ; hl = a * de
+
+    ; add storage offset
+    ld      de,entityStoredState 
+    add     hl,de
+
+    ; move to de
+    ld      d,h
+    ld      e,l
     ret
 

@@ -49,6 +49,15 @@ game_init:
 
 ; Main Loop -------------------------------------------------------------------
 game_loop:
+
+    ld      a,[mapRoomUpdate]
+    cp      0
+    ret     nz
+
+    call    player_update
+
+    call    entity_update
+
     call    sprite_animate_all
     call    sound_update
 
@@ -60,35 +69,9 @@ game_loop:
     ld      a,SOUND_PLAYER_DEATH_LAVA
     call    sound_play
 
-    ;ld      a,8
-    ;call    screen_flash_fast_dark
-    ;call    save_restore_player
-
 .next:
-
-
-    ; debug save restore
-    ld      a,[coreInputOn]
-    and     BUTTON_SELECT
-    cp      BUTTON_SELECT
-    ret     nz
-    ld      a,SOUND_BG_WATERFALL
-    call    sound_stop
-
     ret
 
-
-game_loop_one_half:
-
-    ld      a,[mapRoomUpdate]
-    cp      0
-    ret     nz
-
-    call    player_update
-    call    entity_update
-
-    ret
- 
 
 ; Timer -----------------------------------------------------------------------
 game_timer:

@@ -122,6 +122,7 @@ map_set_room: ; b = x, c = y
     call    core_unpack_raw
 
     ; un/load entities
+    call    entity_reset
     call    entity_store
 
     ; draw the room

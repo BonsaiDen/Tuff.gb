@@ -23,7 +23,7 @@ DataEntityUpdateHandlerTable:
     jp      entity_handler_update_save
     nop
 
-    jp      entity_handler_update
+    jp      entity_handler_update_glow
     nop
 
 

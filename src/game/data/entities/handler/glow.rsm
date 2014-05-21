@@ -6,6 +6,21 @@ entity_handler_load_glow:
     ret
     
 
-entity_handler_update: ; generic, b = entity index, c = sprite index, de = screen data
+entity_handler_update_glow: ; generic, b = entity index, c = sprite index, de = screen data
+
+    ; only run every second frame
+    ld      a,[coreLoopCounter]
+    and     %00000011
+    cp      %00000011
+    ret     nz
+
+    inc     de; skip type
+    inc     de; skip flags
+    inc     de; skip direction
+
+    ld      a,[de] ; y position
+    inc     a
+    ld      [de],a ; y position
+
     ret
 
