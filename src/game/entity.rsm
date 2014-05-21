@@ -50,13 +50,31 @@ entity_load:
     srl     a
     srl     a
     ld      [hl],a
+    pop     hl; restore screen state address
 
-    pop     hl
+
+
+    ; TODO refactor entity loading here ---------------------------------------
+    ; TODO --------------------------------------------------------------------
+;    push    hl
+;    push    bc
+;
+;    ; find an existing bucket that stores this entity 
+;    call    _entity_get_current_room_id
+;    call    _entity_find_bucket ; c is the room id, b is the entity id, return a and hl
+;    cp      1
+;    jp      nz,.not_found
+;
+;    ; TODO load the stored data
+;    
+;.not_found:
+;    pop     bc
+;    pop     hl
 
     ; check if the entity has stored state 
     ; state is 2 byte per entity [syyy yyyy] [xxxx xxxx]
     ld      a,[de]
-    and     %10000000 ; y position is 0-127, first bit indicates whethe stored or not
+    and     %10000000 ; y position is 0-127, first bit indicates whether stored or not
     cp      128
     jp      nz,.entity_load_defaults; not stored, load defaults for position
 
@@ -86,6 +104,9 @@ entity_load:
     pop     de
     pop     hl
     jp      .entity_load_init
+
+    ; TODO --------------------------------------------------------------------
+    ; TODO --------------------------------------------------------------------
 
     ; load default data from map buffer
 .entity_load_defaults:
@@ -230,9 +251,22 @@ entity_store:
     cp      0
     jp      z,.skip; not loaded
 
+    ; find a bucket to store this entity in, either the bucket which already
+    ; stores it, or a unused one
+;    push    hl
+;    push    bc
+;    call    _entity_get_last_room_id
+;    call    _entity_get_store_bucket
+;    cp      1
+;    jp      nz,.not_available
+;
+;.not_available:
+;    pop     bc
+;    pop     hl
+
     ; hl = screen state, de = stored state
     inc     hl ; skip type [0]
-    inc     hl ; skip flag [1]
+    inc     hl ; skip flags [1]
     inc     hl ; skip direction [2]
 
     ; store y position and active flag [3]
@@ -568,5 +602,153 @@ _entity_store_offset: ; a = room x, b = room y
     ; move to de
     ld      d,h
     ld      e,l
+    ret
+
+
+; Entity Stored State Buckets -------------------------------------------------
+_entity_get_current_room_id: ; c -> room id
+
+    push    hl
+    push    de
+
+    ld      a,[mapRoomX]
+    inc     a ; convert to 1 based indexing
+    ld      h,a
+
+    ld      a,[mapRoomY]
+    inc     a ; convert to 1 based indexing
+    ld      e,a
+
+    ; get room number index into hl
+    call    math_mul8b ; hl = h * e 
+    ld      c,l
+
+    pop     hl
+    pop     de
+
+    ret
+
+
+_entity_get_last_room_id: ; c -> room id
+
+    push    hl
+    push    de
+
+    ld      a,[mapRoomLastX]
+    inc     a ; convert to 1 based indexing
+    ld      h,a
+
+    ld      a,[mapRoomLastY]
+    inc     a ; convert to 1 based indexing
+    ld      e,a
+
+    ; get room number index into hl
+    call    math_mul8b ; hl = h * e 
+    ld      c,l
+
+    pop     hl
+    pop     de
+
+    ret
+
+
+_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3)
+    call    _entity_find_bucket; first check for a existing bucket that contains the entity
+    cp      1
+    ret     z ; found a used bucket for this entity
+
+    ; find a free bucket, if possible
+    call    _entity_find_free_bucket
+    ret
+    
+
+_entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
+    ; return a = 1 if we found a match, in which case hl = data pointer to entity state
+
+    ; [roomid] (1 based indexing)
+    ; [ffffff][ii] flags and entity id
+    ; [y position]
+    ; [x position]
+    ld      hl,entityStoreBuckets
+    ld      e,0
+
+.loop:
+    ld      a,[hl]; get room id
+    cp      0
+    jp      z,.empty; skip empty buckets
+
+    ; check for room id match
+    cp      c
+    jp      nz,.skip
+
+    ; check entity id match
+    inc     hl
+    ld      a,[hl]
+    and     %00000011
+    dec     hl
+    cp      b
+    jp      nz,.skip
+
+    ; match found, hl is at the correct offset already
+    ld      a,1
+    ret
+
+.empty:
+.skip:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
+    ; break out after going through all rooms
+.next:
+    inc     e
+    ld      a,e
+    cp      ENTITY_MAX_STORE_BUCKETS
+    jp      z,.not_found
+        
+    jp      .loop
+    
+.not_found:
+    ld      a,0
+    ret
+
+
+_entity_find_free_bucket:
+    ; return a = 1 if we found a free spot, in which case hl = data pointer to entity state
+
+    ; [roomid] (1 based indexing)
+    ; [ffffff][ii] flags and entity id
+    ; [y position]
+    ; [x position]
+    ld      hl,entityStoreBuckets
+    ld      e,0
+
+.loop:
+    ld      a,[hl]; get room id
+    cp      0
+    jp      nz,.used; skip used buckets
+
+    ; found a free spot, return the pointer
+    ld      a,1
+    ret
+
+.used:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
+    ; break out after going through all rooms
+.next:
+    inc     e
+    ld      a,e
+    cp      ENTITY_MAX_STORE_BUCKETS
+    jp      z,.not_found
+        
+    jp      .loop
+    
+.not_found:
+    ld      a,0
     ret
 

@@ -9,7 +9,9 @@ ENTITY_SPRITE_ROWS        EQU 8 ; how many entity sprite rows are contained in t
 ENTITY_ANIMATION_OFFSET   EQU 14
 ENTITY_ANIMATION_SAVE     EQU 0
 ENTITY_ANIMATION_GLOW     EQU 1
-ENTITY_STORED_STATE_SIZE  EQU MAP_WIDTH * MAP_HEIGHT * ENTITY_PER_ROOM + 2 
+
+; TODO needs complete rewrite for the actual lookup and saving... getting the offset needs to be reworked internally to only allocate the required data
+ENTITY_STORED_STATE_SIZE  EQU MAP_WIDTH * MAP_HEIGHT * ENTITY_PER_ROOM 
 
 
 ; RAM storage for entity positions / states -----------------------------------
@@ -22,4 +24,11 @@ entityScreenState:      DS  32 ; 8 bytes per entity
                                ; type > 0 = entity is active
 
 entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into vram
+
+ENTITY_MAX_STORE_BUCKETS EQU 4
+entityStoreBuckets:     DS 16 ; 4 bytes per bucket entry
+                              ; [roomid] (1 based indexing)
+                              ; [ffffff][ii] flags and entity id
+                              ; [y position]
+                              ; [x position]
 
