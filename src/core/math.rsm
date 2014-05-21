@@ -3,15 +3,35 @@ math_mul8b:                     ; this routine performs the operation HL=H*E
     ld      d,0                 ; clearing D and L
     ld      l,d
     ld      a,8                 ; we have 8 bits
+
 .Mul8bLoop:
     add     hl,hl               ; advancing a bit
     jp      nc,.Mul8bSkip        ; if zero, we skip the addition (jp is used for speed)
     add     hl,de               ; adding to the product if necessary
+
 .Mul8bSkip:
     dec     a
     jp      nz,.Mul8bLoop
     ret
 
+
+; 16 x 16 bit multiplication ---------------------------------------------------
+math_mul16b: ; BC * DE = HL
+; DE * BC = HL
+    ld      hl,0
+    ld      a,16
+
+.Mul_Loop_1:
+    add     hl,hl
+    rl      e
+    rl      d
+    jr      nc,@+6
+    add     hl,bc
+    jr      nc,@+3
+    inc     de
+    dec     a
+    jr      nz,.Mul_Loop_1
+    ret
 
 ; Fast RND
 ;

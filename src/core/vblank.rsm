@@ -20,14 +20,14 @@ core_vblank_handler:
 
     ; game specific code ------------------------------------------------------
 
+    ; call the DMA code for transfering sprite data to OAM
+    call    $ff80 
+
     ; check if we need to load a new room if so set up the new entities
-    ; before we copy to OAM
+    ; AFTER we copy to OAM to avoid visual glitcehs
     ld      a,[mapRoomUpdate]
     cp      1
     call    z,entity_load
-
-    ; call the DMA code for transfering sprite data to OAM
-    call    $ff80 
 
     ; Set vblank flag, this will cause the core loop to run the game loop once
     ld      a,1

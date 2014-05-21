@@ -6,8 +6,7 @@ core_init:
     ld      a,0
     ld      [coreRandomSeed],a
     ld      [coreVBlankDone],a
-    ld      [coreHalfTick],a
-    ld      [coreHalfTickSwitch],a
+    ld      [coreLoopCounter],a
     ld      [coreTimer],a
     ld      [coreInput],a
     ld      [coreInputOn],a
@@ -46,8 +45,7 @@ core_init:
 
     ; Reset timers
     ld      [coreTimer],a
-    ld      [coreHalfTickSwitch],a
-    ld      [coreHalfTick],a
+    ld      [coreLoopCounter],a
 
     ; clear sound registers
     ld      a,0
