@@ -122,8 +122,8 @@ map_set_room: ; b = x, c = y
     call    core_unpack_raw
 
     ; un/load entities
-    call    entity_store
-    call    entity_reset
+    call    entity_store ; first store them
+    call    entity_reset ; then reset them, as this will clear their active flag
 
     ; draw the room
     ld      a,1

@@ -1,5 +1,85 @@
 SECTION "EntityLogic",ROM0
 
+
+; Update the on screen entites based on the type handler ----------------------
+entity_update:
+    ld      de,entityScreenState
+    ld      b,0
+
+.loop:
+
+    ; load type / active
+    ld      a,[de]
+    cp      0
+    jp      z,.skip; not active skip
+    ld      l,a ; store type
+
+    ; get sprite index
+    call    _entity_sprite_offset
+    add     a,b; offset + entity index
+    ld      h,a; store sprite index
+
+    ; store counter, screen state address 
+    push    bc
+    push    hl
+    push    de
+
+    ; invoke custom entity update handler
+    ld      a,l
+    dec     a; convert into 0 based offset
+    ld      hl,DataEntityUpdateHandlerTable
+    add     a,a  ; multiply entity type by 4
+    add     a,a
+    add     a,l ; add a to hl
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    call    _entity_handler_jump
+
+    pop     de
+    pop     hl
+
+    inc     de; skip type
+    inc     de; skip flags
+    inc     de; skip direction
+
+    ld      a,[de] ; x position
+    ld      c,a
+    inc     de
+
+    ld      a,[de] ; y position
+    ld      b,a
+    ld      a,h  
+    call    sprite_set_position
+    inc     de
+
+    pop     bc
+
+    inc     de
+    inc     de
+    inc     de
+    jp      .next
+
+.skip:
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+
+.next:
+    inc     b
+    ld      a,b
+    cp      ENTITY_PER_ROOM
+    jp      nz,.loop
+    ret
+
+
 ; Load the entity state from RAM or the map default and  ----------------------
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
@@ -7,25 +87,18 @@ entity_load:
     ; clear tile row mapping
     call    _entity_reset_tile_row_mapping
 
-    ; calculate offset into stored state buffer (based on CURRENT room)
-    ld      a,[mapRoomY]
-    ld      b,a
-    ld      a,[mapRoomX]
-    call    _entity_store_offset; returns the address for the entity in DE
-
     ; get offset for entity map data
     ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
     ld      b,0
 
-.entity_load_loop:
-    push    de ; store entity stored state pointer
+.loop:
 
     ; get type / used
     ld      a,[hl]
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
     cp      0
-    jp      z,.entity_load_next ; entity is not set for room
+    jp      z,.next ; entity is not set for room
 
     ; init base state
     push    hl
@@ -40,7 +113,7 @@ entity_load:
     ld      a,0
     ld      [hli],a
 
-    ; set direction 
+    ; set default direction 
     ld      a,c
     and     %11000000 ; mask type bits
     srl     a
@@ -52,101 +125,9 @@ entity_load:
     ld      [hl],a
     pop     hl; restore screen state address
 
+    call    _entity_load
 
-
-    ; TODO refactor entity loading here ---------------------------------------
-    ; TODO --------------------------------------------------------------------
-;    push    hl
-;    push    bc
-;
-;    ; find an existing bucket that stores this entity 
-;    call    _entity_get_current_room_id
-;    call    _entity_find_bucket ; c is the room id, b is the entity id, return a and hl
-;    cp      1
-;    jp      nz,.not_found
-;
-;    ; TODO load the stored data
-;    
-;.not_found:
-;    pop     bc
-;    pop     hl
-
-    ; check if the entity has stored state 
-    ; state is 2 byte per entity [syyy yyyy] [xxxx xxxx]
-    ld      a,[de]
-    and     %10000000 ; y position is 0-127, first bit indicates whether stored or not
-    cp      128
-    jp      nz,.entity_load_defaults; not stored, load defaults for position
-
-.entity_load_stored:
-    ; store index
-    push    hl
-    push    de
-
-    ; get entity screen offset for b into hl
-    call    _entity_screen_offset_hl
-    inc     hl ; skip type
-    inc     hl ; skip flags
-    inc     hl ; skip direction
-
-    ; y position
-    ld      a,[de]
-    and     %01111111
-    ld      [hl],a
-    inc     de
-    inc     hl
-
-    ; x position
-    ld      a,[de]
-    ld      [hl],a
-
-    ; restore index
-    pop     de
-    pop     hl
-    jp      .entity_load_init
-
-    ; TODO --------------------------------------------------------------------
-    ; TODO --------------------------------------------------------------------
-
-    ; load default data from map buffer
-.entity_load_defaults:
-
-    ; store index
-    push    hl
-    push    de
-    
-    ; get entity screen offset for b into hl
-    call    _entity_screen_offset_de
-    inc     de ; skip type
-    inc     de ; skip flags
-    inc     de ; skip direction
-
-    ; skip stored type and direction
-    inc     hl
-
-    ; load x/y value
-    ld      a,[hl]
-    and     %11110000 ; y position, just works we can skip the x16 here
-    add     16 ; anchor at the bottom
-    ld      [de],a
-    inc     de
-
-    ; x position
-    ld      a,[hl]
-    and     %00001111 ; need to multiply by 16 here
-    sla     a
-    sla     a
-    sla     a
-    sla     a
-    add     8
-    ld      [de],a
-
-    ; restore index
-    pop     de
-    pop     hl
-
-.entity_load_init:
-
+.init:
     push    hl
 
     ld      a,c ; type / dir flags
@@ -196,9 +177,7 @@ entity_load:
     sub     l
     ld      h,a
 
-    push    bc
     call    _entity_handler_jump
-    pop     bc
 
     pop     de
     ld      l,c
@@ -219,83 +198,195 @@ entity_load:
     pop     bc;  restore entity / loop index
     pop     hl
 
-.entity_load_next:
-    pop     de; store entity stored state pointer
-    inc     de
-    inc     de
+.next:
     inc     hl
     inc     hl
 
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.entity_load_loop
+    jp      nz,.loop
     ret
 
 
 
+; Load a single Entity's state ------------------------------------------------
+_entity_load:
+
+    ; check if an existing bucket that stores this entity 
+    push    hl
+    push    de
+    push    bc
+    call    _entity_get_current_room_id
+    call    _entity_find_bucket ; c is the room id, b is the entity id, return a and hl
+
+    cp      1
+    jp      nz,.load_defaults
+
+.load_stored:
+    
+    inc     hl; skip room id
+
+    ; get entity screen offset for b into de
+    call    _entity_screen_offset_de
+    inc     de; skip type
+
+    ; load flags, direction and entity id (FFFFDDII)
+    ld      a,[hli]
+    ld      b,a; store copy of original value into b
+
+    ; get flags
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    and     %00001111
+    ld      [de],a; set flags
+    inc     de
+
+    ; get direction
+    ld      a,b; load origin value one more time
+    srl     a
+    srl     a
+    and     %00000011
+    ld      [de],a; set direction
+    inc     de
+
+    ; load y position
+    ld      a,[hli]
+    ld      [de],a
+    inc     de
+    
+    ; load x position
+    ld      a,[hl]
+    ld      [de],a
+    inc     de
+
+    ; restore registers
+    pop     bc
+    pop     de
+    pop     hl
+    ret
+
+
+    ; load default data from map buffer
+.load_defaults:
+
+    ; restore registers
+    pop     bc
+    pop     de
+    pop     hl
+
+    ; push loop indicies
+    push    hl
+    push    de
+    
+    ; get entity screen offset for b into hl
+    call    _entity_screen_offset_de
+    inc     de ; skip type
+    inc     de ; skip flags
+    inc     de ; skip direction
+
+    ; skip stored type and direction
+    inc     hl
+
+    ; load x/y value
+    ld      a,[hl]
+    and     %11110000 ; y position, just works we can skip the x16 here
+    add     16 ; anchor at the bottom
+    ld      [de],a
+    inc     de
+
+    ; x position
+    ld      a,[hl]
+    and     %00001111 ; need to multiply by 16 here
+    sla     a
+    sla     a
+    sla     a
+    sla     a
+    add     8
+    ld      [de],a
+
+    ; restore indicies
+    pop     de
+    pop     hl
+    ret
+
+
 ; Store the entity state into RAM based on the type handler -------------------
+; -----------------------------------------------------------------------------
 entity_store:
-
-    ; calculate offfset into stored state buffer (based on LAST room)
-    ld      a,[mapRoomLastY]
-    ld      b,a
-    ld      a,[mapRoomLastX]
-    call    _entity_store_offset; returns the address for the entity in DE
-
-    ld      hl,entityScreenState
+    ld      de,entityScreenState
     ld      b,0
 
 .loop:
-    ld      a,[hl]
+    ld      a,[de]
     cp      0
-    jp      z,.skip; not loaded
+    jp      z,.skip; entity is not loaded for this screen
 
     ; find a bucket to store this entity in, either the bucket which already
     ; stores it, or a unused one
-;    push    hl
-;    push    bc
-;    call    _entity_get_last_room_id
-;    call    _entity_get_store_bucket
-;    cp      1
-;    jp      nz,.not_available
-;
-;.not_available:
-;    pop     bc
-;    pop     hl
+    push    de
+    call    _entity_get_last_room_id
+    call    _entity_get_store_bucket
+    pop     de
 
-    ; hl = screen state, de = stored state
-    inc     hl ; skip type [0]
-    inc     hl ; skip flags [1]
-    inc     hl ; skip direction [2]
+    ; did we find a bucket?
+    cp      1
+    jp      nz,.next
 
-    ; store y position and active flag [3]
-    ld      a,[hli]
-    or      %10000000
-    ld      [de],a
+    ; store into bucket
+    ; c is the room id, b is the entity id, hl is the pointer, de the screen data
+    ld      a,c
+    ld      [hli],a ; store room id
+
+    inc     de ; skip type [0]
+    
+    ; combine flags, entity id and direction
+    ; FFFFDDII
+    ld      a,[de]; load flags
+    inc     de 
+    sla     a
+    sla     a
+    sla     a
+    sla     a
+    and     %11110000
+    or      b; merge with id
+    ld      b,a; store into b
+
+    ld      a,[de] ; load direction
     inc     de
+    sla     a
+    sla     a
+    and     %00001100
+    or      b; merge with id and flags
+    ld      [hli],a 
 
-    ; store x position
-    ld      a,[hli]
-    ld      [de],a
+    ; y position
+    ld      a,[de]
     inc     de
+    ld      [hli],a 
 
-    inc     hl
-    inc     hl
-    inc     hl
+    ; x position
+    ld      a,[de]
+    inc     de
+    ld      [hl],a 
+
+    ; skip tileslot, custom and custom
+    inc     de
+    inc     de
+    inc     de
     jp      .next
 
 .skip:
     inc     de
     inc     de
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    inc     de
 
 .next:
     inc     b
@@ -305,7 +396,8 @@ entity_store:
     ret
 
 
-; Reset the entity screen state
+; Reset the entity screen state -----------------------------------------------
+; -----------------------------------------------------------------------------
 entity_reset:
     ld      hl,entityScreenState
     ld      b,0
@@ -343,88 +435,8 @@ entity_reset:
     ret
 
 
-; Update the on screen entites based on the type handler ----------------------
-entity_update:
-    ld      de,entityScreenState
-    ld      b,0
-
-entity_update_loop:
-
-    ; load type / active
-    ld      a,[de]
-    cp      0
-    jp      z,.entity_update_skip; not active skip
-    ld      l,a ; store type
-
-    ; get sprite index
-    call    _entity_sprite_offset
-    add     a,b; offset + entity index
-    ld      h,a; store sprite index
-
-    ; store counter, screen state address 
-    push    bc
-    push    hl
-    push    de
-
-    ; invoke custom entity update handler
-    ld      a,l
-    dec     a; convert into 0 based offset
-    ld      hl,DataEntityUpdateHandlerTable
-    add     a,a  ; multiply entity type by 4
-    add     a,a
-    add     a,l ; add a to hl
-    ld      l,a
-    adc     a,h
-    sub     l
-    ld      h,a
-
-    push    bc
-    call    _entity_handler_jump
-    pop     bc
-
-    pop     de
-    pop     hl
-
-    inc     de; skip type
-    inc     de; skip flags
-    inc     de; skip direction
-
-    ld      a,[de] ; x position
-    ld      c,a
-    inc     de
-
-    ld      a,[de] ; y position
-    ld      b,a
-    ld      a,h  
-    call    sprite_set_position
-    inc     de
-
-    pop     bc
-
-    inc     de
-    inc     de
-    inc     de
-    jp      .entity_update_next
-
-.entity_update_skip:
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-
-.entity_update_next:
-    inc     b
-    ld      a,b
-    cp      ENTITY_PER_ROOM
-    jp      nz,entity_update_loop
-    ret
-
-
-; we use this indirection trick to be able to return from the called code
+; Trampolin for entity logic handler ------------------------------------------
+; -----------------------------------------------------------------------------
 _entity_handler_jump:
     jp      [hl]
 
@@ -575,41 +587,10 @@ _entity_defintion: ; a = sprite type
     ret
 
 
-_entity_store_offset: ; a = room x, b = room y
 
-    inc     a ; convert to 1 based indexing
-    ld      h,a
-
-    ld      a,b
-    inc     a ; convert to 1 based indexing
-    ld      e,a
-
-    ; get room number index into hl
-    call    math_mul8b ; hl = h * e 
-    dec     hl; convert back to zero based indexing for the room number
-
-    ; multiply by 8 (4 entites per room with 2 bytes each)
-    ld      b,h
-    ld      c,l
-    ld      d,0
-    ld      e,8
-    call    math_mul16b ; hl = a * de
-
-    ; add storage offset
-    ld      de,entityStoredState 
-    add     hl,de
-
-    ; move to de
-    ld      d,h
-    ld      e,l
-    ret
-
-
-; Entity Stored State Buckets -------------------------------------------------
+; Entity Storage Bucket Handling ----------------------------------------------
+; -----------------------------------------------------------------------------
 _entity_get_current_room_id: ; c -> room id
-
-    push    hl
-    push    de
 
     ld      a,[mapRoomX]
     inc     a ; convert to 1 based indexing
@@ -623,16 +604,11 @@ _entity_get_current_room_id: ; c -> room id
     call    math_mul8b ; hl = h * e 
     ld      c,l
 
-    pop     hl
-    pop     de
-
     ret
 
 
-_entity_get_last_room_id: ; c -> room id
 
-    push    hl
-    push    de
+_entity_get_last_room_id: ; c -> room id
 
     ld      a,[mapRoomLastX]
     inc     a ; convert to 1 based indexing
@@ -646,21 +622,23 @@ _entity_get_last_room_id: ; c -> room id
     call    math_mul8b ; hl = h * e 
     ld      c,l
 
-    pop     hl
-    pop     de
-
     ret
+
 
 
 _entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3)
+    push    bc
     call    _entity_find_bucket; first check for a existing bucket that contains the entity
     cp      1
-    ret     z ; found a used bucket for this entity
+    jp      z,.done ; found a used bucket for this entity
 
     ; find a free bucket, if possible
     call    _entity_find_free_bucket
+.done:
+    pop     bc
     ret
     
+
 
 _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ; return a = 1 if we found a match, in which case hl = data pointer to entity state
@@ -669,13 +647,13 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ; [ffffff][ii] flags and entity id
     ; [y position]
     ; [x position]
-    ld      hl,entityStoreBuckets
+    ld      hl,entityStoredState
     ld      e,0
 
 .loop:
     ld      a,[hl]; get room id
     cp      0
-    jp      z,.empty; skip empty buckets
+    jp      z,.skip; skip empty buckets
 
     ; check for room id match
     cp      c
@@ -693,7 +671,6 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ld      a,1
     ret
 
-.empty:
 .skip:
     inc     hl
     inc     hl
@@ -714,6 +691,7 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ret
 
 
+
 _entity_find_free_bucket:
     ; return a = 1 if we found a free spot, in which case hl = data pointer to entity state
 
@@ -721,7 +699,7 @@ _entity_find_free_bucket:
     ; [ffffff][ii] flags and entity id
     ; [y position]
     ; [x position]
-    ld      hl,entityStoreBuckets
+    ld      hl,entityStoredState
     ld      e,0
 
 .loop:
