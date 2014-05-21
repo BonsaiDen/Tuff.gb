@@ -5,7 +5,7 @@ SECTION "EntityLogic",ROM0
 entity_load:
 
     ; clear tile row mapping
-    call    entity_reset_tile_row_mapping
+    call    _entity_reset_tile_row_mapping
 
     ; calculate offset into stored state buffer (based on CURRENT room)
     ld      a,[mapRoomY]
@@ -131,7 +131,7 @@ entity_load:
     ld      a,c ; type / dir flags
     and     %00111111 ; mask type bits
     ld      l,a; store entity type
-    call    entity_sprite_offset
+    call    _entity_sprite_offset
     add     a,b ; offset + entity index
     ld      c,a ; store sprite index
     call    sprite_enable
@@ -282,20 +282,14 @@ entity_reset:
     jp      z,.skip; not loaded
 
     ; disable sprite 
-    call    entity_sprite_offset
+    call    _entity_sprite_offset
     add     a,b; offset + entity index
     call    sprite_disable
-    ;call    sprite_unset_mirror
+    ;call    sprite_unset_mirror ; TODO needed?
 
     ; unset type
     ld      a,0
     ld      [hl],a
-
-    ; TODO unset these too?
-    inc     hl
-    inc     hl
-    inc     hl
-    jp      .next
 
 .skip:
     inc     hl
@@ -329,7 +323,7 @@ entity_update_loop:
     ld      l,a ; store type
 
     ; get sprite index
-    call    entity_sprite_offset
+    call    _entity_sprite_offset
     add     a,b; offset + entity index
     ld      h,a; store sprite index
 
@@ -403,7 +397,7 @@ _entity_handler_jump:
 
 ; Entity Sprite Handling ------------------------------------------------------
 ; -----------------------------------------------------------------------------
-entity_sprite_offset: ; a = sprite type -> a = background offset
+_entity_sprite_offset: ; a = sprite type -> a = background offset
     call    _entity_defintion
     and     %10000000
     cp      %10000000
@@ -416,7 +410,7 @@ entity_sprite_offset: ; a = sprite type -> a = background offset
     ret
 
 
-entity_reset_tile_row_mapping:
+_entity_reset_tile_row_mapping:
     ld      hl,entityTileRowMap
     ld      a,255
     ld      [hli],a
