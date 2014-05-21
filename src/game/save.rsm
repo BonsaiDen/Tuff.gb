@@ -5,6 +5,7 @@ SAVE_GAME_VERSION          EQU 2
 
 SAVE_HEADER_SIZE           EQU 3
 SAVE_VERSION_SIZE          EQU 1
+SAVE_CHECKSUM_SIZE         EQU 2
 SAVE_PLAYER_DATA_SIZE      EQU 10
 SAVE_ENTITY_HEADER_SIZE    EQU 1
 SAVE_ENTITY_DATA_SIZE      EQU ENTITY_STORED_STATE_SIZE
@@ -22,14 +23,18 @@ save_load_from_sram:
 
     ; calculate checksum
     ld      bc,SAVE_COMPLETE_SIZE
-    ld      hl,$A001
-    call    _save_calculate_checksum
+    ld      de,$A000 + SAVE_CHECKSUM_SIZE
+    call    _crc16
 
-    ; compare
-    ld      b,a
+    ; high byte
     ld      hl,$A000 
     ld      a,[hli]
     cp      b
+    jp      nz,.defaults
+
+    ; low byte
+    ld      a,[hli]
+    cp      c
     jp      nz,.defaults
 
     ; check header
@@ -148,10 +153,11 @@ save_store_to_sram:
     ld      hl,$0000 
     ld      [hl],$0A 
 
-    ld      hl,$A000 
     
-    ; checksum of the save data bytes starting from $A001
+    ; crc16 checksum of the save data bytes starting from $A002
+    ld      hl,$A000 
     ld      a,$00
+    ld      [hli],a
     ld      [hli],a
 
     ; header prefix
@@ -214,11 +220,14 @@ save_store_to_sram:
 
     ; caclulate checksum
     ld      bc,SAVE_COMPLETE_SIZE
-    ld      hl,$A001
-    call    _save_calculate_checksum
+    ld      de,$A000 + SAVE_CHECKSUM_SIZE
+    call    _crc16
 
-    ; write checksum byte
+    ; write crc checksum 
     ld      hl,$A000 
+    ld      a,b
+    ld      [hli],a
+    ld      a,c
     ld      [hl],a
 
     ; disable external RAM
@@ -230,27 +239,44 @@ save_store_to_sram:
 
 
 ; Helpers ---------------------------------------------------------------------
-_save_calculate_checksum: ; hl = source address, bc = bytecount checksum byte -> a
-    push    de
+; de = source address, bc = byte count -> hl = crc
+_crc16:
+    push    hl
+    ld	    hl,$ffff
 
-    ; must be in external RAM mode
-    ld      d,0; checksum data
+.read:
+    ld	    a,[de]
+    inc	    de
+    xor	    h
+    ld	    h,a
 
-.loop:
+    push    bc
+    ld	    b,8
 
-    ld      a,[hli]
-    add     d
-    ld      d,a
+.crcByte:
+    add	    hl,hl
+    jr	    nc,.next
+    ld	    a,h
+    xor	    $10
+    ld	    h,a
+    ld	    a,l
+    xor	    $21
+    ld	    l,a
 
-    ; check if we're done
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
+.next:
+    dec     b
+    jp      nz,.crcByte
 
-    ld      a,d; store out
+    pop     bc
+    dec     c
+    jr	    nz,.read
 
-    pop     de
+    dec	    b
+    jr	    nz,.read
+
+    ld      b,h
+    ld      c,l
+    pop     hl
 
     ret
 
