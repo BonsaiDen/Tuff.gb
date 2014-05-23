@@ -122,7 +122,7 @@ var IO = {
 // ----------------------------------------------------------------------------
 var Pack = {
 
-    lz4: function(buffer, storeSize, other) {
+    lz4: function(buffer, storeSize) {
 
         var deffered = Promise.pending(),
             stream = streamifier.createReadStream(buffer),
@@ -143,7 +143,6 @@ var Pack = {
 
             // Strip header and other things which are not related to the block
             output = output.slice(11);
-            console.log('[lz4] %s -> %s bytes', buffer.length, output.length, other);
 
             if (storeSize) {
                 var size = buffer.length;
@@ -280,7 +279,11 @@ var Pack = {
 
         }
 
-        if (addSizePrefix !== false) {
+        // Verify
+        if (bytes.join(',') !== Pack.unpack(compressed).join(',')) {
+            throw new Error('Incorrect data compression');
+
+        } else if (addSizePrefix !== false) {
             var size = bytes.length;
             return [(size >> 8), size & 0xff].concat(compressed);
 
@@ -288,7 +291,58 @@ var Pack = {
             return compressed;
         }
 
+    },
+
+    unpack: function(compressed) {
+
+        var bytes = [],
+            offset = 0,
+            count = 0,
+            //minRun = 3,
+            cur = 0;
+
+        while((count = compressed[offset++]) !== undefined) {
+
+            if (count > 127) {
+
+                //count = (minRun - 1) - (count - 256);
+                count = 255 - (count - 3);
+
+                if ((cur = compressed[offset++]) === undefined) {
+                    count = 0;
+                    throw new Error('Run block is too short');
+                }
+
+                while(count > 0) {
+                    bytes.push(cur);
+                    count--;
+                }
+
+            } else {
+
+                count++;
+
+                while(count > 0) {
+
+                    if ((cur = compressed[offset++]) !== undefined) {
+                        bytes.push(cur);
+
+                    } else {
+                        throw new Error('Copy block is too short');
+                    }
+
+                    count--;
+
+                }
+
+            }
+
+        }
+
+        return bytes;
+
     }
+
 
 };
 
@@ -319,7 +373,7 @@ var Parse = {
     },
 
     /** Encode a image of 16x16px tiles into a mapping of rows along with a index header. */
-    rowMapFromImage: function(palette, columns, img) {
+    rowMapFromImage: function(palette, columns, img, file) {
 
         var rowOffsets = [],
             rowBytes = [];
@@ -336,7 +390,7 @@ var Parse = {
 
             var tileBytes = Parse.tilesFromImage(palette, true, subImage);
             rowOffsets.push((rowBytes.length >> 8), rowBytes.length & 0xff);
-            rowBytes.push.apply(rowBytes, Pack.pack(tileBytes, false));
+            rowBytes.push.apply(rowBytes, Pack.pack(tileBytes, false, y === 3 && file === 'entities.ch.png'));
 
         }
 
@@ -558,7 +612,7 @@ var Convert = {
         console.log('[tilerowmap] Converting tilerowmap "%s"...', file);
 
         return IO.load(file).then(function(img) {
-            return Parse.rowMapFromImage(Palette.Sprite, 4, img);
+            return Parse.rowMapFromImage(Palette.Sprite, 4, img, file);
 
         }).then(function(data) {
             return IO.saveAs('bin', file, data);
@@ -993,17 +1047,12 @@ var Reverse = {
             }
 
             var raw = [];
-
-            console.log(raw.length, tiles.length);
-
             for(y = 0; y < 32 * 8; y++) {
                 for(x = 0; x < 32; x++) {
                     var t = tiles[grid[~~(y / 8)][x]];
                     raw.push.apply(raw, t[y % 8]);
                 }
             }
-
-            console.log(raw.length);
 
             var image = new PNG({
                 width: 32 * 8,
