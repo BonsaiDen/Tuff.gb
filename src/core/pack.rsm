@@ -18,6 +18,7 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
     ; fetch next instruction byte
     ld      a,[hli]
     cp      127 ; a > 127
+    jr      z,.copy
     jr      nc,.repeat
 
     ; copy X bytes
