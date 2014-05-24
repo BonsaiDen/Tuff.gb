@@ -76,7 +76,7 @@ _screen_shake_timer:
 
 
 ; Screen Fading ---------------------------------------------------------------
-screen_fade_out:
+screen_fade_out_light:
     ld      a,1
     ld      [screenFadeMode],a
     ld      a,0
@@ -84,10 +84,10 @@ screen_fade_out:
     ret
 
 
-screen_fade_in:
+screen_fade_in_light:
     ld      a,2
     ld      [screenFadeMode],a
-    ld      a,3
+    ld      a,4
     ld      [screenFadeIndex],a
     ret
 
@@ -105,18 +105,19 @@ _screen_fade_timer:
     ld      c,a
     
     ; bg mask
-    ld      hl,screenFadePaletteBG
+    ld      hl,screenFadePaletteBGLight
     add     hl,bc
     ld      a,[hl]
     ld      [corePaletteBG],a
 
     ; sprite mask
-    ld      hl,screenFadePaletteSprite0
+    ld      hl,screenFadePaletteSprite0Light
     add     hl,bc
     ld      a,[hl]
-    ld      [rOBP0],a
+    ld      [corePaletteSprite0],a
+    ld      [corePaletteSprite1],a
 
-    ld      hl,screenFadePaletteSprite1
+    ld      hl,screenFadePaletteSprite1Light
     add     hl,bc
     ld      a,[hl]
     ld      [corePaletteSprite1],a
@@ -128,7 +129,7 @@ _screen_fade_timer:
         
     ; fade out
     ld      a,[screenFadeIndex]
-    cp      3
+    cp      4
     jp      z,.complete
     inc     a
     ld      [screenFadeIndex],a
@@ -283,23 +284,48 @@ _screen_flash_timer:
 
 
 ; Palette Data ----------------------------------------------------------------
-screenFadePaletteBG:
+screenFadePaletteBGDark:
     DB      %11100100
     DB      %11100101
     DB      %11101010
+    DB      %11101011
     DB      %11111111
 
-screenFadePaletteSprite0:
+screenFadePaletteSprite0Dark:
     DB      %11010000 
     DB      %11100100 
     DB      %11101000 
+    DB      %11101100 
     DB      %11111100 
 
-screenFadePaletteSprite1:
+screenFadePaletteSprite1Dark:
     DB      %10010000 
     DB      %11100100 
     DB      %11101000 
+    DB      %11111000 
     DB      %11111100 
+
+
+screenFadePaletteBGLight:
+    DB      %11100100
+    DB      %10100100
+    DB      %01010100
+    DB      %01010000
+    DB      %00000000
+
+screenFadePaletteSprite0Light:
+    DB      %11010000 
+    DB      %10010000 
+    DB      %01010000 
+    DB      %01010000 
+    DB      %00000000
+
+screenFadePaletteSprite1Light:
+    DB      %10010000 
+    DB      %10010000 
+    DB      %01010000 
+    DB      %01010000 
+    DB      %00000000
 
 
 ; Flash Light
