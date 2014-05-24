@@ -177,16 +177,18 @@ entity_load:
     sub     l
     ld      h,a
 
+    ; call the load handler
     call    _entity_handler_jump
-
     pop     de
-    ld      l,c
+    cp      1
+    jp      z,.ignore_load
 
     ; set sprite position
     inc     de ; skip type
     inc     de ; skip flags
     inc     de ; skip direction
 
+    ld      l,c ; restore sprite index
     ld      a,[de] ; load y position
     ld      c,a
     inc     de
@@ -197,6 +199,18 @@ entity_load:
 
     pop     bc;  restore entity / loop index
     pop     hl
+
+    jp      .next
+
+.ignore_load:
+    pop     bc;  restore entity / loop index
+
+    call    _entity_screen_offset_hl
+    ld      [hl],0
+
+    pop     hl
+    ld      a,c
+    call    sprite_disable
 
 .next:
     inc     hl

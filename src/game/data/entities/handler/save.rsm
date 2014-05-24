@@ -3,6 +3,7 @@ entity_handler_load_save: ; generic, b = entity index, c = sprite index
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
     call    sprite_animation_set
     call    sprite_animation_start
+    ld      a,0
     ret
 
 

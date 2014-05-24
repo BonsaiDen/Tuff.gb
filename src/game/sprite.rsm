@@ -1,11 +1,6 @@
 SECTION "SpriteLogic",ROM0
 
 
-; Sprite Position Update ------------------------------------------------------
-sprite_update_all:
-    ret
-
-
 ; Sprite Animation Update -----------------------------------------------------
 sprite_animate_all:
     ld      b,0 ; loop counter
