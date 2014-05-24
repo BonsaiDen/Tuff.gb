@@ -1,3 +1,4 @@
+# Build
 rom: convert
 	@mkdir -p build
 	@cd src && rgbasm -o ../build/main.o main.rsm
@@ -11,6 +12,7 @@ convert:
 	@mkdir -p data/bin
 	node convert data data/bin
 
+# Emulation
 run: rom
 	gngb --fps -a build/game.gb
 
@@ -20,10 +22,20 @@ gambatte: rom
 bgb: rom
 	WINEPREFIX=~/.local/share/wineprefixes/steam wine ~/.local/bin/bgb.exe build/game.gb
 
+
+# Others
 clean:
 	rm -rf build
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 	
 tiled:
 	~/Sources/tiled-qt-0.9.1/build/bin/tiled &
+
+
+# Video
+record:
+	../gameboy/mednafen -sound.driver sdl -qtrecord "game_raw.mov" -qtrecord.vcodec png -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 build/game.gb
+
+render:
+	../gameboy/ffmpeg -i game_raw.mov -vf scale=480:432 -sws_flags neighbor -acodec libmp3lame -ac 1 -ab 64000 -ar 22050 -vcodec mpeg4 -flags +mv4+gmc -mbd bits -trellis 2 -b 8000k game.avi
 
