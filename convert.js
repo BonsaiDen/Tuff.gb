@@ -1094,6 +1094,7 @@ if (process.argv[4] === '-reverse') {
 
     Promise.all([
         Convert.Tileset('tiles.bg.png'),
+        Convert.Tileset('logo.bg.png'),
         Convert.TileRowMap('player.ch.png'),
         Convert.TileRowMap('entities.ch.png'),
         Convert.Collision('tiles.col.png'),
