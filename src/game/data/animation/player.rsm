@@ -1,11 +1,10 @@
+; Player Animations -----------------------------------------------------------
+
 ; Each Animation takes 32 bytes
 ; The first 16 are the tile indexes (which are 16x16)
 ; The other 16 bytes are frame lengths, each frame is 16ms long.
 ; FF FD and FE are special values for frame lengths which are used to control
 ; the animation behavior. FF means STOP, FE means loop, FD means bounce
-
-
-; Player ------------------------------------------------------------------
 
 ; Idle
 DB $00, $00,$01,$00,$01, $00,$01,$00,$02, $00,$00, $ff,$ff,$ff,$ff,$ff
@@ -62,19 +61,4 @@ DB $fd, $04,$04,$04,$04, $04,$04,$04,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 ; Player Landing
 DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $09,$05,$04,$03, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-
-; Entity ------------------------------------------------------------------
-
-; Save Point
-DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-DB $fd, $09,$09,$09,$09, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-; Glow Flicker
-DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-DB $fd, $02,$02,$02,$02, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-
-; Powerup Hover
-DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
-DB $fd, $b0,$06,$06,$06, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 

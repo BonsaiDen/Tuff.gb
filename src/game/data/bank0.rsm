@@ -17,7 +17,8 @@ DataEntityRows:
     INCBIN  "../data/bin/entities.ch.bin" 
 
 DataSpriteAnimation:
-    INCLUDE "game/data/animation/sprite.rsm"
+    INCLUDE "game/data/animation/player.rsm"
+    INCLUDE "game/data/animation/entity.rsm"
 
 DataTileAnimation:
     INCLUDE "game/data/animation/tile.rsm"
