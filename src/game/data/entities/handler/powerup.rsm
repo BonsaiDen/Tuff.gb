@@ -3,12 +3,21 @@ entity_handler_load_powerup:
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_POWERUP
     call    sprite_animation_set
     call    sprite_animation_start
-    ; TODO check if powerup is already collected
-    ld      a,0; 
+    ld      a,[playerCanJump]; check if powerup is already collected
     ret
     
 
-entity_handler_update_powerup: ; generic, b = entity index, c = sprite index, de = screen data
+entity_handler_update_powerup: ; b = entity index, c = sprite index, de = screen data
+    ld      hl,playerCanJump
+    call    _entity_handler_powerup_collect
+    ret
+
+
+_entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = screen data, hl = powerup enabled byte
+
+    ld      a,[hl]
+    cp      1
+    ret     z
 
     inc     de; skip type
     inc     de; skip flags
@@ -19,17 +28,17 @@ entity_handler_update_powerup: ; generic, b = entity index, c = sprite index, de
     ; check bottom edge
     ld      a,[de] ; y
     add     1
-    ld      b,a
+    ld      l,a
     ld      a,[playerY]
-    cp      b
+    cp      l
     ret     nc; edge > player
 
     ; check left edge
     ld      a,[de] ; y
     sub     15
-    ld      b,a
+    ld      l,a
     ld      a,[playerY]
-    cp      b
+    cp      l
     ret     c; edge < player
 
     ; check player x > powerup x - 8 and player x < powerup x + 8
@@ -38,28 +47,31 @@ entity_handler_update_powerup: ; generic, b = entity index, c = sprite index, de
     ; check right edge
     ld      a,[de] ; x
     add     7 
-    ld      b,a
+    ld      l,a
     ld      a,[playerX]
-    cp      b
+    cp      l
     ret     nc; edge > player
 
     ; check left edge
     ld      a,[de] ; x
     sub     6 
-    ld      b,a
+    ld      l,a
     ld      a,[playerX]
-    cp      b
+    cp      l
     ret     c; edge < player
 
-    ; TODO disable this entity
-    ;call    screen_flash_light
+    ; disable entity
+    dec     de
+    dec     de
+    dec     de
+    dec     de
+    ld      a,0
+    ld      [de],a
 
-    ;call    _entity_screen_offset_hl
-    ;ld      [hl],0
+    call    screen_flash_light
 
-    ;pop     hl
-    ;ld      a,c
-    ;call    sprite_disable
-
+    ; enable ability 
+    ld      a,1
+    ld      [hl],a
     ret
 
