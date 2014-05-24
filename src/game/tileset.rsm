@@ -52,10 +52,11 @@ map_load_tileset: ; hl = destination, de = source
     call    lz4_decode_block
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
+    ; TODO make vram safe
     ld      hl,$9400
     ld      de,TILE_ANIMATION_BUFFER
     ld      bc,1024
-    call    core_mem_cpy
+    call    core_vram_cpy
 
     ret
 
