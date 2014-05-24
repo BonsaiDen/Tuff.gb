@@ -73,6 +73,8 @@ core_init:
 
     ; Enable interrupts
     ei
+
+    ; Setup interrupts
     ld      a,IEF_VBLANK|IEF_TIMER
     ld      [rIE],a
     ld      a,TACF_START|TACF_16KHZ

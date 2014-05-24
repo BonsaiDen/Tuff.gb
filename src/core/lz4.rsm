@@ -68,6 +68,12 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
     jp      z,.match ; l == c
 
 .literals_copy_next:
+
+    ; wait for vblank
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+
     ld      a,[de]
     inc     de
     ld      [hli],a
@@ -151,6 +157,11 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
     jp      z,.match_done ; l == c
 
 .copy_match_next:
+    ; wait for vblank
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+
     ld      a,[de]
     inc     de
     ld      [hli],a
