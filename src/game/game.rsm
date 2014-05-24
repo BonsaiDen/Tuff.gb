@@ -17,6 +17,18 @@ game_init:
     ld      a,%10010000  ; 3 = dark gray  2 = light gray  1 = white  0 = transparent
     ld      [corePaletteSprite1],a 
 
+    ; Sound setup
+    call    sound_enable
+
+    call    game_setup
+    call    game_continue
+
+    ret
+
+
+; Setup Actual Game -----------------------------------------------------------
+game_setup:
+
     ; reset fading
     ld      a,0
     ld      [gameFadeMode],a
@@ -32,18 +44,19 @@ game_init:
     ld      a,$5f
     call    map_init
 
-    ; Load from SRAM or 
-    call    save_load_from_sram
-
     ; Hud
     call    game_hud
 
-    ; Sound setup
-    call    sound_enable
+    ret
 
-    ;ld      a,SOUND_BG_WATERFALL
-    ;call    sound_play
 
+game_start:
+    ld      a,1
+    call    save_load_player
+    ret
+
+game_continue:
+    call    save_load_from_sram
     ret
 
 

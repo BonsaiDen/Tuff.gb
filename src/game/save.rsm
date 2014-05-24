@@ -13,7 +13,7 @@ SAVE_COMPLETE_SIZE         EQU SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_PLAYE
 
 
 ; SRAM Handling Routines ------------------------------------------------------
-save_load_from_sram:
+save_load_from_sram:; a = 1 triggers defaults
     
     di
 
@@ -102,10 +102,30 @@ save_load_from_sram:
     ld      de,entityStoredState
     call    core_mem_cpy
 
-    jp      .load
+    ld      a,0
+    call    save_load_player
+    jp      .end
 
 .defaults:
-    
+    ld      a,1
+    call    save_load_player
+
+.end:
+    ; disable external RAM
+    ld      hl,$0000 
+    ld      [hl],$00
+
+    ei
+    ret
+
+
+save_load_player: 
+
+    ; Check if we should use the game defaults
+    cp     1; a = 1
+    jp     nz,.init
+
+    ; Positions
     ld      a,24
     ld      [playerX],a
 
@@ -118,8 +138,24 @@ save_load_from_sram:
     ld      a,0
     ld      [mapRoomY],a
 
-.load:
+    ; Abilities
+    ld      a,1
+    ld      [playerCanJump],a
 
+    ld      a,1
+    ld      [playerCanWallJump],a
+
+    ld      a,1
+    ld      [playerCanSwim],a
+
+    ld      a,1
+    ld      [playerCanDive],a
+
+    ld      a,1
+    ld      [playerCanPound],a
+
+.init:
+    
     ld      a,[mapRoomX]
     ld      b,a
     ld      a,[mapRoomY]
@@ -128,12 +164,6 @@ save_load_from_sram:
     call    map_set_room
     call    player_reset
 
-.end:
-    ; disable external RAM
-    ld      hl,$0000 
-    ld      [hl],$00
-
-    ei
     ret
 
 
