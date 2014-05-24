@@ -17,12 +17,14 @@ entity_update:
     ; get sprite index
     call    _entity_sprite_offset
     add     a,b; offset + entity index
-    ld      h,a; store sprite index
+    ld      h,a; store sprite index for position code
 
-    ; store counter, screen state address 
+    ; store counter, screen state address and indecies
     push    bc
     push    hl
     push    de
+
+    ld      c,a; store sprite index for update handler
 
     ; invoke custom entity update handler
     ld      a,l
@@ -36,10 +38,17 @@ entity_update:
     sub     l
     ld      h,a
 
+    push    bc
     call    _entity_handler_jump
+    pop     bc
 
     pop     de
     pop     hl
+
+    ; check if the update handler disabled the entity
+    ld      a,[de]
+    cp      0
+    jp      z,.disabled; not active skip
 
     inc     de; skip type
     inc     de; skip flags
@@ -61,6 +70,11 @@ entity_update:
     inc     de
     inc     de
     jp      .next
+
+.disabled:
+    ld      a,c
+    call    sprite_disable
+    pop     bc
 
 .skip:
     inc     de
@@ -295,7 +309,7 @@ _entity_load:
     push    hl
     push    de
     
-    ; get entity screen offset for b into hl
+    ; get entity screen offset for b into de
     call    _entity_screen_offset_de
     inc     de ; skip type
     inc     de ; skip flags
