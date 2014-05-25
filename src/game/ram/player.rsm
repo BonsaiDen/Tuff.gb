@@ -39,7 +39,7 @@ PLAYER_HALF_WIDTH            EQU 7
 PLAYER_HEIGHT                EQU 13
 PLAYER_WATER_OFFSET_MAX      EQU 35
 
-PLAYER_SLIDE_DURATION        EQU 60 ; in frames
+PLAYER_SLIDE_DURATION        EQU 40 ; in frames
 PLAYER_SLIDE_SLOWDOWN        EQU 3 ; only apply fall speed every X other ticks while sliding
 PLAYER_WALL_JUMP_WINDOW      EQU 4
 PLAYER_WALL_JUMP_DURATION    EQU 12

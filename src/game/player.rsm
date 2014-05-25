@@ -33,22 +33,6 @@ player_init:
     ; Load initial sprite data
     call    player_animation_update
 
-    ; Abilities
-    ld      a,1
-    ld      [playerCanJump],a
-
-    ld      a,1
-    ld      [playerCanWallJump],a
-
-    ld      a,1
-    ld      [playerCanSwim],a
-
-    ld      a,1
-    ld      [playerCanDive],a
-
-    ld      a,1
-    ld      [playerCanPound],a
-
     ret
 
 
@@ -1628,7 +1612,7 @@ player_slide_wall:
     inc     a
     ld      [playerWallSlideTick],a
 
-    ; set animation
+
     ld      a,PLAYER_ANIMATION_SLIDE
     ld      [playerAnimation],a
 
@@ -1777,7 +1761,7 @@ player_slide_wall:
 player_slide_wall_init:
     ld      a,[playerDirectionWall]
     ld      [playerWallSlideDir],a
-    ld      a,20
+    ld      a,1
     ld      [playerWallSlideTick],a
     ret
 
