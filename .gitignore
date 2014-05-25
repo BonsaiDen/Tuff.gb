@@ -3,4 +3,6 @@ help
 node_modules
 data/bin
 build
-
+vis
+*.avi
+*.mov
