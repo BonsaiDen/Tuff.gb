@@ -174,7 +174,7 @@ module.exports = [{
 }, {
     "id": "GAME_LOGO",
     "channel": 1,
-    "priority": 3,
+    "priority": 1,
     "sweepShifts": 7,
     "sweepDir": 0,
     "sweepTime": 7,
@@ -185,5 +185,19 @@ module.exports = [{
     "envInitVol": 0x000A,
     "frequency": 0x0760,
     "endless": true // don't make the sound stop after the calculated length
+
+}, {
+    "id": "GAME_MENU_SELECT",
+    "channel": 1,
+    "priority": 1,
+    "sweepShifts": 3,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 0x000C,
+    "frequency": 0x0500
 }];
 
