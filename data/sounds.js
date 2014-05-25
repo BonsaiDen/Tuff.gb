@@ -170,5 +170,20 @@ module.exports = [{
     "envStepDir": 0,
     "envInitVol": 0x000F,
     "frequency": 0x0230
+
+}, {
+    "id": "GAME_LOGO",
+    "channel": 1,
+    "priority": 3,
+    "sweepShifts": 7,
+    "sweepDir": 0,
+    "sweepTime": 7,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 6,
+    "envStepDir": 0,
+    "envInitVol": 0x000A,
+    "frequency": 0x0760,
+    "loop": true
 }];
 

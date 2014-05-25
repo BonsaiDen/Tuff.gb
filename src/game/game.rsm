@@ -137,10 +137,14 @@ game_loop:
     ld      a,80
     ld      [gameWaitCounter],a
 
+    ld      a,SOUND_GAME_LOGO
+    call    sound_play
+
     ret
 
 ; Show logo and fade out
 .logo:
+
     ld      a,[screenFadeMode]
     cp      0
     ret     nz

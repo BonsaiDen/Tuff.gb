@@ -455,12 +455,16 @@ _sound_update_channel: ; hl = SoundChannelState, a = channel number 1-4
     ret
 
 .clear_channel_1:
+
+    ld      a,c
+    cp      2
+    ret     nz
+
     ld      a,0
     ld      [$ff10],a
     ld      [$ff11],a
     ld      [$ff12],a
     ld      [$ff13],a
-    ld      [$ff14],a
     ret
 
 .clear_channel_2:
