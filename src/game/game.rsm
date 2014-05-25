@@ -24,7 +24,6 @@ game_init:
     ld      a,$5f
     call    map_init
     call    player_init
-
     
     ; Debug More or Release Mode
     ld      a,GAME_DEBUG_MODE
@@ -63,6 +62,9 @@ game_setup:
     ; load tile data
     ld      de,DataTileImg
     call    map_load_tileset
+
+    ; Reset player
+    call    player_init
 
     ; Hud
     call    game_hud
