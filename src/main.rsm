@@ -33,6 +33,7 @@ INCLUDE     "game/save.rsm"
 INCLUDE     "game/sprite.rsm"
 INCLUDE     "game/screen.rsm"
 INCLUDE     "game/sound.rsm"
+INCLUDE     "game/title.rsm"
 INCLUDE     "game/tileset.rsm"
 
 
