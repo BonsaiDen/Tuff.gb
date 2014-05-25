@@ -308,7 +308,7 @@ screenFadePaletteSprite1Dark:
 
 screenFadePaletteBGLight:
     DB      %11100100
-    DB      %10010100
+    DB      %10100100
     DB      %10010000
     DB      %01000000
     DB      %00000000

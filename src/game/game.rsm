@@ -67,7 +67,7 @@ game_setup:
     call    player_init
 
     ; Hud
-    call    game_hud
+    call    game_draw_hud
 
     ld      a,GAME_MODE_PLAYING
     ld      [gameMode],a
@@ -128,7 +128,7 @@ game_loop:
     cp      0
     ret     nz
 
-    call    game_logo
+    call    game_draw_logo
 
     ; setup fade in
     ld      a,GAME_MODE_LOGO
@@ -174,21 +174,7 @@ game_loop:
     cp      0
     ret     nz
 
-    ; clear screen buffer
-    ld      a,$00
-    sub     128
-    ld      hl,$9800
-    ld      bc,512
-    call    core_vram_set
-
-    ; setup title screen room
-    ld      de,DataTileImg
-    call    map_load_tileset
-
-    ; map
-    ld      b,15
-    ld      c,15
-    call    map_set_room
+    call    game_draw_title
 
     ; player
     ld      a,87
@@ -362,6 +348,7 @@ game_title_screen_movement:
 
 ; Timer -----------------------------------------------------------------------
 game_timer:
+
     ld      a,[gameTimerHalf]
     cp      1
     jp      nz,.tick
@@ -377,11 +364,12 @@ game_timer:
 
     call    map_animate_tiles
     call    screen_timer
+
     ret
 
 
 ; Logo ------------------------------------------------------------------------
-game_logo:
+game_draw_logo:
 
     ; load title screen graphics into vram
     ld      de,DataLogoImg
@@ -398,7 +386,7 @@ game_logo:
 
     ; initial screen offset
     ld      hl,$9800 + 128
-    ld      de,DataTitleLayout
+    ld      de,DataLogoLayout
 
     ; copy logo data into vram
     ld      b,8; 8 rows
@@ -440,10 +428,37 @@ game_logo:
     jp      nz,.loop_y
 
     ret
-    
+
+
+game_draw_title:
+
+    ; clear screen buffer
+    ld      a,$00
+    sub     128
+    ld      hl,$9800
+    ld      bc,512
+    call    core_vram_set
+
+    ; setup title screen room graphics
+    ld      de,DataTileImg
+    call    map_load_tileset
+
+    ; load additional text graphics
+    ld      de,DataTitleImg
+    ld      hl,$9100; start target for decode write
+    ld      bc,$9200; end target for decode write
+    call    lz4_decode_block
+
+    ; map
+    ld      b,15
+    ld      c,15
+    call    map_set_room
+
+    ret
+
 
 ; Hud -------------------------------------------------------------------------
-game_hud:
+game_draw_hud:
     ld      a,$bf - 128
     ld      hl,$9a00
     ld      bc,20

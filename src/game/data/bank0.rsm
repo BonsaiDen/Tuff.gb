@@ -13,7 +13,7 @@ DataTileImg:
 DataLogoImg:
     INCBIN  "../data/bin/logo.bg.bin" 
 
-DataTitleLayout:
+DataLogoLayout:
     DB      $00,$01,$02,$03, $04,$05,$06,$07
     DB      $10,$11,$12,$13, $14,$15,$16,$17
     DB      $08,$09,$0A,$0B, $0C,$0D,$00,$00
@@ -22,6 +22,13 @@ DataTitleLayout:
     DB      $00,$00,$1D,$1E, $1F,$20,$00,$00
     DB      $21,$00,$00,$00, $22,$23,$00,$00
     DB      $24,$25,$26,$27, $28,$29,$2A,$2B
+
+DataTitleImg:
+    INCBIN  "../data/bin/title.bg.bin" 
+
+DataTitleLayout:
+    DB      $A0,$A1,$A2,$A3
+    DB      $A4,$A5,$A6,$A7,$A8,$A9
 
 DataPlayerImg:
     INCBIN  "../data/bin/player.ch.bin" 
