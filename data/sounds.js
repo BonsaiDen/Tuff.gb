@@ -40,7 +40,7 @@ module.exports = [{
     "id": "BG_WATERFALL",
     "channel": 4,
     "priority": 2,
-    "looping": true,
+    "looping": true, // loop inside the sound system
     "soundLength": 0,
     "envStepTime": 4,
     "envStepDir": 1,
@@ -184,6 +184,6 @@ module.exports = [{
     "envStepDir": 0,
     "envInitVol": 0x000A,
     "frequency": 0x0760,
-    "loop": true
+    "endless": true // don't make the sound stop after the calculated length
 }];
 

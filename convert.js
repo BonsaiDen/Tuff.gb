@@ -829,7 +829,7 @@ var Convert = {
 
                     // FF 14
                     bytes.push(
-                        128 | 64 | ((s.frequency >> 8) & 0x07)
+                        128 | (s.endless ? 0 : 64) | ((s.frequency >> 8) & 0x07)
                     );
 
                 } else if (s.channel === 4) {
