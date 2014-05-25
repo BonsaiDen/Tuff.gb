@@ -31,7 +31,7 @@ game_init:
     cp      1
     jp      z,.debug
 
-    ; release
+.release:
     ld      a,80
     ld      [gameWaitCounter],a
     ld      a,GAME_MODE_INIT
@@ -276,8 +276,79 @@ game_loop:
 
 
 game_title_screen_movement:
+
+    ; clean up actual input state
     ld      a,[coreInput]
-    and     %00001100
+    and     BUTTON_START | BUTTON_SELECT
+    ld      c,a
+
+    ; check if we need a new player movement command
+    ld      a,[gameTitlePlayerTick]
+    cp      0
+    jp      nz,.move
+
+    ; new length of the movement
+    call    math_random
+    and     %00001111; at most 15 random frames
+    add     10; minimum of 10 frames
+    ld      [gameTitlePlayerTick],a
+
+    ; get new direction
+    call    math_random
+    and     %000001111
+    ld      [gameTitlePlayerDir],a
+
+; continously move into the current target direction
+.move:
+    ld      a,[gameTitlePlayerTick]
+    dec     a
+    ld      [gameTitlePlayerTick],a
+
+    ld      a,[gameTitlePlayerDir]
+    cp      0
+    jp      z,.left
+
+    cp      3
+    jp      z,.right
+
+    jp      .control
+
+.left:
+
+    ; don't leave the screen
+    ld      a,[playerX]
+    cp      16
+    jp      c, .switch_to_right; x < 8
+
+    ld      a,c
+    or      BUTTON_LEFT
+    ld      c,a
+    jp      .control
+
+.switch_to_right:
+    ld      a,3
+    ld      [gameTitlePlayerDir],a
+    jp      .right
+
+.right:
+
+    ; don't leave the screen
+    ld      a,[playerX]
+    cp      152
+    jp      nc, .switch_to_left; x > 152
+
+    ld      a,c
+    or      BUTTON_RIGHT
+    ld      c,a
+    jp      .control
+
+.switch_to_left:
+    ld      a,0
+    ld      [gameTitlePlayerDir],a
+    jp      .left
+
+.control:
+    ld      a,c
     ld      [coreInput],a
 
     ret

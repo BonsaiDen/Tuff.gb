@@ -20,4 +20,5 @@ gameTimerHalf:      DB
 ; Game State ------------------------------------------------------------------
 gameMode:           DB
 gameWaitCounter:    DB
-
+gameTitlePlayerDir: DB
+gameTitlePlayerTick: DB
