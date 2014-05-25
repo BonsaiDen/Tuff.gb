@@ -27,8 +27,8 @@ DataTitleImg:
     INCBIN  "../data/bin/title.bg.bin" 
 
 DataTitleLayout:
-    DB      $A0,$A1,$A2,$A3
-    DB      $A4,$A5,$A6,$A7,$A8,$A9
+    DB      $10,$11,$12,$13
+    DB      $14,$15,$16,$17,$18,$19
 
 DataPlayerImg:
     INCBIN  "../data/bin/player.ch.bin" 

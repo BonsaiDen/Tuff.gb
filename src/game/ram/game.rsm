@@ -12,13 +12,7 @@ GAME_MODE_PLAYING   EQU 6
 
 GAME_DEBUG_MODE     EQU 0
 
-
-; Screen State ----------------------------------------------------------------
-gameTimerHalf:      DB
-
-
 ; Game State ------------------------------------------------------------------
+gameTimerHalf:      DB
 gameMode:           DB
-gameWaitCounter:    DB
-gameTitlePlayerDir: DB
-gameTitlePlayerTick: DB
+

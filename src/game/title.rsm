@@ -1,3 +1,10 @@
+title_init:
+    ld      a,80
+    ld      [titleWaitCounter],a
+    ld      a,GAME_MODE_INIT
+    ld      [gameMode],a
+    ret
+
 title_update:
     ld      a,[gameMode]
     cp      GAME_MODE_TITLE
@@ -24,9 +31,9 @@ title_update:
 .init:
 
     ; delay
-    ld      a,[gameWaitCounter]
+    ld      a,[titleWaitCounter]
     dec     a
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
     cp      0
     ret     nz
 
@@ -39,7 +46,7 @@ title_update:
 
     ; show the logo for 80 frames
     ld      a,80
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
 
     ld      a,SOUND_GAME_LOGO
     call    sound_play
@@ -54,9 +61,9 @@ title_update:
     ret     nz
 
     ; delay
-    ld      a,[gameWaitCounter]
+    ld      a,[titleWaitCounter]
     dec     a
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
     cp      0
     ret     nz
 
@@ -65,7 +72,7 @@ title_update:
     ld      [gameMode],a
 
     ld      a,4
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
 
     ret
 
@@ -76,7 +83,7 @@ title_update:
     cp      0
     ret     nz
 
-    call    title_draw_text
+    call    title_draw_room
 
     ; player
     ld      a,87
@@ -85,9 +92,9 @@ title_update:
     ld      [playerY],a
 
     ; delay
-    ld      a,[gameWaitCounter]
+    ld      a,[titleWaitCounter]
     dec     a
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
     cp      0
     ret     nz
 
@@ -124,7 +131,7 @@ title_update:
     ret     nz
 
     ld      a,10
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
 
     ld      a,GAME_MODE_CONTINUE
     ld      [gameMode],a
@@ -140,9 +147,9 @@ title_update:
     ret     nz
 
     ; delay
-    ld      a,[gameWaitCounter]
+    ld      a,[titleWaitCounter]
     dec     a
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
     cp      0
     ret     nz
 
@@ -158,9 +165,9 @@ title_update:
     ret     nz
 
     ; delay
-    ld      a,[gameWaitCounter]
+    ld      a,[titleWaitCounter]
     dec     a
-    ld      [gameWaitCounter],a
+    ld      [titleWaitCounter],a
     cp      0
     ret     nz
 
@@ -178,7 +185,7 @@ title_screen_movement:
     ld      c,a
 
     ; check if we need a new player movement command
-    ld      a,[gameTitlePlayerTick]
+    ld      a,[titlePlayerTick]
     cp      0
     jp      nz,.move
 
@@ -186,20 +193,20 @@ title_screen_movement:
     call    math_random
     and     %00001111; at most 15 random frames
     add     10; minimum of 10 frames
-    ld      [gameTitlePlayerTick],a
+    ld      [titlePlayerTick],a
 
     ; get new direction
     call    math_random
     and     %000001111
-    ld      [gameTitlePlayerDir],a
+    ld      [titlePlayerDir],a
 
 ; continously move into the current target direction
 .move:
-    ld      a,[gameTitlePlayerTick]
+    ld      a,[titlePlayerTick]
     dec     a
-    ld      [gameTitlePlayerTick],a
+    ld      [titlePlayerTick],a
 
-    ld      a,[gameTitlePlayerDir]
+    ld      a,[titlePlayerDir]
     cp      0
     jp      z,.left
 
@@ -222,7 +229,7 @@ title_screen_movement:
 
 .switch_to_right:
     ld      a,3
-    ld      [gameTitlePlayerDir],a
+    ld      [titlePlayerDir],a
     jp      .right
 
 .right:
@@ -239,7 +246,7 @@ title_screen_movement:
 
 .switch_to_left:
     ld      a,0
-    ld      [gameTitlePlayerDir],a
+    ld      [titlePlayerDir],a
     jp      .left
 
 .control:
@@ -310,7 +317,7 @@ title_draw_logo:
     ret
 
 
-title_draw_text:
+title_draw_room:
 
     ; clear screen buffer
     ld      a,$00
@@ -329,10 +336,25 @@ title_draw_text:
     ld      bc,$9200; end target for decode write
     call    lz4_decode_block
 
-    ; map
+    ; draw room
     ld      b,15
     ld      c,15
     call    map_set_room
+
+    ; draw the room right away instead of waiting for the next vblank to draw it
+    call    map_load_room
+
+    ; setup title text
+    ld      hl,DataTitleLayout
+    ld      de,$9800 + 488; "Start"
+    ld      bc,$04
+    call    core_vram_cpy
+
+    ; TODO check for existing save data before displaying the continue option
+    ld      hl,DataTitleLayout + 4
+    ld      de,$9800 + 519; "Continue"
+    ld      bc,$06
+    call    core_vram_cpy
 
     ret
 

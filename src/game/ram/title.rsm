@@ -1,0 +1,9 @@
+SECTION "TitleRam",WRAM0[$C3E0]
+
+; Title State -----------------------------------------------------------------
+titleWaitCounter:   DB
+titlePlayerDir:     DB
+titlePlayerTick:    DB
+titleCursorPos:     DB
+titleCanContinue:   DB
+

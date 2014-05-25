@@ -31,10 +31,7 @@ game_init:
     jp      z,.debug
 
 .release:
-    ld      a,80
-    ld      [gameWaitCounter],a
-    ld      a,GAME_MODE_INIT
-    ld      [gameMode],a
+    call    title_init
     ret
 
 .debug:
