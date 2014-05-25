@@ -55,12 +55,6 @@ save_load_from_sram:; a = 1 triggers defaults
     cp      SAVE_GAME_VERSION
     jp      nz,.defaults
 
-    ; ignore save state when start button is being pressed during powerup
-    ld      a,[coreInput]
-    and     %00001100
-    cp      %00001100
-    jp      z,.defaults
-
     ; Map Data
     ld      a,[hli]
     ld      [mapRoomX],a
@@ -265,6 +259,59 @@ save_store_to_sram:
     ld      [hl],$00
 
     ei
+    ret
+
+
+save_check_state: ; return 1 in a if a save state exists in sram
+
+    di
+
+    ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
+    ld      hl,$0000 
+    ld      [hl],$0A 
+
+    ; calculate checksum
+    ld      bc,SAVE_COMPLETE_SIZE
+    ld      de,$A000 + SAVE_CHECKSUM_SIZE
+    call    _crc16
+
+    ; high byte
+    ld      hl,$A000 
+    ld      a,[hli]
+    cp      b
+    jp      nz,.missing
+
+    ; low byte
+    ld      a,[hli]
+    cp      c
+    jp      nz,.missing
+
+    ; check header
+    ld      a,[hli]
+    cp      $12
+    jp      nz,.missing
+
+    ld      a,[hli]
+    cp      $34
+    jp      nz,.missing
+
+    ld      a,[hli]
+    cp      $56
+    jp      nz,.missing
+
+    ld      a,1
+    jp      .done
+
+.missing:
+    ld      a,0
+
+.done:
+
+    ; disable external RAM
+    ld      hl,$0000 
+    ld      [hl],$00
+    ei
+
     ret
 
 
