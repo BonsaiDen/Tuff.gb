@@ -24,6 +24,12 @@ game_init:
     ld      a,$5f
     call    map_init
     call    player_init
+
+    ; If both start, select and up are pressed during power on go into debug mode
+    ld      a,[coreInput]
+    and     BUTTON_START | BUTTON_SELECT | BUTTON_UP
+    cp      BUTTON_START | BUTTON_SELECT | BUTTON_UP
+    jp      z,.debug
     
     ; Debug More or Release Mode
     ld      a,GAME_DEBUG_MODE
