@@ -584,6 +584,31 @@ player_collision_down:
 
 .check:
 
+    ; check for normal block collision
+    ld      h,1
+    call    _player_col_check_down
+    cp      1
+    ret     z; 
+
+    ; if pounding check for breaking blocks
+    ld      a,[playerIsPounding]
+    cp      1
+    jp      z,.pounding
+    
+    ; otherwise check for collision with breakable blocks
+.col_breakable:
+    ld      h,5
+    call    _player_col_check_down
+    cp      1
+    ret     z; 
+
+.pounding:
+    
+    ld      a,0; fall through breakable blocks
+    ret
+
+
+_player_col_check_down:
     ; middle
     ld      a,[playerY]
     add     e
@@ -592,8 +617,9 @@ player_collision_down:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ld      a,[mapCollisionFlag]
+    cp      h
+    jp      z,.col
 
     ; right half 
     ld      a,[playerY]
@@ -604,8 +630,9 @@ player_collision_down:
     add     PLAYER_HALF_WIDTH - 3
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ld      a,[mapCollisionFlag]
+    cp      h
+    jp      z,.col
 
     ; left half 
     ld      a,[playerY]
@@ -616,8 +643,16 @@ player_collision_down:
     sub     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      h
+    jp      z,.col
 
-    ret     
+    ld      a,0
+    ret
+
+.col:
+    ld      a,1
+    ret
 
 
 player_collision_left:
@@ -2022,6 +2057,27 @@ player_pound:
     ld      [playerGravityMax],a
     ret
 
+
+player_pounding_collision:
+    ; 1. check all 3 collision points
+    ;    - all points must be either 0 (no col) or 5 (breakable)
+    ;    - if we hit a non-breakable, solid block or water, we exit
+    
+    ; 2. we can at most hit two 16x16 blocks on the x axis, figure out which two were hit
+    
+    ; 3. destroy the block(s)
+
+    ret
+
+map_destroy_breakable_block:
+    ; 1. check all 4 8x8 tiles for their surrounding tiles being 0x5f (white background)
+    ;    - if    up is 0x5f set the tile to: 0x67
+    ;    - if  down is 0x5f set the tile to: 0x68
+    ;    - if  left is 0x5f set the tile to: 0x65
+    ;    - if right is 0x5f set the tile to: 0x66
+    ;     - else set to 0x70 - 0x73
+    ret
+    
 
 ; Sleep Timer -----------------------------------------------------------------
 player_sleep:
