@@ -39,6 +39,8 @@ core_init:
     ld      a,0
     ld      [rSCX],a
     ld      [rSCY],a
+    ld      [coreScrollX],a
+    ld      [coreScrollY],a
 
     ; Reset vblank flag
     ld      [coreVBlankDone],a

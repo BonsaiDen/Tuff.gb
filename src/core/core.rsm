@@ -16,6 +16,8 @@ coreLZ4token:       DB
 corePaletteBG:      DB
 corePaletteSprite0: DB
 corePaletteSprite1: DB
+coreScrollX:        DB
+coreScrollY:        DB
 
 
 ; Code ------------------------------------------------------------------------

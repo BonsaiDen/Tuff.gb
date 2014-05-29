@@ -26,6 +26,12 @@ core_vblank_handler:
     ; call the DMA code for transfering sprite data to OAM
     call    $ff80 
 
+    ld      a,[coreScrollX]
+    ld      [rSCX],a
+
+    ld      a,[coreScrollY]
+    ld      [rSCY],a
+
     ; check if we need to load a new room if so set up the new entities
     ; AFTER we copy to OAM to avoid visual glitcehs
     ld      a,[mapRoomUpdate]
