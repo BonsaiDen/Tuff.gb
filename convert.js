@@ -34,8 +34,10 @@ var Palette = {
         '0,0,0': 1, // blocking
         '0,255,255': 2, // water top (swimming)
         '0,0,255': 3,  // water full (diving)
-        '255,0,0': 4,  // danger (environmental hazard)
-        '255,255,255': 5 // saving?
+        '255,0,0': 4,  // hazard lava
+        '255,128,0': 4,  // hazard spikes
+        '255,255,0': 4,  // hazard electic
+        '0,255,0': 5 // breakable
     }
 
 };
