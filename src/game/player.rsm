@@ -603,8 +603,7 @@ player_collision_down:
     ret     z; 
 
 .pounding:
-    
-    ld      a,0; fall through breakable blocks
+    call    player_pounding_collision
     ret
 
 
@@ -2059,23 +2058,113 @@ player_pound:
 
 
 player_pounding_collision:
-    ; 1. check all 3 collision points
-    ;    - all points must be either 0 (no col) or 5 (breakable)
-    ;    - if we hit a non-breakable, solid block or water, we exit
-    
-    ; 2. we can at most hit two 16x16 blocks on the x axis, figure out which two were hit
-    
-    ; 3. destroy the block(s)
 
+    ; check which 16x16 blocks we're hitting
+    ld      a,255; reset
+    ld      [playerPoundBlockM],a
+    ld      [playerPoundBlockR],a
+    ld      [playerPoundBlockL],a
+    
+    ; middle of player
+    ld      a,[playerY]
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      1
+    jp      z,.collision
+
+    cp      5
+    jp      nz,.check_right
+
+    ; store M block x coordinate
+    ld      a,[playerX]; divide x by 16
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    ld      [playerPoundBlockM],a; store block a x
+
+    ; right edge of player
+.check_right:
+    ld      a,[playerY]
+    ld      c,a
+
+    ld      a,[playerX]
+    add     7
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      1
+    jp      z,.collision
+
+    cp      5
+    jp      nz,.check_left
+
+    ; store R block x coordinate
+    ld      a,[playerX]; divide x by 16
+    add     7
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    ld      [playerPoundBlockR],a
+
+    ; left edge of player
+.check_left:
+    ld      a,[playerY]
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     8
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+
+    cp      1
+    jp      z,.collision
+
+    cp      5
+    jp      nz,.check_blocks
+
+    ; store L block x coordinate
+    ld      a,[playerX]; divide x by 16
+    sub     8
+    srl     a
+    srl     a
+    srl     a
+    srl     a
+    ld      [playerPoundBlockL],a
+
+.check_blocks:
+
+    ld      a,[playerY]; divide by 16
+    ld      c,a
+    srl     c
+    srl     c
+    srl     c
+    srl     c
+
+    ; check which 16x16 blocks need to be destroyed
+    ld      a,[playerPoundBlockR]
+    cp      255
+    call    nz,map_destroy_breakable_block
+
+    ld      a,[playerPoundBlockM]
+    cp      255
+    call    nz,map_destroy_breakable_block
+
+    ld      a,[playerPoundBlockL]
+    cp      255
+    call    nz,map_destroy_breakable_block
+
+    ld      a,0; fall through breakable blocks
     ret
 
-map_destroy_breakable_block:
-    ; 1. check all 4 8x8 tiles for their surrounding tiles being 0x5f (white background)
-    ;    - if    up is 0x5f set the tile to: 0x67
-    ;    - if  down is 0x5f set the tile to: 0x68
-    ;    - if  left is 0x5f set the tile to: 0x65
-    ;    - if right is 0x5f set the tile to: 0x66
-    ;     - else set to 0x70 - 0x73
+.collision:
+    ld      a,1; stop if we touch a normal collision block
     ret
     
 

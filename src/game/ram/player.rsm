@@ -70,6 +70,9 @@ playerDirectionWall: DB
 ; Pounding
 playerIsPounding:    DB
 playerPoundTick:     DB
+playerPoundBlockM:   DB
+playerPoundBlockR:   DB
+playerPoundBlockL:   DB
 
 
 ; Wall Sliding
