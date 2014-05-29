@@ -317,8 +317,24 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ret
 
 
+map_get_tile_collision:
+    push    bc
+    push    hl
+
+    ; get offset into collision table
+    call    map_get_tile_value
+    ld      hl,DataTileCol ; needs to be aligned at 256 bytes
+    ld      l,a
+    ld      a,[hl]
+
+    pop     hl
+    pop     bc
+    ret
+
+
 map_get_tile_value: ; b = tile x, c = tile y -> a = value
-                    ; trashes hl and bc
+    ; gets the tile value from the room data buffer (not VRAM!)
+    ; trashes hl and bc
 
     ld      a,b ; store x
 
@@ -340,6 +356,60 @@ map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; load tile value from background buffer
     ld      a,[hl]
     sub     128 ; convert into 0-255 range
+
+    ret
+
+
+map_set_tile_value: ; b = tile x, c = tile y, a = value
+    ; sets the tile value in the room data buffer AND in vram
+
+    push    bc
+    push    hl
+    push    de
+
+    ; convert tile into -127-128 range and store into d
+    add     128
+    ld      d,a
+
+    ; y * 32
+    ld      h,0 
+    ld      l,c
+
+    add     hl,hl ; 2
+    add     hl,hl ; 4
+    add     hl,hl ; 8
+    add     hl,hl ; 16
+    add     hl,hl ; 32
+
+    ; + mapRoomBuffer + x
+    ld      a,b ; store x
+    push    hl
+    push    af
+
+    ld      b,$C4
+    ld      c,a ; restore x
+    add     hl,bc
+    ld      a,d
+    ld      [hl],a; set tile in buffer
+
+    pop     af
+    pop     hl
+
+    ; + VRAM buffer + x
+    ld      b,$98
+    ld      c,a ; restore x
+    add     hl,bc
+
+    ; store tile value to background buffer
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      a,d
+    ld      [hl],a
+
+    pop     de
+    pop     hl
+    pop     bc
 
     ret
 
@@ -486,49 +556,15 @@ map_get_tile_background: ; b = tx, c = ty
     ; 4a. check if more than one bit is set, if so, background will be white
     ; 4b. otherwise, check if any direction is set to white and set fade background
     ; 4c. if no direction is set to white, set black background 0x70 + modulo of x and y tile index
-
     push    hl
     push    bc
-
     ; up
     call    map_get_tile_value    
-
-
-
     ; left
-
-
-
     ; right
-
-
-
     ; down
-
     pop     bc
     pop     hl
-
-    ret
-
-
-; destroy a 16x16 breakable block at 
-map_destroy_breakable_block: ; a = block x, c = block y
-
-    ld    b,a; store x into a
-
-    ; check if the block is really breakable (it may already have been destroy on the current frame)
-    push    hl
-    call    map_get_tile_value
-
-    ld      hl,DataTileCol ; needs to be aligned at 256 bytes
-    ld      l,a
-    ld      a,[hl]
-    pop     hl
-
-    cp      5
-    ret     nz; exit if block is not breakable
-
-
 
     ; 1. check all 4 8x8 tiles for their surrounding tiles being 0x5f (white background)
     ;    - if    up is 0x5f set the tile to: 0x67
@@ -536,5 +572,95 @@ map_destroy_breakable_block: ; a = block x, c = block y
     ;    - if  left is 0x5f set the tile to: 0x65
     ;    - if right is 0x5f set the tile to: 0x66
     ;     - else set to 0x70 - 0x73
+
+
+    ret
+
+
+; Breakable Blocks ------------------------------------------------------------
+map_check_breakable_block_top:
+
+    ; break the four 8x8 blocks
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+
+    ; check if we actually need to break them
+    call    map_get_tile_collision
+    cp      5
+    jp      nz,.no
+
+    ld      a,1
+    pop     bc
+    ret
+
+.no:
+    ld      a,0
+    pop     bc
+    ret
+
+map_check_breakable_block_bottom:
+
+    ; break the four 8x8 blocks
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    inc     c
+
+    ; check if we actually need to break them
+    call    map_get_tile_collision
+    cp      5
+    jp      nz,.no
+
+    ld      a,1
+    pop     bc
+    ret
+
+.no:
+    ld      a,0
+    pop     bc
+    ret
+
+
+
+map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
+
+    ; TODO check the actual data block from mapRoomUnpackBuffer to determine the new background tile
+
+    ; break the four 8x8 blocks
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+
+    ; clear tiles
+    ld      a,$5f
+    call    map_set_tile_value; top left
+
+    inc     b
+    ld      a,$5f
+    call    map_set_tile_value; top right
+
+    pop     bc
+    ret
+
+map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
+
+    ; TODO check the actual data block from mapRoomUnpackBuffer to determine the new background tile
+
+    ; break the four 8x8 blocks
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    inc     c; lower row
+
+    ; clear tiles
+    ld      a,$5f
+    call    map_set_tile_value; bottom left
+
+    inc     b
+    ld      a,$5f
+    call    map_set_tile_value; bottom right
+
+    pop     bc
     ret
 

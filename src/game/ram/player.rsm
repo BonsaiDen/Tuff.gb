@@ -73,6 +73,7 @@ playerPoundTick:     DB
 playerPoundBlockM:   DB
 playerPoundBlockR:   DB
 playerPoundBlockL:   DB
+playerBreakDelayed:  DB
 
 
 ; Wall Sliding
@@ -91,6 +92,7 @@ playerLandingFrames: DB ; number of frames for which the controls should be dela
 
 playerGravityTick:   DB ; ticker for applying gravity
 playerGravityMax:    DB ; maximum gravity per tick
+playerGravityDelay:  DB ; ticks for which gravity should not be applied
 playerJumpPressed:   DB ; whether the jump button is still continously pressed
 playerOnGround:      DB ; is the player on ground
 playerJumpForce:     DB ; current jump force per frame

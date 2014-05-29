@@ -199,5 +199,17 @@ module.exports = [{
     "envStepDir": 0,
     "envInitVol": 0x000C,
     "frequency": 0x0500
+
+}, {
+    "id": "PLAYER_POUND_BREAK",
+    "channel": 4,
+    "priority": 3,
+    "soundLength": 0x23,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "freqRatio": 5,
+    "polyStep": 1,
+    "shiftFreq": 6
 }];
 
