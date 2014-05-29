@@ -1,5 +1,5 @@
 title_init:
-    ld      a,80
+    ld      a,30
     ld      [titleWaitCounter],a
     ld      a,GAME_MODE_INIT
     ld      [gameMode],a

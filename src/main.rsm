@@ -6,7 +6,7 @@ INCLUDE     "core/include/rom.inc"
 CART_NAME       EQUS       "Tuff"
 CART_LICENSEE   EQUS       "BD"
 CART_TYPE       EQU        ROM_MBC5_RAM_BAT
-CART_ROM_SIZE   EQU        ROM_SIZE_32KBYTE
+CART_ROM_SIZE   EQU        ROM_SIZE_64KBYTE
 CART_RAM_SIZE   EQU        RAM_SIZE_64KBIT
 CART_DEST       EQU        ROM_DEST_OTHER
 
@@ -43,6 +43,6 @@ INCLUDE     "game/game.rsm"
 
 
 ; Data ------------------------------------------------------------------------
-INCLUDE     "game/data/bank0.rsm"
 INCLUDE     "game/data/bank1.rsm"
+INCLUDE     "game/data/bank2.rsm"
 

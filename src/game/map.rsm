@@ -78,6 +78,11 @@ map_set_room: ; b = x, c = y
     ld      a,c
     ld      [mapRoomY],a
 
+    ; bank switch
+    di
+    ld      hl,$2000
+    ld      [hl],$02
+
     ; RoomId = y * MAP_WIDTH + x
     ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
     ; MapData = (MapOffset + MapIndexSize + RoomOffset) - 1
@@ -121,7 +126,12 @@ map_set_room: ; b = x, c = y
     ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
     call    core_unpack_raw
 
-    ; un/load entities
+    ; bank switch
+    ld      hl,$2000
+    ld      [hl],$01
+    ei
+
+    ; unload entities
     call    entity_store ; first store them
     call    entity_reset ; then reset them, as this will clear their active flag
 
@@ -186,7 +196,7 @@ map_load_room:
     ld      d,a ; save block data
 
     ; upper left
-    ld      b,$20 ; block def row 0 offset
+    ld      b,$40 ; block def row 0 offset
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
@@ -194,7 +204,7 @@ map_load_room:
 
 
     ; upper right
-    ld      b,$21 ; block def row 0 offset
+    ld      b,$41 ; block def row 0 offset
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
@@ -208,14 +218,14 @@ map_load_room:
     ld      d,a ; restore block
 
     ; lower left
-    ld      b,$22 ; block def row 0 offset
+    ld      b,$42 ; block def row 0 offset
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
     ld      [hli],a ; draw + 32
 
     ; lower right
-    ld      b,$23 ; block def row 0 offset
+    ld      b,$43 ; block def row 0 offset
     ld      c,d
     ld      a,[bc] ; tile value
     sub     a,128 ; tile data offset
@@ -298,7 +308,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     sub     128 ; convert into 0-255 range
 
     ; get offset into collision table
-    ld      h,$24 ; $2400 + a
+    ld      hl,DataTileCol ; needs to be aligned at 256 bytes
     ld      l,a
     ld      a,[hl]
 

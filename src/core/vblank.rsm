@@ -20,6 +20,9 @@ core_vblank_handler:
 
     ; game specific code ------------------------------------------------------
 
+    ; update the player animation so the player sprites show the correct frames
+    call    player_animation_update
+
     ; call the DMA code for transfering sprite data to OAM
     call    $ff80 
 
@@ -32,9 +35,6 @@ core_vblank_handler:
     ; Set vblank flag, this will cause the core loop to run the game loop once
     ld      a,1
     ld      [coreVBlankDone],a
-
-    ; update the player animation so the player sprites show the correct frames
-    call    player_animation_update
 
     ; load the new room data into vram
     ld      a,[mapRoomUpdate]
