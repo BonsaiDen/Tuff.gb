@@ -62,7 +62,11 @@ Getting the video YouTube ready can quickly be done with `ffmpeg`:
 
 # License
 
-Tuff, a Gameboy Game
+"Tuff" including all Graphics, Ideas, Sound and Maps are Copyright (c) 2014 Ivo Wetzel
+
+
+The assembly code along with all conversion tools is licensed as MIT and can be used by anyone:
+
 Copyright (C) 2014 Ivo Wetzel
 
 This program is free software: you can redistribute it and/or modify
