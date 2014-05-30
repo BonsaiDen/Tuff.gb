@@ -25,7 +25,7 @@ You'll find the assembled ROM under `build/main.gb`, it should play in a GameBoy
 ## Emulators for Development
 
 I found that [Gambatte](https://github.com/sinamas/gambatte) and [bgb](http://bgb.bircd.org/) are by far the best emulators for developing 
-as they have a big focus on accuracy, especially *bgb* comes with a great, 
+as they have a big focus on accuracy. Especially *bgb*, as it comes with a great, 
 built-in debugger, vram viewer and other goodies. 
 
 For the web, [GameBoy Online](https://github.com/grantgalitz/GameBoy-Online) is by far the best of the available JavaScript based 
@@ -34,11 +34,15 @@ emulators out there.
 For video recording [mednafen](http://mednafen.sourceforge.net/) will be the emulator of choice, you can record a 
 uncompressed gameplay video along with audio like so:
 
-    mednafen -qtrecord "game_raw.mov" -qtrecord.vcodec raw -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 game.gb
+    mednafen -qtrecord "game_raw.mov" -qtrecord.vcodec png -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 game.gb
 
-> Note: Beware, this is completely uncompressed and even at a resolution of a mere 
-> `160x144`, this results in about ~150mb for ~30 seconds of video. Refer to the 
-> mednafen docs for some other encoding options.
+This will record a uncompressed 160x144 video of the game.
+
+Getting the video YouTube ready can quickly be done with `ffmpeg`:
+
+    ffmpeg -i game_raw.mov -vf scale=480:432 -sws_flags neighbor -acodec libmp3lame -ac 1 -ab 64000 -ar 22050 -vcodec mpeg4 -flags +mv4+gmc -mbd bits -trellis 2 -b 8000k game.avi
+
+> This will scale it up, convert the audio to mp3 and the video to mpeg4, you can tweak the bitrate, but it will normally average out at around 3000kb/s (of course, this depends on the graphics of the game).
 
 
 # License
