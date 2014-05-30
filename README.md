@@ -16,7 +16,7 @@ Below are some older screens of the game to give you an impression of what it lo
 
 # Development
 
-The Game is being developed mostly on Emulators, although I actually build a number of custom Game Paks by replacing the original masked ROM with a reprogrammable flash chip, so it does actually [rn on the hardware](http://www.youtube.com/watch?v=yXNEeld8Lq8) !
+The Game is being developed mostly on Emulators, although I actually build a number of custom Game Paks by replacing the original masked ROM with a reprogrammable flash chip, so it does actually [run on the hardware](http://www.youtube.com/watch?v=yXNEeld8Lq8) !
 
 In case you're trying to get started with your own DMG game, you might find a lot of helpful code under `src/core`. The core runtime is mostly separated from the game code (except where stated in the source) and there are many useful routines and a whole lot of comments for you to check out :)
 
@@ -60,12 +60,14 @@ Getting the video YouTube ready can quickly be done with `ffmpeg`:
 > This will scale it up, convert the audio to mp3 and the video to mpeg4, you can tweak the bitrate, but it will normally average out at around 3000kb/s (of course, this depends on the graphics of the game).
 
 
-# License
+## Copyright
 
 "Tuff" including all Graphics, Ideas, Sound and Maps are Copyright (c) 2014 Ivo Wetzel
 
 
-The assembly code along with all conversion tools is licensed as MIT and can be used by anyone:
+## License
+
+The assembly code along with all conversion tools is licensed under MIT:
 
 Copyright (C) 2014 Ivo Wetzel
 
