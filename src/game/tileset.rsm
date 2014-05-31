@@ -1,7 +1,7 @@
 ; Tileset ---------------------------------------------------------------------
 
 ; hl = sprite map, c = row index, b = target row in ram, de = target base in ram, a = table index size
-map_load_sprite_row: ; load a compress sprite row into vram
+tileset_load_sprite_row: ; load a compress sprite row into vram
 
     push    bc
     push    de
@@ -41,7 +41,7 @@ map_load_sprite_row: ; load a compress sprite row into vram
     ret
 
 
-map_load_tileset: ; hl = destination, de = source
+tileset_load: ; hl = destination, de = source
 
     ; copy tiles to character data
     ld      hl,$8800

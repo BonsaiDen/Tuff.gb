@@ -21,7 +21,7 @@ game_init:
     call    sound_enable
 
     ; Init game core
-    ld      a,$5f
+    ld      a,$5f ; TODO convert into constant
     call    map_init
     call    player_init
 
@@ -64,7 +64,7 @@ game_setup:
 
     ; load tile data
     ld      de,DataTileImg
-    call    map_load_tileset
+    call    tileset_load
 
     ; Reset player
     call    player_init

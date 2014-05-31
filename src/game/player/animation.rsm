@@ -53,7 +53,7 @@ player_animation_update: ; executed during vblank
     ld      c,a
     ld      de,$8000
     ld      a,PLAYER_SPRITE_ROWS * 2
-    call    map_load_sprite_row
+    call    tileset_load_sprite_row
 
     ret
 

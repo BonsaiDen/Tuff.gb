@@ -1,3 +1,4 @@
+; Title Screen and Developer Logo Functions -----------------------------------
 title_init:
     ld      a,30
     ld      [titleWaitCounter],a
@@ -316,7 +317,7 @@ title_draw_room:
 
     ; setup title screen room graphics
     ld      de,DataTileImg
-    call    map_load_tileset
+    call    tileset_load
 
     ; load additional text graphics
     ld      de,DataTitleImg

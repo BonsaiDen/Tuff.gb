@@ -539,7 +539,7 @@ _entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entit
     ld      hl,DataEntityRows
     ld      de,$8400
     ld      a,ENTITY_SPRITE_ROWS * 2
-    call    map_load_sprite_row
+    call    tileset_load_sprite_row
 
 .done:
     ld      a,b ; load the row into which the sprite data got loaded
