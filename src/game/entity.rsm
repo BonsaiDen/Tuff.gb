@@ -102,7 +102,7 @@ entity_load:
     call    _entity_reset_tile_row_mapping
 
     ; get offset for entity map data
-    ld      hl,mapRoomUnpackBuffer + MAP_ROOM_SIZE
+    ld      hl,mapRoomBlockBuffer + MAP_ROOM_SIZE
     ld      b,0
 
 .loop:

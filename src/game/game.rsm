@@ -21,7 +21,7 @@ game_init:
     call    sound_enable
 
     ; Init game core
-    ld      a,$5f ; TODO convert into constant
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_init
     call    player_init
 
@@ -82,7 +82,7 @@ game_setup:
 game_loop:
 
     ; disable everything during room updates
-    ld      a,[mapRoomUpdate]
+    ld      a,[mapRoomUpdateRequired]
     cp      0
     ret     nz
 

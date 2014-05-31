@@ -2,10 +2,10 @@ SECTION "MapLogic",ROM0
 
 
 ; Map -------------------------------------------------------------------------
-map_init: ; a = base value
+map_init: ; a = base value for background tiles
 
     sub     128
-    ld      hl,mapRoomBuffer
+    ld      hl,mapRoomTileBuffer
     ld      bc,512
     call    core_mem_set
 
@@ -81,7 +81,7 @@ map_set_room: ; b = x, c = y
     ; bank switch
     di
     ld      hl,$2000
-    ld      [hl],$02
+    ld      [hl],MAP_ROOM_DATA_BANK
 
     ; RoomId = y * MAP_WIDTH + x
     ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
@@ -122,8 +122,8 @@ map_set_room: ; b = x, c = y
     add     hl,bc ; hl = pointer to packed room data
 
     ; unpack the data
-    ld      de,mapRoomUnpackBuffer
-    ld      bc,mapRoomUnpackBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
+    ld      de,mapRoomBlockBuffer
+    ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
     call    core_unpack_raw
 
     ; bank switch
@@ -137,7 +137,7 @@ map_set_room: ; b = x, c = y
 
     ; draw the room
     ld      a,1
-    ld      [mapRoomUpdate],a
+    ld      [mapRoomUpdateRequired],a
 
     pop     bc
     pop     de
@@ -151,13 +151,13 @@ map_set_room: ; b = x, c = y
 map_load_room:
     
     ld      a,0
-    ld      [mapRoomUpdate],a
+    ld      [mapRoomUpdateRequired],a
 
     ; target is the screen buffer
     ld      hl,$C400
 
     ; we read from the unpacked room data
-    ld      de,mapRoomUnpackBuffer - 1
+    ld      de,mapRoomBlockBuffer - 1
 
     ; setup loop counts
     ld      b,8 ; row
@@ -288,7 +288,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
 
     ; get offset into collision table
     call    map_get_tile_value
-    ld      hl,DataTileCol ; needs to be aligned at 256 bytes
+    ld      h,DataTileCol >> 8; high byte, needs to be aligned at 256 bytes
     ld      l,a
     ld      a,[hl]
 
@@ -332,6 +332,11 @@ map_get_tile_collision:
     ret
 
 
+HI_BYTE: MACRO
+\1
+ENDM
+
+
 map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; gets the tile value from the room data buffer (not VRAM!)
     ; trashes hl and bc
@@ -348,8 +353,8 @@ map_get_tile_value: ; b = tile x, c = tile y -> a = value
     add     hl,hl ; 16
     add     hl,hl ; 32
 
-    ; + mapRoomBuffer + x
-    ld      b,$C4
+    ; + mapRoomTileBuffer + x
+    ld      b,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
     ld      c,a ; restore x
     add     hl,bc
 
@@ -381,12 +386,12 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     add     hl,hl ; 16
     add     hl,hl ; 32
 
-    ; + mapRoomBuffer + x
     ld      a,b ; store x
     push    hl
     push    af
 
-    ld      b,$C4
+    ; + mapRoomTileBuffer + x
+    ld      b,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
     ld      c,a ; restore x
     add     hl,bc
     ld      a,d
@@ -625,7 +630,7 @@ map_check_breakable_block_bottom:
 
 map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
 
-    ; TODO check the actual data block from mapRoomUnpackBuffer to determine the new background tile
+    ; TODO check the actual data block from mapRoomBlockBuffer to determine the new background tile
 
     ; break the four 8x8 blocks
     push    bc
@@ -633,11 +638,11 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
     sla     c; convert into 8x8 index
 
     ; clear tiles
-    ld      a,$5f
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; top left
 
     inc     b
-    ld      a,$5f
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; top right
 
     pop     bc
@@ -645,7 +650,7 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
 
 map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
 
-    ; TODO check the actual data block from mapRoomUnpackBuffer to determine the new background tile
+    ; TODO check the actual data block from mapRoomBlockBuffer to determine the new background tile
 
     ; break the four 8x8 blocks
     push    bc
@@ -654,11 +659,11 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
     inc     c; lower row
 
     ; clear tiles
-    ld      a,$5f
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; bottom left
 
     inc     b
-    ld      a,$5f
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; bottom right
 
     pop     bc

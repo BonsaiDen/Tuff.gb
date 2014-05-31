@@ -1,18 +1,21 @@
 SECTION "MapRam",WRAM0[$C400]
 
 ; Constants -------------------------------------------------------------------
-MAP_INDEX_SIZE      EQU     512
-MAP_ROOM_SIZE       EQU     80
-MAP_ENTITY_SIZE     EQU     8
-MAP_WIDTH           EQU     16
-MAP_HEIGHT          EQU     16
+MAP_INDEX_SIZE              EQU     512
+MAP_ROOM_SIZE               EQU     80
+MAP_ENTITY_SIZE             EQU     8
+MAP_WIDTH                   EQU     16
+MAP_HEIGHT                  EQU     16
+
+MAP_BACKGROUND_TILE_LIGHT   EQU     $5f
+MAP_ROOM_DATA_BANK          EQU     2
 
 
 ; Room drawing ----------------------------------------------------------------
-mapRoomBuffer:              DS 512 ; 
-mapRoomUnpackBuffer:        DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
+mapRoomTileBuffer:          DS 512 ; 
+mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomDataPointer:         DW ; pointer to packed data of the current room
-mapRoomUpdate:              DB
+mapRoomUpdateRequired:      DB
 
 
 ; -----------------------------------------------------------------------------
