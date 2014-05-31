@@ -1,0 +1,207 @@
+; High Level Player API -------------------------------------------------------
+player_init:
+
+    ; Position 
+    ld      a,24
+    ld      [playerX],a
+    ld      a,62
+    ld      [playerY],a
+
+    ; Direction
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirection],a
+    ld      a,0
+    ld      [playerDirectionLast],a
+
+    ; Animation
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ld      a,255
+    ld      [playerAnimationLast],a
+
+    ; Jumping / Falling
+    call    player_reset
+
+    ; Sprite
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_enable
+    ld      b,0
+    call    sprite_set_tile_offset
+
+    ; Load initial sprite data
+    call    player_animation_update
+
+    ret
+
+
+player_reset:
+
+    ; Gravity
+    ld      a,1
+    ld      [playerGravityTick],a
+    ld      a,PLAYER_GRAVITY_MAX
+    ld      [playerGravityMax],a
+
+    ld      a,0
+    ld      [playerJumpForce],a
+    ld      [playerJumpPressed],a
+    ld      [playerGravityDelay],a
+    ld      [playerFallSpeed],a
+    ld      [playerUnderWater],a
+    ld      [playerWasUnderWater],a
+    ld      [playerIsPounding],a
+    ld      [playerInWater],a
+    ld      [playerFallFrames],a
+    ld      [playerBreakDelayed],a
+
+    ld      a,1
+    ld      [playerOnGround],a
+
+    ; Movement
+    ld      a,0
+    ld      [playerSpeedRight],a
+    ld      [playerSpeedLeft],a
+    ld      [playerDecTick],a
+    ld      [playerMoveTick],a
+    ld      [playerLandingFrames],a
+    ld      [playerWaterTick],a
+
+    ; Sliding
+    ld      a,0
+    ld      [playerDirectionWall],a
+    ld      [playerWallSlideDir],a
+    ld      [playerWallSlideTick],a
+    ld      [playerWallJumpPressed],a
+    ld      [playerWallJumpTick],a
+
+    ; Other
+    ld      a,PLAYER_SLEEP_WAIT
+    ld      [playerSleepTick],a
+
+    ld      a,255
+    ld      [playerDissolveTick],a
+
+    ret
+
+
+player_set_position:
+    ; update player sprite position
+    ld      a,[playerX]
+    ld      b,a
+    ld      a,[playerY]
+    ld      c,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_position
+    ret
+
+
+player_dissolve:
+
+    ; jump out if already dissolving
+    ld      a,[playerDissolveTick]
+    cp      255
+    jp      nz,.done
+
+    ; TODO check tile type and play corresponding sound
+    ld      a,SOUND_PLAYER_DEATH_LAVA
+    call    sound_play
+
+    ; dissolve player when hitting a hazard
+    ld      a,PLAYER_ANIMATION_DISSOLVE
+    ld      [playerAnimation],a
+    ld      a,0
+    ld      [playerDissolveTick],a
+    ld      [mapCollisionFlag],a
+
+.done:
+    ret
+
+
+; Handle Map Scrolling --------------------------------------------------------
+player_scroll_map:
+
+    ; left ------------------------------
+    ld      a,[playerX]
+    cp      2 ; < 1
+    jp      nc,.check_right
+
+    ld      a,157
+    ld      [playerX],a
+    call    player_set_position
+    call    map_scroll_left
+
+    jp      .done
+
+
+    ; right -----------------------------
+.check_right:
+    ld      a,[playerX]
+    cp      158 ; > 159
+    jp      c,.check_up
+
+    ld      a,3
+    ld      [playerX],a
+    call    player_set_position
+    call    map_scroll_right
+
+    jp      .done
+
+
+    ; up --------------------------------
+.check_up:
+
+    ; add a boost to the jump to we can reach a platform or something
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.check_up_water
+
+    ld      a,[playerY]
+    cp      2 ; < 1
+    jp      nc,.check_down
+
+    ld      a,PLAYER_JUMP_SCREEN_BOOST
+    ld      [playerJumpForce],a
+
+    ld      a,PLAYER_GRAVITY_INTERVAL / 2
+    ld      [playerGravityTick],a
+
+    ld      a,125
+    ld      [playerY],a
+
+    call    player_set_position
+    call    map_scroll_up
+
+    jp      .done
+
+
+.check_up_water:
+
+    ld      a,[playerY]
+    cp      5 ; < 6
+    jp      nc,.check_down
+
+    ld      a,125
+    ld      [playerY],a
+
+    call    player_set_position
+    call    map_scroll_up
+    jp      .done
+
+
+    ; down ------------------------------
+.check_down:
+    ld      a,[playerY]
+    cp      126 ; 
+    jp      c,.done
+
+    ld      a,6
+    ld      [playerY],a
+    call    player_set_position
+    call    map_scroll_down
+
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    ld      [playerGravityTick],a
+
+.done:
+    ret
+

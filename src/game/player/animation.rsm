@@ -1,0 +1,94 @@
+; Animation -------------------------------------------------------------------
+playerAnimationRowMap:
+    DB 0; IDLE      
+    DB 1; WALKING   
+    DB 3; SLEEP     
+    DB 4; PUSHING   
+    DB 2; JUMP      
+    DB 2; FALL      
+    DB 1; RUNNING   
+    DB 6; SWIMMING  
+    DB 7; DISSOLVE  
+    DB 2; SURFACE   
+    DB 0; SLIDE     
+    DB 5; POUND START
+    DB 5; POUND STOP
+    DB 8; LANDING
+
+player_animation_update: ; executed during vblank
+
+    ; check how far we are into vblank
+    ld      a,[rLY]
+    cp      144
+    ret     c; < 144
+    cp      148
+    ret     nc; > 146
+
+    ; check for animation changes
+    ld      a,[playerAnimationLast]
+    ld      b,a
+    ld      a,[playerAnimation]
+    cp      b
+    ret     z
+    
+    ; switch to new animation
+    ld      b,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_set
+    call    sprite_animation_start
+    ld      a,b
+    ld      [playerAnimationLast],a
+
+    ; figure out which row in the sprite sheet maps
+    ; to the current animation
+    ld      hl,playerAnimationRowMap
+    ld      d,0
+    ld      e,a
+    add     hl,de
+    ld      a,[hl]
+
+    ; load the corresponding row into vram
+    ld      hl,DataPlayerImg
+    ld      b,0
+    ld      c,a
+    ld      de,$8000
+    ld      a,PLAYER_SPRITE_ROWS * 2
+    call    map_load_sprite_row
+
+    ret
+
+player_animate:
+
+    ; check for direction changes
+    ld      a,[playerDirectionLast]
+    ld      b,a
+    ld      a,[playerDirection]
+    cp      b
+    jp      z,.no_direction_change
+
+    ; switch to new direction
+    cp      PLAYER_DIRECTION_RIGHT
+    jp      z,.direction_right
+
+.direction_left:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_unset_mirror
+    jp      .direction_changed
+
+.direction_right:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_mirror
+    jp      .direction_changed
+
+.direction_changed:
+
+    ; reset animation frame
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_start
+
+    ld      a,[playerDirection]
+    ld      [playerDirectionLast],a
+
+.no_direction_change:
+    ret
+

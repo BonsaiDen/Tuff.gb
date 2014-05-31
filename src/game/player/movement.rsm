@@ -1,0 +1,287 @@
+; Horizontal Player Movement --------------------------------------------------
+player_move:
+
+    ; check for landing frames
+    ld      a,[playerLandingFrames]
+    cp      0
+    jp      nz,.landing
+
+    ; reset wall flag
+    ld      a,0
+    ld      [playerDirectionWall],a
+
+    ; are we moving at all?
+    ld      a,[playerSpeedLeft]
+    ld      b,a
+    ld      a,[playerSpeedRight]
+    add     a,b
+    cp      0
+    jp      z,.stopped
+
+    ; set walking animation only when on ground
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.not_on_ground
+
+    ld      a,PLAYER_ANIMATION_WALKING
+    ld      [playerAnimation],a
+    
+.not_on_ground:
+
+    ld      a,[playerInWater]
+    cp      0
+    jp      z,.not_in_water
+
+    ld      a,PLAYER_ANIMATION_SWIMMING
+    ld      [playerAnimation],a
+
+    ; half speed when in water
+    ld      a,[playerMoveTick]
+    cp      1
+    jp      nz,.delay
+    ld      a,0
+    ld      [playerMoveTick],a
+
+.not_in_water:
+
+    ; load x position
+    ld      a,[playerX]
+    ld      d,a
+
+    ; move right -----------------------------------
+.move_right:
+    ld      a,[playerSpeedRight]
+    cp      0
+    jp      z,.move_left
+    ld      e,a
+
+.loop_right:
+
+    call    player_collision_right
+    cp      0
+    jp      z,.not_blocked_right
+
+    ; set wall flag
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirectionWall],a
+
+    ; set pushing animation when not in water
+    ld      a,[playerInWater]
+    cp      0
+    jp      z,.pushing_right
+    jp      .idle_right
+
+.pushing_right:
+    call    player_collision_right_all
+    cp      0
+    jp      z,.idle_right
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.idle_right
+    ld      a,PLAYER_ANIMATION_PUSHING
+    ld      [playerAnimation],a
+    jp      .move_left
+
+.idle_right:
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    jp      .move_left
+
+.not_blocked_right:
+    inc     d
+    ld      a,d
+    ld      [playerX],a
+    dec     e
+    jp      nz,.loop_right
+
+
+    ; move left ------------------------------------
+.move_left:
+    ld      a,[playerSpeedLeft]
+    cp      0
+    jp      z,.moved
+    ld      e,a
+
+.loop_left:
+
+    call    player_collision_left
+    cp      0
+    jp      z,.not_blocked_left
+
+    ; set wall flag
+    ld      a,PLAYER_DIRECTION_LEFT
+    ld      [playerDirectionWall],a
+
+    ; set pushing animation when not in water
+    ld      a,[playerInWater]
+    cp      0
+    jp      z,.pushing_left
+    jp      .idle_left
+
+.pushing_left:
+    call    player_collision_left_all
+    cp      0
+    jp      z,.idle_left
+    ld      a,[playerOnGround]
+    cp      1
+    jp      nz,.idle_left
+    ld      a,PLAYER_ANIMATION_PUSHING
+    ld      [playerAnimation],a
+    jp      .moved
+
+.idle_left:
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    jp      .moved
+
+.not_blocked_left:
+    dec     d
+    ld      a,d
+    ld      [playerX],a
+    dec     e
+    jp      nz,.loop_left
+
+
+    ; moved ----------------------------------------
+.moved:
+    ld      a,d
+    ld      [playerX],a
+    ret     z
+
+.stopped: 
+
+    ; reset to idle animation if on ground
+    ld      a,[playerOnGround]
+    cp      0
+    jp      z,.stopped_water
+
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ret
+
+.stopped_water:
+    ld      a,[playerInWater]
+    cp      0
+    ret     z
+
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ret
+
+.delay:
+    inc     a
+    ld      [playerMoveTick],a
+    ret
+
+.landing:
+    dec     a
+    ld      [playerLandingFrames],a
+    cp      0
+    ret     nz
+
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ret
+
+
+; Horizontal Acceleration -----------------------------------------------------
+player_accelerate:
+
+    ; skip during wall jump with forced horizontal movement
+    ld      a,[playerWallJumpTick]
+    cp      0
+    ret     nz
+
+    ; if both directions are pressed at the same time ignore input
+    ld      a,[coreInput]
+    and     BUTTON_LEFT | BUTTON_RIGHT
+    cp      BUTTON_LEFT | BUTTON_RIGHT
+    ret     z
+
+    ; check which direction is pressed
+    ld      a,[coreInput]
+    and     BUTTON_LEFT
+    cp      BUTTON_LEFT
+    jp      z,.acc_left
+
+    ld      a,[coreInput]
+    and     BUTTON_RIGHT
+    cp      BUTTON_RIGHT
+    jp      z,.acc_right
+
+    ret ; not moving in any direction
+
+.acc_right:
+    ld      hl,playerSpeedRight
+
+    ; set player direction
+    ld      a,PLAYER_DIRECTION_RIGHT
+    ld      [playerDirection],a
+    jp      .accelerate
+
+.acc_left:
+    ld      hl,playerSpeedLeft
+
+    ; set player direction
+    ld      a,PLAYER_DIRECTION_LEFT
+    ld      [playerDirection],a
+
+.accelerate:
+    ; load speed from corresponding direction variable 
+    ld      a,[hl]
+    cp      PLAYER_SPEED_MAX ; check if at max speed
+    ret     z
+
+    ; if not increase
+    inc     a
+    ld      [hl],a
+    ret
+
+
+player_decelerate:
+
+    ; only decelerate on every 10th frame
+    ; this introduces "lag" or a sliding when turning rapidly
+    ld      a,[playerDecTick]
+    inc     a
+    cp      10
+    jp      z,.decrease_right
+
+    ; if not on 10th frame store frame count and return
+    ld      [playerDecTick],a
+    ret
+
+.decrease_right:
+
+    ; check if right direction is still pressed
+    ld      a,[coreInput]
+    and     BUTTON_RIGHT
+    jp      nz,.decrease_left
+
+    ; right
+    ld      a,[playerSpeedRight]
+    cp      0
+    jp      z,.decrease_left
+    dec     a
+    ld      [playerSpeedRight],a
+
+.decrease_left:
+
+    ; check if left direction is still pressed
+    ld      a,[coreInput]
+    and     BUTTON_LEFT
+    jp      nz,.no_decrease
+
+    ; left
+    ld      a,[playerSpeedLeft]
+    cp      0
+    jp      z,.no_decrease ; if it reached zero we're done
+
+    dec     a
+    ld      [playerSpeedLeft],a
+
+.no_decrease:
+    ld      a,0
+    ld      [playerDecTick],a
+    ret
+
