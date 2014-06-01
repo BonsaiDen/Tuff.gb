@@ -170,8 +170,6 @@ player_pound:
     cp      1
     ret     nz; return if not
 
-    ; TODO check for breakable blocks etc.
-
     ; If we hit ground shake screen, delay and then disable pounding
     ld      a,10
     call    screen_shake
@@ -259,6 +257,7 @@ player_pound:
     ; unset pound
     ld      a,0
     ld      [playerIsPounding],a
+    ld      [playerPoundYBlock],a
 
     ; reset gravity max
     ld      a,PLAYER_GRAVITY_MAX
@@ -456,6 +455,10 @@ player_destroy_breakable_block:; a = block x, c = block y
 
 .delay:
 
+    ld      a,3
+    call    screen_shake
+
+    ; sound
     ld      a,SOUND_PLAYER_POUND_BREAK
     call    sound_play
 
@@ -467,11 +470,21 @@ player_destroy_breakable_block:; a = block x, c = block y
     ld      a,1
     ld      [playerBreakDelayed],a
 
+    ; check if we already added delay for this block row
+    ; this is done so that when breaking two blocks at the time we only get
+    ; 1 delay
+    ld      a,[playerY];
+    ld      c,a
+    ld      a,[playerPoundYBlock]
+    cp      c
+    ret     z; if so exit
+
+    ; otherwise set the block row to the current one
+    ld      a,c
+    ld      [playerPoundYBlock],a
+
     ld      a,4
     ld      [playerGravityDelay],a
-
-    ld      a,3
-    call    screen_shake
 
     ret
 

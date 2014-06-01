@@ -74,6 +74,7 @@ playerPoundBlockM:   DB
 playerPoundBlockR:   DB
 playerPoundBlockL:   DB
 playerBreakDelayed:  DB
+playerPoundYBlock:   DB
 
 
 ; Wall Sliding
