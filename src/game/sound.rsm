@@ -353,7 +353,6 @@ _sound_update_apply: ; hl = SoundEffectQueue address of sound
     cp      b
     ret     z
 
-    ; TODO untested code below
     ; if it is used check if the current sound effect's priority is higher
     ; than the one that is currently playing on the channel
     inc     hl; skip id
