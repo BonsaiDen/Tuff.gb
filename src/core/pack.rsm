@@ -55,9 +55,6 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
     ; 255 - (count - minRun - 1) (minRun = 2)
     sub     3 ; count - 3
     cpl
-    ;ld      b,a ; save count
-    ;ld      a,255
-    ;sub     b ; 255 - count, a is now the number of bytes to repeat
     ld      b,a ; set up loop counter
 
     ; load byte to repeat

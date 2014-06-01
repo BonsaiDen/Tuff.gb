@@ -7,7 +7,6 @@ lz4_decode_block: ; de = source, hl = destination, bc = end
 
     ld      a,l ; low byte
     cp      c 
-    ; ret     z ; l == c TODO maybe required
     ret     nc ; l > c
 
 

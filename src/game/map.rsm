@@ -4,7 +4,7 @@ SECTION "MapLogic",ROM0
 ; Map -------------------------------------------------------------------------
 map_init: ; a = base value for background tiles
 
-    sub     128
+    sub     128; add offset for tile buffer at $9800
     ld      hl,mapRoomTileBuffer
     ld      bc,512
     call    core_mem_set

@@ -77,9 +77,9 @@ core_init:
     ei
 
     ; Setup interrupts
-    ld      a,IEF_VBLANK|IEF_TIMER
+    ld      a,IEF_VBLANK | IEF_TIMER
     ld      [rIE],a
-    ld      a,TACF_START|TACF_16KHZ
+    ld      a,TACF_START | TACF_16KHZ
     ld      [rTAC],a
 
     call    core_screen_on  ; Turn on the screen
