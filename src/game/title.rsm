@@ -395,6 +395,9 @@ title_select_option:
     call    title_draw_cursor
 
     ld      a,SOUND_GAME_MENU_SELECT
+    call    sound_stop
+
+    ld      a,SOUND_GAME_MENU_SELECT
     call    sound_play
 
     ret

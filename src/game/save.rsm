@@ -1,7 +1,7 @@
 SECTION "SaveLogic",ROM0
 
 ; Constants -------------------------------------------------------------------
-SAVE_GAME_VERSION          EQU 2
+SAVE_GAME_VERSION          EQU 3
 
 SAVE_HEADER_SIZE           EQU 3
 SAVE_VERSION_SIZE          EQU 1
