@@ -103,6 +103,7 @@ player_dissolve:
     jp      nz,.done
 
     ; TODO check tile type and play corresponding sound
+    ld      a,[mapCollisionFlag]
     ld      a,SOUND_PLAYER_DEATH_LAVA
     call    sound_play
 

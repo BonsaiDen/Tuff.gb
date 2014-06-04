@@ -44,7 +44,11 @@ player_update:
 
     ; check for hazard (checked before gravity so we actually overlap a few pixels)
     ld      a,[mapCollisionFlag]
-    cp      4
+    cp      4; lava
+    jp      z,player_dissolve
+    cp      6; spikes
+    jp      z,player_dissolve
+    cp      7; electricity
     jp      z,player_dissolve
 
     ; pounding logic
@@ -54,9 +58,13 @@ player_update:
     call    player_gravity
     call    player_slide_wall
 
-    ; check for hazard
+    ; check for hazard once more after gravity got applied
     ld      a,[mapCollisionFlag]
-    cp      4
+    cp      4; lava
+    jp      z,player_dissolve
+    cp      6; spikes
+    jp      z,player_dissolve
+    cp      7; electricity
     jp      z,player_dissolve
 
     call    player_scroll_map
@@ -109,11 +117,6 @@ player_update:
     ld      a,[mapCollisionFlag]
     cp      3
     jr      z,.under_water
-
-
-.check_hazard:
-    cp      4
-    jp      z,player_dissolve
 
     ; reset water variables when on land
 .land:
