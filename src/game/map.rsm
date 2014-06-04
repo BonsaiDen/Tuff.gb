@@ -1,5 +1,9 @@
 SECTION "MapLogic",ROM0
 
+HI_BYTE: MACRO
+\1
+ENDM
+
 
 ; Map -------------------------------------------------------------------------
 map_init: ; a = base value for background tiles
@@ -332,11 +336,6 @@ map_get_tile_collision:
     ret
 
 
-HI_BYTE: MACRO
-\1
-ENDM
-
-
 map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; gets the tile value from the room data buffer (not VRAM!)
     ; trashes hl and bc
@@ -368,6 +367,7 @@ map_get_tile_value: ; b = tile x, c = tile y -> a = value
 map_set_tile_value: ; b = tile x, c = tile y, a = value
     ; sets the tile value in the room data buffer AND in vram
 
+    push    af
     push    bc
     push    hl
     push    de
@@ -415,6 +415,7 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     pop     de
     pop     hl
     pop     bc
+    pop     af
 
     ret
 
@@ -552,36 +553,6 @@ map_animate_tiles:
     ret
 
 
-map_get_tile_background: ; b = tx, c = ty
-
-    ; 1. get tile value
-    ; 2. check if white background (0x5f) and set flag
-    ; 3a. if is, set flag bit
-    ; 3b. if not, clear flag bit
-    ; 4a. check if more than one bit is set, if so, background will be white
-    ; 4b. otherwise, check if any direction is set to white and set fade background
-    ; 4c. if no direction is set to white, set black background 0x70 + modulo of x and y tile index
-    push    hl
-    push    bc
-    ; up
-    call    map_get_tile_value    
-    ; left
-    ; right
-    ; down
-    pop     bc
-    pop     hl
-
-    ; 1. check all 4 8x8 tiles for their surrounding tiles being 0x5f (white background)
-    ;    - if    up is 0x5f set the tile to: 0x67
-    ;    - if  down is 0x5f set the tile to: 0x68
-    ;    - if  left is 0x5f set the tile to: 0x65
-    ;    - if right is 0x5f set the tile to: 0x66
-    ;     - else set to 0x70 - 0x73
-
-
-    ret
-
-
 ; Breakable Blocks ------------------------------------------------------------
 map_check_breakable_block_top:
 
@@ -603,6 +574,7 @@ map_check_breakable_block_top:
     ld      a,0
     pop     bc
     ret
+
 
 map_check_breakable_block_bottom:
 
@@ -627,45 +599,174 @@ map_check_breakable_block_bottom:
     ret
 
 
+map_get_block_value: ; b = x, c = y -> a block value
+
+    push    bc
+    push    hl
+    push    de
+
+    ; y * 10
+    ld      h,10
+    ld      e,c
+    call    math_mul8b
+
+    ; add x
+    ld      c,b
+    ld      b,0
+    add     hl,bc
+
+    ; add base offset
+    ld      de,mapRoomBlockBuffer
+    add     hl,de
+
+    ld      a,[hl]
+
+    pop     de
+    pop     hl
+    pop     bc
+
+    ret
+
 
 map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
 
-    ; TODO check the actual data block from mapRoomBlockBuffer to determine the new background tile
-
     ; break the four 8x8 blocks
     push    bc
+    
+    ; get the 16x16 block tile
+    call    map_get_block_value
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
+    cp      MAP_BREAKABLE_BLOCK_LIGHT
+    jp      z,.light
 
-    ; clear tiles
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
+.dark:
+    call    map_check_breakable_surrounding
     call    map_set_tile_value; top left
-
     inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; top right
 
+    call    map_check_breakable_surrounding
+    call    map_set_tile_value; top right
     pop     bc
     ret
 
-map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
+.light:
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    map_set_tile_value; top left
+    inc     b
+    call    map_set_tile_value; top right
+    pop     bc
+    ret
 
-    ; TODO check the actual data block from mapRoomBlockBuffer to determine the new background tile
+
+map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
 
     ; break the four 8x8 blocks
     push    bc
+
+    ; get the 16x16 block tile
+    call    map_get_block_value
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
     inc     c; lower row
+    cp      MAP_BREAKABLE_BLOCK_LIGHT
+    jp      z,.light
 
-    ; clear tiles
+.dark:
+    call    map_check_breakable_surrounding
+    call    map_set_tile_value; bottom left
+    inc     b
+
+    call    map_check_breakable_surrounding
+    call    map_set_tile_value; bottom right
+    pop     bc
+    ret
+
+.light:
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; bottom left
-
     inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_set_tile_value; bottom right
-
     pop     bc
+    ret
+
+
+map_check_breakable_surrounding: ; b = tx, c = ty
+
+    push    hl
+            
+.left:
+    ld      a,b; ignore blocks < 0
+    cp      0
+    jp      z,.top
+    push    bc
+    dec     b
+    call    map_get_tile_value
+    pop     bc
+    
+    cp      MAP_BACKGROUND_TILE_LIGHT
+    jp      z,.found_left
+
+.top:
+    ld      a,c; ignore blocks < 0
+    cp      0
+    jp      z,.right
+    push    bc
+    dec     c
+    call    map_get_tile_value
+    pop     bc
+
+    cp      MAP_BACKGROUND_TILE_LIGHT
+    jp      z,.found_top
+
+.right:
+
+    ld      a,b; ignore blocks > 20
+    cp      20
+    jp      z,.bottom
+    push    bc
+    inc     b
+    call    map_get_tile_value
+    pop     bc
+
+    cp      MAP_BACKGROUND_TILE_LIGHT
+    jp      z,.found_right
+
+.bottom:
+
+    ld      a,b; ignore blocks > 8
+    cp      8
+    jp      z,.found_none
+    push    bc
+    inc     c
+    call    map_get_tile_value
+    pop     bc
+
+    cp      MAP_BACKGROUND_TILE_LIGHT
+    jp      z,.found_bottom
+
+.found_none:
+    pop     hl
+    ld      a,MAP_BACKGROUND_TILE_DARK
+    ret
+
+.found_left:
+    ld      a,MAP_BACKGROUND_FADE_LEFT
+    pop     hl
+    ret
+
+.found_top:
+    ld      a,MAP_BACKGROUND_FADE_TOP
+    pop     hl
+    ret
+
+.found_right:
+    ld      a,MAP_BACKGROUND_FADE_RIGHT
+    pop     hl
+    ret
+
+.found_bottom:
+    ld      a,MAP_BACKGROUND_FADE_BOTTOM
+    pop     hl
     ret
 
