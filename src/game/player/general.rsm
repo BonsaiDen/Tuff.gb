@@ -131,7 +131,7 @@ player_scroll_map:
     call    player_set_position
     call    map_scroll_left
 
-    jp      .done
+    jp      .scrolled
 
 
     ; right -----------------------------
@@ -145,7 +145,7 @@ player_scroll_map:
     call    player_set_position
     call    map_scroll_right
 
-    jp      .done
+    jp      .scrolled
 
 
     ; up --------------------------------
@@ -172,7 +172,7 @@ player_scroll_map:
     call    player_set_position
     call    map_scroll_up
 
-    jp      .done
+    jp      .scrolled
 
 
 .check_up_water:
@@ -186,7 +186,8 @@ player_scroll_map:
 
     call    player_set_position
     call    map_scroll_up
-    jp      .done
+
+    jp      .scrolled
 
 
     ; down ------------------------------
@@ -202,7 +203,13 @@ player_scroll_map:
 
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
+    jp      .scrolled
 
 .done:
+    ld      a,0
+    ret
+
+.scrolled:
+    ld      a,1
     ret
 

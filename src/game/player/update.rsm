@@ -68,6 +68,9 @@ player_update:
     jp      z,player_dissolve
 
     call    player_scroll_map
+    cp      1
+    ret     z; exit if the map got scrolled to prevent glitched collision access
+
     call    player_sleep
 
     ; y position for sprite
