@@ -4,7 +4,8 @@ DS                  10 ; DMA code area
 
 
 SECTION "CoreVars",HRAM[$FF8A] ; stored into high ram for quicker access
-coreRandomSeed:     DB
+coreRandomHigh:     DB
+coreRandomLow:      DB
 coreVBlankDone:     DB
 coreLoopCounter:    DB
 coreTimer:          DB; ~60ms timer interrupt

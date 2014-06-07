@@ -38,14 +38,14 @@ core_vblank_handler:
     cp      1
     call    z,entity_load
 
-    ; Set vblank flag, this will cause the core loop to run the game loop once
-    ld      a,1
-    ld      [coreVBlankDone],a
-
     ; load the new room data into vram
     ld      a,[mapRoomUpdateRequired]
     cp      1
     call    z,map_load_room
+
+    ; Set vblank flag, this will cause the core loop to run the game loop once
+    ld      a,1
+    ld      [coreVBlankDone],a
 
     ; end of game specific code -----------------------------------------------
 

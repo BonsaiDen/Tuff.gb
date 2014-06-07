@@ -4,7 +4,6 @@ core_init:
     di                      ; Disable interrupts
 
     ld      a,0
-    ld      [coreRandomSeed],a
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
     ld      [coreTimer],a

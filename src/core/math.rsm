@@ -20,7 +20,7 @@ math_mul16b: ; BC * DE = HL
 ; DE * BC = HL
     ld      hl,0
     ld      a,16
-
+            
 .Mul_Loop_1:
     add     hl,hl
     rl      e
@@ -46,17 +46,21 @@ math_mul16b: ; BC * DE = HL
 ; S = R - 1
 ; an 8-bit unsigned integer
 math_random:
-    ld a,[coreRandomSeed]
-    ld b,a 
+    call    math_update_random
+    ld      a,[coreRandomLow]
+    ret
 
-    rrca; multiply by 32
-    rrca
-    rrca
-    xor $1f
-    
-    add a,b
-    sbc a,255 ; carry
-    
-    ld [coreRandomSeed],a
+math_update_random:
+    ld      a,[rDIV]
+    ld      b,a
+    ld      a,[coreRandomHigh]
+    adc     b
+    ld      [coreRandomHigh],a
+
+    ld      a,[rDIV]
+    ld      b,a
+    ld      a,[coreRandomLow]
+    sbc     b
+    ld      [coreRandomLow],a
     ret
 
