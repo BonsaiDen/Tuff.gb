@@ -2,9 +2,16 @@
 
 ## Player
 
-- Dash ability (twice the running speed) (no idea how to active it though)
+- Run ability (twice the running speed) (hold b for some time during running)
 
     - Breaks blocks horizontally
+    - needs all sort of code
+    - when active, won't trigger dissappearing blocks
+    - hidden in lava zone
+
+- Double Jump
+
+    - 
 
 ## World
 
@@ -21,6 +28,8 @@
 
 - Blocks which dissolve when standing on them
 
+- Colletible stuff for end percentage
+- Special ending based on percentage and save count
 
 ## Entities
 
@@ -66,13 +75,47 @@
 
 - Mark Dark / Light Background tiles with different collision values (Might be useful for something?)
 
-
 # Other
 
 ## Fixes
+
+- swimming bug across horizontal screens
 
 ## Tweaks
 
 - For breakable blocks prevent patterns by checking x and y for default dark tiles
 - Pounding when diving is disabled (is not cancelled perfectly just yet player is left to deep in water when swimming after the pound was cancelled)
+- When starting pounding, move player away from top collision edge
 
+
+
+# Route
+
+- Intro
+- Jump (Powerup)
+- Portal Piece
+
+- Swim (Powerup)
+- Portal Piece
+
+- Wall Jump (Powerup)
+- Portal Piece
+- Portal Piece
+
+- Running (Powerup)
+- Portal Piece
+- Portal Piece
+
+- Pounding (Powerup)
+- Portal Piece
+- Portal Piece
+
+- Diving (Powerup)
+- Portal Piece
+
+- Double Jump (Powerup)
+- Portal Piece
+- Portal Piece
+- Portal Piece
+
+- Outro
