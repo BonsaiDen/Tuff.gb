@@ -641,10 +641,12 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
     jp      z,.light
 
 .dark:
+    ld      a,$70
     call    map_check_breakable_surrounding
     call    map_set_tile_value; top left
     inc     b
 
+    ld      a,$71
     call    map_check_breakable_surrounding
     call    map_set_tile_value; top right
     pop     bc
@@ -673,10 +675,12 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
     jp      z,.light
 
 .dark:
+    ld      a,$72
     call    map_check_breakable_surrounding
     call    map_set_tile_value; bottom left
     inc     b
 
+    ld      a,$73
     call    map_check_breakable_surrounding
     call    map_set_tile_value; bottom right
     pop     bc
@@ -692,8 +696,8 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
 
 
 map_check_breakable_surrounding: ; b = tx, c = ty
-
     push    hl
+    push    af
             
 .left:
     ld      a,b; ignore blocks < 0
@@ -746,26 +750,31 @@ map_check_breakable_surrounding: ; b = tx, c = ty
     jp      z,.found_bottom
 
 .found_none:
+    pop     af
     pop     hl
-    ld      a,MAP_BACKGROUND_TILE_DARK
+    ;ld      a,MAP_BACKGROUND_TILE_DARK
     ret
 
 .found_left:
+    pop     af
     ld      a,MAP_BACKGROUND_FADE_LEFT
     pop     hl
     ret
 
 .found_top:
+    pop     af
     ld      a,MAP_BACKGROUND_FADE_TOP
     pop     hl
     ret
 
 .found_right:
+    pop     af
     ld      a,MAP_BACKGROUND_FADE_RIGHT
     pop     hl
     ret
 
 .found_bottom:
+    pop     af
     ld      a,MAP_BACKGROUND_FADE_BOTTOM
     pop     hl
     ret
