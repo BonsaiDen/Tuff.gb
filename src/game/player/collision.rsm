@@ -49,6 +49,53 @@ player_collision_up:
     call    map_get_collision
     ret
 
+player_collision_far_up: 
+
+    ; different height when diving
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.diving
+    ld      e,PLAYER_HEIGHT + 3
+    jp      .check
+
+.diving:
+    ld      e,PLAYER_HEIGHT + 5
+
+.check:
+    ; middle
+    ld      a,[playerY]
+    sub     e
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+    call    map_get_collision
+    cp      1
+    ret     z
+
+    ; right half 
+    ld      a,[playerY]
+    sub     e
+    ld      c,a
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 3
+    ld      b,a
+    call    map_get_collision
+    cp      1
+    ret     z
+
+    ; left half 
+    ld      a,[playerY]
+    sub     e
+    ld      c,a
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 2
+    ld      b,a
+    call    map_get_collision
+    ret
+
 
 ; DOWN ----------------------------------------------------------------- DOWN -
 player_collision_down: 
@@ -127,7 +174,8 @@ _player_col_check_down:
     cp      h
     jp      z,.col
 
-    ld      a,0
+    ;ld      a,0
+    xor a
     ret
 
 .col:

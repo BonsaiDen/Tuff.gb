@@ -116,8 +116,22 @@ player_pound:
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
 
+    ; push away from ceiling
+    call    player_collision_far_up
+    cp      1
+    jp      nz,.push_sides
+
+    ld      a,[coreLoopCounter]
+    and     %00000111
+    cp      7
+    jp      nz,.push_sides
+
+    ld      a,[playerY]
+    inc     a
+    ld      [playerY],a
 
     ; push away from walls
+.push_sides:
     call    player_collision_far_right
     cp      1
     jp      nz,.push_left
