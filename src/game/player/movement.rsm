@@ -227,12 +227,25 @@ player_accelerate:
     ld      [playerDirection],a
 
 .accelerate:
+    ld      a,[playerIsRunning]
+    cp      1
+    jp      z,.running
+
     ; load speed from corresponding direction variable 
     ld      a,[hl]
     cp      PLAYER_SPEED_MAX ; check if at max speed
     ret     z
+    jp      .increase
+
+.running:
+
+    ; load speed from corresponding direction variable 
+    ld      a,[hl]
+    cp      PLAYER_SPEED_MAX_RUNNING ; check if at max running speed
+    ret     z
 
     ; if not increase
+.increase:
     inc     a
     ld      [hl],a
     ret

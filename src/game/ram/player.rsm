@@ -9,6 +9,7 @@ PLAYER_JUMP_WALL             EQU 2
 PLAYER_JUMP_SCREEN_BOOST     EQU 2
 PLAYER_FALL_MAX              EQU 3
 PLAYER_SPEED_MAX             EQU 1
+PLAYER_SPEED_MAX_RUNNING     EQU 2
 PLAYER_GRAVITY_MAX           EQU 2
 PLAYER_GRAVITY_MAX_POUND     EQU 3
 PLAYER_JUMP_SWIM             EQU 1
@@ -76,6 +77,9 @@ playerPoundBlockL:   DB
 playerBreakDelayed:  DB
 playerPoundYBlock:   DB
 
+; Running
+playerIsRunning:     DB
+
 
 ; Wall Sliding
 playerWallSlideDir:  DB ; direction of the wall which the player is/was sliding on
@@ -115,4 +119,6 @@ playerCanWallJump:   DB
 playerCanSwim:       DB
 playerCanDive:       DB
 playerCanPound:      DB
+playerCanRun:        DB
+playerCanDoubleJump: DB
 
