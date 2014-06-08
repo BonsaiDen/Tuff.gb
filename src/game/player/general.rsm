@@ -50,8 +50,11 @@ player_reset:
     ld      [playerUnderWater],a
     ld      [playerWasUnderWater],a
     ld      [playerIsPounding],a
+    ld      [playerIsRunning],a
     ld      [playerInWater],a
+    ld      [playerDoubleJumped],a
     ld      [playerFallFrames],a
+    ld      [playerJumpFrames],a
     ld      [playerBreakDelayed],a
 
     ld      a,1

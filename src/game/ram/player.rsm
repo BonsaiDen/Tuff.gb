@@ -13,6 +13,7 @@ PLAYER_SPEED_MAX_RUNNING     EQU 2
 PLAYER_GRAVITY_MAX           EQU 2
 PLAYER_GRAVITY_MAX_POUND     EQU 3
 PLAYER_JUMP_SWIM             EQU 1
+PLAYER_DOUBLE_JUMP_THRESHOLD EQU $17; max jump frames are $1C
 
 PLAYER_GRAVITY_INTERVAL      EQU 10
 
@@ -101,6 +102,8 @@ playerGravityDelay:  DB ; ticks for which gravity should not be applied
 playerJumpPressed:   DB ; whether the jump button is still continously pressed
 playerOnGround:      DB ; is the player on ground
 playerJumpForce:     DB ; current jump force per frame
+playerJumpFrames:    DB
+playerDoubleJumped:  DB
 
 ; Water and Swimming
 playerInWater:       DB ; is the player in water?

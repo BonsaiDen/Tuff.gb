@@ -135,7 +135,7 @@ save_load_player:
     ld      a,14
     ld      [mapRoomX],a
 
-    ld      a,15
+    ld      a,14
     ld      [mapRoomY],a
 
     ; Abilities

@@ -167,6 +167,8 @@ player_jump:
     ; if we are, set the initial jump force and reset the gravity ticker
 .jump:
     ld      [playerGravityTick],a
+    ld      a,0
+    ld      [playerJumpFrames],a
     jp      .still_pressed
 
     ; reset the jump state
@@ -219,6 +221,11 @@ player_jump:
     ld      a,[playerY]
     dec     a
     ld      [playerY],a
+
+    ; increase jump frames
+    ld      a,[playerJumpFrames]
+    inc     a
+    ld      [playerJumpFrames],a
 
     ; loop until stored jump force reaches 0
     dec     d
@@ -343,11 +350,20 @@ player_fall:
 .done:
     ld      a,0
     ld      [playerFallFrames],a
+    ld      [playerJumpFrames],a
     ret
 
 .no_collision:
 
+    ; decrease the numbers of jump frames
+    ld      a,[playerJumpFrames]
+    cp      0
+    jp      z,.dec_fall
+    dec     a
+    ld      [playerJumpFrames],a
+
     ; increase the number of frames we were falling
+.dec_fall:
     ld      a,[playerFallFrames]
     cp      $ff
     ret     z ; fall frames max out at 255
