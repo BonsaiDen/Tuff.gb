@@ -104,7 +104,8 @@ player_jump:
     ; see if the jump button has been pressed
     ld      a,[coreInput]
     and     BUTTON_A
-    jp      z,.not_pressed
+    cp      BUTTON_A
+    jp      nz,.not_pressed
 
     ; check if the player is continuosly pressing the button
     ld      a,[playerJumpPressed]
@@ -115,15 +116,17 @@ player_jump:
     ld      a,1
     ld      [playerJumpPressed],a
 
-    ; play jump sound
+    ; no sound when not on ground
     ld      a,[playerOnGround]
     cp      0
     jp      z,.no_sound
 
+    ; no sound under water
     ld      a,[playerUnderWater]
     cp      1
     jp      z,.no_sound
 
+    ; when on ground play normal jump
     ld      a,SOUND_PLAYER_JUMP
     call    sound_play
 
@@ -142,7 +145,7 @@ player_jump:
     ; and check if we're on the ground
     ld      a,[playerOnGround]
     cp      1
-    jp      nz,.no_ground
+    jp      nz,.check_double; if not check for double jump
 
     ; land jump force 
     ld      a,PLAYER_JUMP_FORCE
@@ -169,17 +172,71 @@ player_jump:
     ld      [playerGravityTick],a
     ld      a,0
     ld      [playerJumpFrames],a
-    jp      .still_pressed
+    jp      .no_ground
 
     ; reset the jump state
 .not_pressed:
     ld      a,0
     ld      [playerJumpPressed],a
+    ld      [playerJumpHold],a
     ld      [playerWallJumpPressed],a
+    jp      .no_ground
 
+.check_double:
+    
+    ; don't allow any sort of double jump during wall sliding / jumping
+    ld      a,[playerDirectionWall]
+    cp      0
+    jp      nz,.no_ground
+
+    ld      a,[playerWallSlideDir]
+    cp      0
+    jp      nz,.no_ground
+
+    ld      a,[playerWallJumpTick]
+    cp      0
+    jp      nz,.no_ground
+
+    ; check if we really hit the button on this frame
+    ld      a,[coreInputOn]
+    and     BUTTON_A
+    cp      BUTTON_A
+    jp      nz,.no_ground
+
+    ; check if we already double jumped
+    ld      a,[playerDoubleJumped]
+    cp      1
+    jp      z,.no_ground
+
+    ld      a,1
+    ld      [playerDoubleJumped],a
+
+    ; check if above threshold for double jump
+    ld      a,[playerJumpFrames]
+    cp      PLAYER_DOUBLE_JUMP_THRESHOLD
+    jp      c,.no_ground; if playerJumpFrames - threshold < 0 don't jump
+
+    ; set up double jump
+    ld      a,SOUND_PLAYER_JUMP_DOUBLE
+    call    sound_play
+
+    ld      a,0
+    ld      [playerFallSpeed],a
+    ld      [playerFallFrames],a
+
+    ld      a,PLAYER_JUMP_FORCE
+    ld      [playerJumpForce],a
+    ld      a,PLAYER_GRAVITY_INTERVAL
+    jp      .jump
 
     ; if we're still pressing the button or are in the air update the jump value
 .still_pressed:
+    ld      a,[playerJumpHold]
+    inc     a
+    cp      $ff; limit to 255
+    jp      z,.no_ground
+    ld      [playerJumpHold],a
+
 .no_ground:
 
     ; check if we need to move upwards
@@ -323,6 +380,10 @@ player_fall:
     ; set ground flag
     ld      a,1
     ld      [playerOnGround],a
+
+    ; reset double jump flag
+    ld      a,0
+    ld      [playerDoubleJumped],a
 
     ; check how long we've been falling
     ld      a,[playerFallFrames]

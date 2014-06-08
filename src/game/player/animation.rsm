@@ -21,7 +21,7 @@ player_animation_update: ; executed during vblank
     ld      a,[rLY]
     cp      144
     ret     c; < 144
-    cp      148
+    cp      147
     ret     nc; > 146
 
     ; check for animation changes

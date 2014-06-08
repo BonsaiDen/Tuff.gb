@@ -166,10 +166,18 @@ player_slide_wall:
     cp      1
     ret     z
 
-    ; check if jump button got pressed
+    ; check if jump button is pressed pressed
     ld      a,[coreInput]
     and     BUTTON_A
-    ret     z
+    ret     z; return if zero
+
+    ; check for how many frames the button was hold down
+    ; this prevents situations where we jump the wall
+    ; and just change direction to trigger the wall jump
+    ; we actually NEED to release the jump button and press it again
+    ld      a,[playerJumpHold]
+    cp      3
+    ret     nc; if > 5 exit
 
     ; set up jump force and reset fall speed
     ld      a,PLAYER_JUMP_WALL
@@ -178,14 +186,21 @@ player_slide_wall:
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
 
+    ; reset jump variables
     ld      a,0
     ld      [playerFallFrames],a
     ld      [playerFallSpeed],a
+    ld      [playerJumpFrames],a
     ld      [playerWallJumpWindow],a
+    ld      [playerDoubleJumped],a
 
     ; setup forced movement away from the wall
     ld      a,[playerWallSlideDir]
     ld      [playerWallJumpDir],a
+
+    ; reset old slide dir
+    ld      a,0
+    ld      [playerWallSlideDir],a
 
     ld      a,PLAYER_WALL_JUMP_DURATION
     ld      [playerWallJumpTick],a

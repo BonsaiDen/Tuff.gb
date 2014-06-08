@@ -13,6 +13,20 @@ module.exports = [{
     "frequency": 1536
 
 }, {
+    "id": "PLAYER_JUMP_DOUBLE",
+    "channel": 1,
+    "priority": 2,
+    "sweepShifts": 6,
+    "sweepDir": 0,
+    "sweepTime": 6,
+    "soundLength": 12,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 0x0B,
+    "frequency": 0x06A0
+
+}, {
     "id": "PLAYER_LAND",
     "channel": 4,
     "priority": 1,
@@ -109,7 +123,7 @@ module.exports = [{
     "priority": 2,
     "sweepShifts": 6,
     "sweepDir": 0,
-    "sweepTime": 4,
+    "sweepTime": 3,
     "soundLength": 0,
     "dutyCycle": 2,
     "envStepTime": 3,
