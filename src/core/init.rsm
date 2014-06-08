@@ -3,7 +3,7 @@ core_init:
 
     di                      ; Disable interrupts
 
-    ld      a,0
+    xor     a
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
     ld      [coreTimer],a
@@ -35,7 +35,7 @@ core_init:
     call    core_mem_set
 
     ; Reset Scroll registers
-    ld      a,0
+    xor     a
     ld      [rSCX],a
     ld      [rSCY],a
     ld      [coreScrollX],a
@@ -49,7 +49,7 @@ core_init:
     ld      [coreLoopCounter],a
 
     ; clear sound registers
-    ld      a,0
+    xor     a
     ld      [$ff10],a
     ld      [$ff11],a
     ld      [$ff12],a

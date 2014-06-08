@@ -14,7 +14,7 @@ core_timer_handler:
     cp      4
     jp      nz,.skip
     call    game_timer
-    ld      a,0
+    xor     a
     ld      [coreTimer],a
 .skip:
 

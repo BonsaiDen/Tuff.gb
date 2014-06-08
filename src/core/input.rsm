@@ -17,7 +17,7 @@ core_input:
     ld      d,a
 
     ; reset state
-    ld      a,0
+    xor     a
     ld      [coreInput], a
 
     ; read the d-pad:
