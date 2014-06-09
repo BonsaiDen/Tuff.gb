@@ -64,6 +64,64 @@ player_pound:
     ld      a,PLAYER_GRAVITY_MAX_POUND
     ld      [playerGravityMax],a
 
+    ; reset x centering for block beneath
+    ld      a,0
+    ld      [playerPoundCenterX],a
+
+    ; check if there's a breakable block below us to align with
+    ld      a,[playerX]
+    ld      b,a
+
+    ; difference of x block to current player xpos
+    and     %11110000; modulo 16
+    or      %00001000 
+    sub     b
+    cp      128
+    jp      c,.positive
+
+    ; make positive
+    ld      b,a
+    ld      a,$ff
+    sub     b
+    inc     a
+
+.positive:
+    
+    ; check if difference < 3, otherwise exit
+    cp      3
+    ret     nc
+
+    ; block y align
+    ld      a,[playerY]
+    and     %11111000; modulo 16
+    ld      c,a
+
+    ld      a,[playerX]
+    ld      b,a
+
+.loop_find:
+
+    ; check current block
+    push    bc
+    call    map_get_collision
+    pop     bc
+    ld      a,[mapCollisionFlag]
+    cp      0; no collision, check next
+    jp      z,.next
+    cp      5 ; found a block
+    jp      z,.found
+    ret;    something other block, exit
+    
+    ; go to next block
+.next:
+    ld      a,c
+    add     16
+    ld      c,a
+    jp      .loop_find
+
+.found:
+    ld      a,1
+    ld      [playerPoundCenterX],a
     ret     
     
 
@@ -159,10 +217,43 @@ player_pound:
     ld      a,[playerX]
     inc     a
     ld      [playerX],a
-    
 
 .delay_done:
+
+    ; check if we should center the player horizontally
+    ld      a,[playerPoundCenterX]
+    cp      0
+    ret     z
+
+    ; only move every 7th frame
+    ld      a,[coreLoopCounter]
+    and     %00000111
+    cp      7
+    ret     nz
+
+    ; slowly move the player into position
+    ld      a,[playerX]
+    and     %11110000; modulo 16
+    or      %00001000; horizontal center of block
+    ld      b,a; save target x into b
+
+    ; compare
+    ld      a,[playerX]
+    cp      b
+    ret     z
+    jp      c,.left
+    jp      nc,.right
+
+.left:
+    inc     a
+    ld      [playerX],a
     ret
+
+.right:
+    dec     a
+    ld      [playerX],a
+    ret
+
 
 .pounding:
     
@@ -374,15 +465,21 @@ player_pounding_collision:
     ; check which 16x16 blocks need to be destroyed
     ld      a,[playerPoundBlockR]
     cp      255
+    push    bc
     call    nz,player_destroy_breakable_block
+    pop     bc
 
     ld      a,[playerPoundBlockM]
     cp      255
+    push    bc
     call    nz,player_destroy_breakable_block
+    pop     bc
 
     ld      a,[playerPoundBlockL]
     cp      255
+    push    bc
     call    nz,player_destroy_breakable_block
+    pop     bc
 
     ld      a,0; fall through breakable blocks
     ret

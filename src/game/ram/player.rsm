@@ -77,6 +77,7 @@ playerPoundBlockR:   DB
 playerPoundBlockL:   DB
 playerBreakDelayed:  DB
 playerPoundYBlock:   DB
+playerPoundCenterX:  DB
 
 ; Running
 playerIsRunning:     DB
