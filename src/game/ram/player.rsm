@@ -51,79 +51,79 @@ PLAYER_POUND_DELAY_END       EQU 37
 
 
 ; Variables -------------------------------------------------------------------
-playerX:             DB 
-playerY:             DB 
-playerYOffset:       DB ; y offset the player is rendered at, only visual
-playerSpeedRight:    DB 
-playerSpeedLeft:     DB 
-playerMoveTick:      DB
+playerX:                   DB 
+playerY:                   DB 
+playerYOffset:             DB ; y offset the player is rendered at, only visual
+playerSpeedRight:          DB 
+playerSpeedLeft:           DB 
+playerMoveTick:            DB
 
-playerSleepTick:     DB
-playerDecTick:       DB
+playerSleepTick:           DB
+playerDecTick:             DB
 
-playerAnimation:     DB
-playerAnimationLast: DB
+playerAnimation:           DB
+playerAnimationLast:       DB
 
-playerDirection:     DB
-playerDirectionLast: DB
-playerDirectionWall: DB
+playerDirection:           DB
+playerDirectionLast:       DB
+playerDirectionWall:       DB
 
 
 ; Pounding
-playerIsPounding:    DB
-playerPoundTick:     DB
-playerPoundBlockM:   DB
-playerPoundBlockR:   DB
-playerPoundBlockL:   DB
-playerBreakDelayed:  DB
-playerPoundYBlock:   DB
-playerPoundCenterX:  DB
+playerIsPounding:          DB
+playerPoundTick:           DB
+playerPoundBlockM:         DB
+playerPoundBlockR:         DB
+playerPoundBlockL:         DB
+playerBreakDelayed:        DB
+playerPoundYBlock:         DB
+playerPoundCenterX:        DB
 
 ; Running
-playerIsRunning:     DB
+playerIsRunning:           DB
 
 
 ; Wall Sliding
-playerWallSlideDir:  DB ; direction of the wall which the player is/was sliding on
-playerWallSlideTick: DB ; number of ticks the player is sliding down the wall
-playerWallJumpWindow:DB ; number of ticks left in which a wall jump can be started
-playerWallJumpDir:   DB ; direction of the wall from which the player jumped of
-playerWallJumpTick:  DB ; ticks left during which the player movement will be forced into the direction of the wall jump
-playerWallJumpPressed: DB
-playerWallJumpRest:  DB ; frames left until movement input is recognized again after a wall jump
+playerWallSlideDir:        DB ; direction of the wall which the player is/was sliding on
+playerWallSlideTick:       DB ; number of ticks the player is sliding down the wall
+playerWallJumpWindow:      DB ; number of ticks left in which a wall jump can be started
+playerWallJumpDir:         DB ; direction of the wall from which the player jumped of
+playerWallJumpTick:        DB ; ticks left during which the player movement will be forced into the direction of the wall jump
+playerWallJumpPressed:     DB
+playerWallJumpRest:        DB ; frames left until movement input is recognized again after a wall jump
 
-; Gravity and Jumping
-playerFallSpeed:     DB ; current fall speed per frame
-playerFallFrames:    DB ; number of frames the player is falling (max 255)
-playerLandingFrames: DB ; number of frames for which the controls should be delayed after landing on ground
+; Gravity and Jumping      
+playerFallSpeed:           DB ; current fall speed per frame
+playerFallFrames:          DB ; number of frames the player is falling (max 255)
+playerLandingFrames:       DB ; number of frames for which the controls should be delayed after landing on ground
 
-playerGravityTick:   DB ; ticker for applying gravity
-playerGravityMax:    DB ; maximum gravity per tick
-playerGravityDelay:  DB ; ticks for which gravity should not be applied
-playerJumpPressed:   DB ; whether the jump button is still continously pressed
-playerOnGround:      DB ; is the player on ground
-playerJumpForce:     DB ; current jump force per frame
-playerJumpFrames:    DB ; number of frames the current jump is active
-playerDoubleJumped:  DB ; wether the double jump was performed since the last wall touch / on ground
-playerJumpHold:      DB ; number of frames the jump button was hold down
+playerGravityTick:         DB ; ticker for applying gravity
+playerGravityMax:          DB ; maximum gravity per tick
+playerGravityDelay:        DB ; ticks for which gravity should not be applied
+playerJumpPressed:         DB ; whether the jump button is still continously pressed
+playerOnGround:            DB ; is the player on ground
+playerJumpForce:           DB ; current jump force per frame
+playerJumpFrames:          DB ; number of frames the current jump is active
+playerDoubleJumped:        DB ; wether the double jump was performed since the last wall touch / on ground
+playerJumpHold:            DB ; number of frames the jump button was hold down
 
 ; Water and Swimming
-playerInWater:       DB ; is the player in water?
-playerUnderWater:    DB ; is the player in water?
-playerWasUnderWater: DB ; is the player in water?
-playerWaterHitDone:  DB ; whether the intitial splash hit is done
-playerWaterTick:     DB ; player water offset ticker
-playerWaterHitDepth: DB ; value to check how deep the player should splash into the water
+playerInWater:             DB ; is the player in water?
+playerUnderWater:          DB ; is the player in water?
+playerWasUnderWater:       DB ; is the player in water?
+playerWaterHitDone:        DB ; whether the intitial splash hit is done
+playerWaterTick:           DB ; player water offset ticker
+playerWaterHitDepth:       DB ; value to check how deep the player should splash into the water
 
 ; Dissolving
-playerDissolveTick:  DB ; tick for when the player is dissolving
+playerDissolveTick:        DB ; tick for when the player is dissolving
 
 ; Power Up States
-playerCanJump:       DB
-playerCanWallJump:   DB
-playerCanSwim:       DB
-playerCanDive:       DB
-playerCanPound:      DB
-playerCanRun:        DB
-playerCanDoubleJump: DB
+playerCanJump:             DB
+playerCanWallJump:         DB
+playerCanSwim:             DB
+playerCanDive:             DB
+playerCanPound:            DB
+playerCanRun:              DB
+playerCanDoubleJump:       DB
 
