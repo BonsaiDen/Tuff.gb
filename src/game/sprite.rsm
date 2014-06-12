@@ -79,7 +79,7 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     ld      d,a
     ld      a,b ; sprite index (counter)
     call    sprite_animation_timer
-    cp      0 ;  cp 0, but faster
+    cp      0 
     ret     nz ; if there are still frames to play, dont advance index
 
 
@@ -196,13 +196,13 @@ sprite_animation_set: ; a = sprite index, b = animation id
     push    bc
 
     call    _sprite_meta_offset
-    inc     hl
-    ld      [hl],1 ; reset frame 0 and 15 are border frames
+    inc     hl; skip flags
+    ld      [hl],1 ; reset frame (0 and 15 are option frames)
     inc     hl
     ld      [hl],b ; set id
     inc     hl
-    ld      a,0 ; reset frame left count
-    ld      [hl],a
+
+    push    hl
 
     ; add the animation table base address
     ld      l,b
@@ -226,6 +226,14 @@ sprite_animation_set: ; a = sprite index, b = animation id
     ld      b,e ; 16x16 sprite tile 
     call    sprite_set_tile_index
 
+    ; set up frame duration
+    ld      de,16
+    add     hl,de
+    ld      a,[hl]
+
+    pop     hl; restore sprite data offset
+    ld      [hl],a ; set frames left
+
     pop     bc
     pop     de
     pop     hl
@@ -243,9 +251,11 @@ sprite_animation_start: ; a = sprite index
     or      %00000100 ; set animating
     ld      [hl],a
     inc     hl; frame
+    ld      a,1
+    ld      [hl],a
     inc     hl; id
     inc     hl; frames left
-    ld      a,0 ; reset frame left count
+    ld      a,1 ; reset frame left count
     ld      [hl],a
 
     pop     hl

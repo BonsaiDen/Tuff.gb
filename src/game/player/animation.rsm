@@ -19,9 +19,7 @@ player_animation_update: ; executed during vblank
 
     ; check how far we are into vblank
     ld      a,[rLY]
-    cp      144
-    ret     c; < 144
-    cp      147
+    cp      145
     ret     nc; > 146
 
     ; check for animation changes
@@ -31,12 +29,12 @@ player_animation_update: ; executed during vblank
     cp      b
     ret     z
     
-    ; switch to new animation
-    ld      b,a
+    ; stop current animation before updating tile data
     ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_animation_set
-    call    sprite_animation_start
-    ld      a,b
+    call    sprite_animation_stop
+
+    ; flag animation as updated
+    ld      a,[playerAnimation]
     ld      [playerAnimationLast],a
 
     ; figure out which row in the sprite sheet maps
@@ -54,6 +52,13 @@ player_animation_update: ; executed during vblank
     ld      de,$8000
     ld      a,PLAYER_SPRITE_ROWS * 2
     call    tileset_load_sprite_row
+
+    ; switch to new animation
+    ld      a,[playerAnimationLast]
+    ld      b,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_set
+    call    sprite_animation_start
 
     ret
 
