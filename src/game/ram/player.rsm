@@ -63,6 +63,7 @@ playerDecTick:             DB
 
 playerAnimation:           DB
 playerAnimationLast:       DB
+playerAnimationUpdate:     DB
 
 playerDirection:           DB
 playerDirectionLast:       DB

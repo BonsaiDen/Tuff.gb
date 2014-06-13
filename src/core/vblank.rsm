@@ -26,6 +26,10 @@ core_vblank_handler:
     ; call the DMA code for transfering sprite data to OAM
     call    $ff80 
 
+    ; now copy the new tile data into vram 
+    ; we need to do it in this order to prevent flicker
+    call    player_animation_update_tile
+
     ld      a,[coreScrollX]
     ld      [rSCX],a
 

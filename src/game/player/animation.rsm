@@ -17,11 +17,6 @@ playerAnimationRowMap:
 
 player_animation_update: ; executed during vblank
 
-    ; check how far we are into vblank
-    ld      a,[rLY]
-    cp      145
-    ret     nc; > 146
-
     ; check for animation changes
     ld      a,[playerAnimationLast]
     ld      b,a
@@ -33,12 +28,35 @@ player_animation_update: ; executed during vblank
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_animation_stop
 
-    ; flag animation as updated
+    ; get new animation
     ld      a,[playerAnimation]
+    ld      b,a
+
+    ; switch to new animation
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_animation_set
+    call    sprite_animation_start
+
+    ; flag as changed
+    ld      a,b
     ld      [playerAnimationLast],a
 
+    ; flag for update
+    ld      a,1
+    ld      [playerAnimationUpdate],a
+
+    ret
+
+player_animation_update_tile:
+
+    ; check if we need to update the tile data for the player
+    ld      a,[playerAnimationUpdate]
+    cp      0
+    ret     z
+    
     ; figure out which row in the sprite sheet maps
     ; to the current animation
+    ld      a,[playerAnimation]
     ld      hl,playerAnimationRowMap
     ld      d,0
     ld      e,a
@@ -53,12 +71,8 @@ player_animation_update: ; executed during vblank
     ld      a,PLAYER_SPRITE_ROWS * 2
     call    tileset_load_sprite_row
 
-    ; switch to new animation
-    ld      a,[playerAnimationLast]
-    ld      b,a
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_animation_set
-    call    sprite_animation_start
+    ld      a,0
+    ld      [playerAnimationUpdate],a
 
     ret
 
