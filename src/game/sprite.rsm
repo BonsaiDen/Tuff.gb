@@ -235,23 +235,23 @@ sprite_animation_start: ; a = sprite index
 
     push    af
     push    hl
+    push    bc
 
     call    _sprite_meta_offset
     ld      a,[hl]
     or      %00000100 ; set animating
-    ld      [hl],a
-    inc     hl; frame
+    ld      [hli],a
     ld      a,1
-    ld      [hl],a
-    inc     hl; id
+    ld      [hli],a ; set current animation frame
+    ld      a,[hl]; load animation id
+    ld      b,a
     inc     hl; frames left
 
     ; set frames left
-    push    bc
     push    de
     push    hl
 
-    ; add the animation table base address
+    ; calculate the animation offset from the id
     ld      l,b
     ld      h,0
 

@@ -101,7 +101,7 @@ player_animate:
 
 .direction_changed:
 
-    ; reset animation frame
+    ; reset animation frame 
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_animation_start
 
