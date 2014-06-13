@@ -24,6 +24,20 @@ player_water_update:
     ld      a,0
     ld      [playerFallFrames],a
 
+    ; play sound
+    ld      a,[playerWasUnderWater]
+    cp      1
+    jp      z,.sound_surface
+
+    ld      a,SOUND_PLAYER_WATER_ENTER
+    jp      .sound
+
+.sound_surface:
+    ld      a,SOUND_PLAYER_WATER_LEAVE
+
+.sound:
+    call    sound_play
+
     ; check if we were previously under water, if so skip water offset
     ld      a,[playerWasUnderWater]
     cp      1
@@ -47,7 +61,6 @@ player_water_update:
     and     %11111000
     add     5
     ld      [playerY],a
-
 
 .not_initial:
 

@@ -119,9 +119,9 @@ player_jump:
     ; no sound when not on ground
     ld      a,[playerOnGround]
     cp      0
-    jp      z,.no_sound
+    jp      z,.check_swimming
 
-    ; no sound under water
+    ; no sound under water (even when on ground)
     ld      a,[playerUnderWater]
     cp      1
     jp      z,.no_sound
@@ -130,9 +130,30 @@ player_jump:
     ld      a,SOUND_PLAYER_JUMP
     call    sound_play
 
-.no_sound:
+.check_swimming:
+
+    ; check if swimming
+    ld      a,[playerWaterHitDone]
+    cp      1
+    jp      nz,.no_sound
+
+    ld      a,[playerInWater]
+    cp      0
+    jp      z,.no_sound
+    
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      z,.no_sound
+
+    ; player normal jump sound plus water leave sound
+    ld      a,SOUND_PLAYER_JUMP
+    call    sound_play
+
+    ld      a,SOUND_PLAYER_WATER_ENTER
+    call    sound_play
 
     ; under water movement
+.no_sound:
     ld      a,[playerUnderWater]
     cp      1
     jp      z,.jump_swim
@@ -387,6 +408,8 @@ player_fall:
 
     ; check how long we've been falling
     ld      a,[playerFallFrames]
+    cp      14
+    jp      c,.soft
     cp      50
     jp      c,.normal
 
@@ -407,6 +430,12 @@ player_fall:
 .normal:
     ld      a,SOUND_PLAYER_LAND
     call    sound_play
+    jp      .done
+
+.soft:
+    ld      a,SOUND_PLAYER_LAND_SOFT
+    call    sound_play
+    jp      .done
 
 .done:
     ld      a,0

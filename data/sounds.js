@@ -39,6 +39,18 @@ module.exports = [{
     "shiftFreq": 6
 
 }, {
+    "id": "PLAYER_LAND_SOFT",
+    "channel": 4,
+    "priority": 1,
+    "soundLength": 0,
+    "envStepTime": 1,
+    "envStepDir": 0,
+    "envInitVol": 3,
+    "freqRatio": 2,
+    "polyStep": 1,
+    "shiftFreq": 6
+
+}, {
     "id": "PLAYER_LAND_HARD",
     "channel": 4,
     "priority": 1,
@@ -51,6 +63,30 @@ module.exports = [{
     "shiftFreq": 7
 
 }, {
+    "id": "PLAYER_WATER_ENTER",
+    "channel": 4,
+    "priority": 1,
+    "soundLength": 0,
+    "envStepTime": 2,
+    "envStepDir": 0,
+    "envInitVol": 4,
+    "freqRatio": 4,
+    "polyStep": 0,
+    "shiftFreq": 3
+
+}, {
+    "id": "PLAYER_WATER_LEAVE",
+    "channel": 4,
+    "priority": 1,
+    "soundLength": 0,
+    "envStepTime": 2,
+    "envStepDir": 0,
+    "envInitVol": 4,
+    "freqRatio": 3,
+    "polyStep": 0,
+    "shiftFreq": 3
+
+},{
     "id": "BG_WATERFALL",
     "channel": 4,
     "priority": 2,
@@ -134,7 +170,7 @@ module.exports = [{
 }, {
     "id": "PLAYER_LAND_POUND",
     "channel": 4,
-    "priority": 3,
+    "priority": 4,
     "soundLength": 0,
     "envStepTime": 7,
     "envStepDir": 0,
@@ -218,12 +254,12 @@ module.exports = [{
     "id": "PLAYER_POUND_BREAK",
     "channel": 4,
     "priority": 3,
-    "soundLength": 0x23,
-    "envStepTime": 1,
+    "soundLength": 0x2A,
+    "envStepTime": 2,
     "envStepDir": 0,
-    "envInitVol": 0x0F,
-    "freqRatio": 5,
-    "polyStep": 1,
+    "envInitVol": 0x0D,
+    "freqRatio": 2,
+    "polyStep": 0,
     "shiftFreq": 6
 }];
 
