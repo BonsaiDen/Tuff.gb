@@ -20,6 +20,7 @@ MAP_ROOM_DATA_BANK          EQU     2
 
 MAP_MAX_FALLABLE_BLOCKS     EQU     16
 MAP_FALLABLE_BLOCK_LIGHT    EQU     $8f
+MAP_FALLING_TILE_LIGHT      EQU     $30
 
 
 ; Room drawing ----------------------------------------------------------------
@@ -38,7 +39,7 @@ mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
 
 ; Fallable Blocks -------------------------------------------------------------
-mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Type7Active1][x][y][frame]
+mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Type7Active1][frame][x][y]
 mapFallableBlockCount:      DB
 
 

@@ -11,6 +11,11 @@ SAVE_ENTITY_HEADER_SIZE    EQU 1
 SAVE_ENTITY_DATA_SIZE      EQU ENTITY_STORED_STATE_SIZE
 SAVE_COMPLETE_SIZE         EQU SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_PLAYER_DATA_SIZE + SAVE_ENTITY_HEADER_SIZE + SAVE_ENTITY_DATA_SIZE
 
+SAVE_DEFAULT_PLAYER_X      EQU 24
+SAVE_DEFAULT_PLAYER_Y      EQU 16
+SAVE_DEFAULT_ROOM_X        EQU 14
+SAVE_DEFAULT_ROOM_Y        EQU 14
+
 
 ; SRAM Handling Routines ------------------------------------------------------
 save_load_from_sram:; a = 1 triggers defaults
@@ -126,16 +131,16 @@ save_load_player:
     jp     nz,.init
 
     ; Positions
-    ld      a,24
+    ld      a,SAVE_DEFAULT_PLAYER_X
     ld      [playerX],a
 
-    ld      a,48
+    ld      a,SAVE_DEFAULT_PLAYER_Y
     ld      [playerY],a
 
-    ld      a,14
+    ld      a,SAVE_DEFAULT_ROOM_X
     ld      [mapRoomX],a
 
-    ld      a,14
+    ld      a,SAVE_DEFAULT_ROOM_Y
     ld      [mapRoomY],a
 
     ; Abilities

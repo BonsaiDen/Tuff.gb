@@ -260,6 +260,10 @@ map_load_room:
     ld      a,%00000010; 7 bytes type, 1 bytes active
     ld      [hli],a
 
+    ; reset frames 
+    ld      a,0;
+    ld      [hli],a
+
     ; store x and y coordinates
     ld      a,9
     sub     c
@@ -267,10 +271,6 @@ map_load_room:
     ld      a,7
     sub     b
     ld      [hli],a; y / row
-
-    ; reset frames 
-    ld      a,0;
-    ld      [hl],a
 
     ; next index
     ld      a,[mapFallableBlockCount]
@@ -741,7 +741,7 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
 map_check_breakable_surrounding: ; b = tx, c = ty
     push    hl
     push    af
-            
+
 .left:
     ld      a,b; ignore blocks < 0
     cp      0
@@ -795,7 +795,6 @@ map_check_breakable_surrounding: ; b = tx, c = ty
 .found_none:
     pop     af
     pop     hl
-    ;ld      a,MAP_BACKGROUND_TILE_DARK
     ret
 
 .found_left:
@@ -851,6 +850,8 @@ map_check_fallable_blocks:
     cp      1
     jp      z,.active
             
+    ; skip frame
+    inc     hl
 
     ; load block x coordinate
     ld      a,[hli]
@@ -872,7 +873,7 @@ map_check_fallable_blocks:
     ; check the block 2 pixel under the player
     ; TODO check if in upper half of block only ?
     ld      a,[playerY]
-    add     2
+    add     1
     srl     a; divide by 16
     srl     a; divide by 16
     srl     a; divide by 16
@@ -882,29 +883,14 @@ map_check_fallable_blocks:
 
     dec     hl
     dec     hl
+    dec     hl
 
     ; if near set active
     ld      a,[hl]
     or      %00000001; type / active flag
-    ld      [hl],a
-    inc     hl
+    ld      [hli],a
 
-    ; clear tiles for testing TODO remove this
-    push    bc
-
-    ld      a,[hli]; load x
-    ld      b,a
-    ld      a,[hl]; load y
-    ld      c,a
-
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value
-    inc     b
-    call    map_set_tile_value
-
-    pop     bc
+    call    map_update_falling_block
 
     ; loop
 .active:
@@ -940,14 +926,7 @@ map_update_falling_blocks:
     cp      1
     jp      nz,.inactive
 
-    ; skip x and y
-    inc     hl
-    inc     hl
-
-    ld      a,[hl]
-
-    ; check frame count
-    ld      a,1
+    call    map_update_falling_block
 
     ; loop
 .inactive:
@@ -955,5 +934,63 @@ map_update_falling_blocks:
     ld      a,[mapFallableBlockCount]
     cp      b
     jp      nz,.loop
+    ret
+
+
+map_update_falling_block: ; b = index
+
+    ; check frame count
+    ld      a,[hl]
+    cp      4
+    ret     z
+
+    ; next frame
+    ld      a,[hl]
+    inc     a
+    ld      [hl],a
+
+    ; store loop counter and frame pointer 
+    push    bc
+    push    hl
+
+    ; skip frame count
+    ld      a,[hl]
+    ld      d,a; store frame count
+    inc     hl
+
+    ; load x / y coordinates
+    ld      a,[hli]; load x
+    ld      b,a
+    ld      a,[hl]; load y
+    ld      c,a
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+
+    ; check tile color
+.light:
+    ld      a,d
+    cp      4
+    jp      z,.done_light
+    ld      a,MAP_FALLING_TILE_LIGHT
+    add     d
+    ld      e,a
+    add     4
+    jp      .set
+
+.done_light:
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    ld      e,a
+
+.set:
+    call    map_set_tile_value
+    inc     b
+    ld      a,e
+    call    map_set_tile_value
+
+    ; restore frame pointer
+    pop     hl
+    pop     bc
+
+.done:
     ret
 
