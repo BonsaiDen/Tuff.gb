@@ -103,6 +103,7 @@ game_loop:
     call    player_update
     call    entity_update
     call    sprite_animate_all
+    call    map_check_fallable_blocks
     call    sound_update
     ret
 
@@ -123,6 +124,7 @@ game_timer:
     and     %00000001
     ld      [gameTimerHalf],a
 
+    call    map_update_falling_blocks
     call    map_animate_tiles
     call    screen_timer
 

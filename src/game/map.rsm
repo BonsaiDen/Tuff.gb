@@ -156,6 +156,7 @@ map_load_room:
     
     ld      a,0
     ld      [mapRoomUpdateRequired],a
+    ld      [mapFallableBlockCount],a
 
     ; target is the screen buffer
     ld      hl,$C400
@@ -235,8 +236,50 @@ map_load_room:
     sub     a,128 ; tile data offset
     ld      [hl],a ; draw + 33
 
+    pop     bc; restore row / col
+
+    ; check if fallable block -------------------------
+    ld      a,d
+    cp      MAP_FALLABLE_BLOCK_LIGHT
+    jp      nz,.no_fallable_block
+
+
+    ; get current index
+    ld      a,[mapFallableBlockCount]
+    cp      MAP_MAX_FALLABLE_BLOCKS
+    jp      z,.no_fallable_block; maximum index reached skip
+
+    ld      de,mapFallableBlocks
+    ld      h,0
+    ld      l,a
+    add     hl,hl; x 2
+    add     hl,hl; x 4
+    add     hl,de; get offset address
+    
+    ; store tile type (dark / light) and reset active
+    ld      a,%00000010; 7 bytes type, 1 bytes active
+    ld      [hli],a
+
+    ; store x and y coordinates
+    ld      a,9
+    sub     c
+    ld      [hli],a; x / col
+    ld      a,7
+    sub     b
+    ld      [hli],a; y / row
+
+    ; reset frames 
+    ld      a,0;
+    ld      [hl],a
+
+    ; next index
+    ld      a,[mapFallableBlockCount]
+    inc     a
+    ld      [mapFallableBlockCount],a
+
+
     ; drawing ------------------------------------------
-    pop     bc
+.no_fallable_block:
     pop     de
     pop     hl
 
@@ -777,5 +820,140 @@ map_check_breakable_surrounding: ; b = tx, c = ty
     pop     af
     ld      a,MAP_BACKGROUND_FADE_BOTTOM
     pop     hl
+    ret
+
+
+; Fallable blocks -------------------------------------------------------------
+map_check_fallable_blocks:
+    ld      a,[mapFallableBlockCount]
+    cp      0
+    ret     z
+
+    ; setup loop counter
+    ld      a,0
+    ld      b,a
+
+.loop:
+
+    ; get offset
+    ld      de,mapFallableBlocks
+    ld      h,0
+    ld      l,b
+    add     hl,hl; x 2
+    add     hl,hl; x 4
+    add     hl,de; get offset address
+
+    ; check if inactive
+    jp      .check_active
+.check_active:
+    ld      a,[hli]
+    and     %00000001
+    cp      1
+    jp      z,.active
+            
+
+    ; load block x coordinate
+    ld      a,[hli]
+    ld      c,a
+
+    ; load player coordinates and convert into blocks
+    ld      a,[playerX]
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    cp      c
+    jp      nz,.active
+
+    ; load block x coordinate
+    ld      a,[hl]
+    ld      c,a
+
+    ; check the block 2 pixel under the player
+    ; TODO check if in upper half of block only ?
+    ld      a,[playerY]
+    add     2
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    cp      c
+    jp      nz,.active
+
+    dec     hl
+    dec     hl
+
+    ; if near set active
+    ld      a,[hl]
+    or      %00000001; type / active flag
+    ld      [hl],a
+    inc     hl
+
+    ; clear tiles for testing TODO remove this
+    push    bc
+
+    ld      a,[hli]; load x
+    ld      b,a
+    ld      a,[hl]; load y
+    ld      c,a
+
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    map_set_tile_value
+    inc     b
+    call    map_set_tile_value
+
+    pop     bc
+
+    ; loop
+.active:
+    inc     b
+    ld      a,[mapFallableBlockCount]
+    cp      b
+    jp      nz,.loop
+    ret
+
+
+map_update_falling_blocks:
+    ld      a,[mapFallableBlockCount]
+    cp      0
+    ret     z
+
+    ; setup loop counter
+    ld      a,0
+    ld      b,a
+
+.loop:
+
+    ; get offset
+    ld      de,mapFallableBlocks
+    ld      h,0
+    ld      l,b
+    add     hl,hl; x 2
+    add     hl,hl; x 4
+    add     hl,de; get offset address
+
+    ; check if active
+    ld      a,[hli]
+    and     %00000001
+    cp      1
+    jp      nz,.inactive
+
+    ; skip x and y
+    inc     hl
+    inc     hl
+
+    ld      a,[hl]
+
+    ; check frame count
+    ld      a,1
+
+    ; loop
+.inactive:
+    inc     b
+    ld      a,[mapFallableBlockCount]
+    cp      b
+    jp      nz,.loop
     ret
 
