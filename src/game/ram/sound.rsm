@@ -1,4 +1,4 @@
-SECTION "SoundRam",WRAM0[$CA90]
+SECTION "SoundRam",WRAM0[$CB10]
 
 
 ; Constants -------------------------------------------------------------------

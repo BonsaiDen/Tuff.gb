@@ -15,8 +15,11 @@ MAP_BACKGROUND_FADE_TOP     EQU     $67
 MAP_BACKGROUND_FADE_BOTTOM  EQU     $68
 
 MAP_BREAKABLE_BLOCK_LIGHT   EQU     $6f
-MAP_BREAKABLE_BLOCK_DARK    EQU     $8f
+MAP_BREAKABLE_BLOCK_DARK    EQU     $7f
 MAP_ROOM_DATA_BANK          EQU     2
+
+MAP_MAX_FALLABLE_BLOCKS     EQU     16
+MAP_FALLABLE_BLOCK_LIGHT    EQU     $8f
 
 
 ; Room drawing ----------------------------------------------------------------
@@ -33,6 +36,10 @@ mapRoomLastX:               DB ; last x index on the map
 mapRoomLastY:               DB ; last y index on the map
 mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
+
+; Fallable Blocks -------------------------------------------------------------
+mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Type7Active1][x][y][frame]
+mapFallableBlockCount:      DB
 
 
 ; Tile Animations -------------------------------------------------------------
