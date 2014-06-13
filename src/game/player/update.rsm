@@ -188,7 +188,6 @@ player_update:
 
     ; animation / other logic
 .update:
-    call    player_animate
 
     ; update player sprite position
     ld      a,[playerX]
