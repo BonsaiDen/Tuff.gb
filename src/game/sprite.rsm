@@ -202,8 +202,6 @@ sprite_animation_set: ; a = sprite index, b = animation id
     ld      [hl],b ; set id
     inc     hl
 
-    push    hl
-
     ; add the animation table base address
     ld      l,b
     ld      h,0
@@ -226,14 +224,6 @@ sprite_animation_set: ; a = sprite index, b = animation id
     ld      b,e ; 16x16 sprite tile 
     call    sprite_set_tile_index
 
-    ; set up frame duration
-    ld      de,16
-    add     hl,de
-    ld      a,[hl]
-
-    pop     hl; restore sprite data offset
-    ld      [hl],a ; set frames left
-
     pop     bc
     pop     de
     pop     hl
@@ -255,8 +245,35 @@ sprite_animation_start: ; a = sprite index
     ld      [hl],a
     inc     hl; id
     inc     hl; frames left
-    ld      a,1 ; reset frame left count
-    ld      [hl],a
+
+    ; set frames left
+    push    bc
+    push    de
+    push    hl
+
+    ; add the animation table base address
+    ld      l,b
+    ld      h,0
+
+    ; multiply by 32 to get into the animation table offset
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+
+    ; add base offset
+    ld      de,DataSpriteAnimation
+    add     hl,de
+    inc     hl; goto first frame
+    ld      de,16; goto duration data
+    add     hl,de
+    ld      a,[hl]
+    pop     hl; restore sprite data offset
+    ld      [hl],a ; set frames left
+
+    pop     de
+    pop     bc
 
     pop     hl
     pop     af
