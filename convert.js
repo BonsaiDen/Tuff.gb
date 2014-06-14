@@ -62,7 +62,7 @@ var IO = {
 
         var file = path.join(IO._source, name);
         if ((/\.png$/).test(file)) {
-            return IO.loadImage(file);
+            return IO.loadImage(file, name);
 
         } else if ((/\.json$/).test(file)) {
             return IO.loadJSON(file);
@@ -95,7 +95,7 @@ var IO = {
             } else {
 
                 console.log(
-                    '[image] Loaded image with %sx%s pixels (%sx%s tiles, %s bytes as tileset)',
+                    '[image] Loaded image "' + file + '" with %sx%s pixels (%sx%s tiles, %s bytes as tileset)',
                     this.width,
                     this.height,
                     this.width / 8,
@@ -148,12 +148,11 @@ var Pack = {
 
             if (storeSize) {
                 var size = buffer.length;
-                deffered.fulfill(Buffer.concat(new Buffer([(size >> 8), size & 0xff]), output));
+                deffered.fulfill(Buffer.concat([new Buffer([(size >> 8), size & 0xff]), output]));
 
             } else {
                 deffered.fulfill(output);
             }
-
 
         });
 
@@ -1014,7 +1013,7 @@ var Reverse = {
             } else {
 
                 console.log(
-                    '[image] Loaded image with %sx%s pixels (%sx%s tiles, %s bytes as tileset)',
+                    '[image] Loaded image "' + file + '" with %sx%s pixels (%sx%s tiles, %s bytes as tileset)',
                     this.width,
                     this.height,
                     this.width / 8,
