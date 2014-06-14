@@ -261,5 +261,33 @@ module.exports = [{
     "freqRatio": 2,
     "polyStep": 0,
     "shiftFreq": 6
+
+}, {
+    "id": "PLAYER_POUND_CANCEL",
+    "channel": 1,
+    "priority": 1,
+    "sweepShifts": 3,
+    "sweepDir": 1,
+    "sweepTime": 6,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 3,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x0600
+
+}, {
+    "id": "MAP_FALLING_BLOCK",
+    "channel": 1,
+    "priority": 1,
+    "sweepShifts": 5,
+    "sweepDir": 0,
+    "sweepTime": 3,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 2,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x0380
 }];
 

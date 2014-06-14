@@ -864,9 +864,30 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     srl     a; divide by 16
     cp      c
-    jp      nz,.active
+    jp      z,.found_x
 
-    ; load block x coordinate
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH - 3
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    cp      c
+    jp      z,.found_x
+
+    ld      a,[playerX]
+    sub     PLAYER_HALF_WIDTH - 2
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    srl     a; divide by 16
+    cp      c
+    jp      z,.found_x
+
+    jp      .active
+
+    ; load block y coordinate
+.found_x:
     ld      a,[hl]
     ld      c,a
 
@@ -891,6 +912,10 @@ map_check_fallable_blocks:
     ld      [hli],a
 
     call    map_update_falling_block
+
+    ; play sound
+    ld      a,SOUND_MAP_FALLING_BLOCK
+    call    sound_play
 
     ; loop
 .active:
