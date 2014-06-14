@@ -73,6 +73,11 @@ player_gravity:
     cp      1
     ret     z
 
+    ; prevent glitches were we screw up the animation frame here
+    ld      a,[playerIsPounding]
+    cp      1
+    ret     z
+
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
     ret

@@ -15,6 +15,7 @@ playerAnimationRowMap:
     DB 5; POUND STOP
     DB 8; LANDING
 
+
 player_animation_update: ; executed during vblank
 
     ; check for direction changes
