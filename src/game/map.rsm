@@ -1,9 +1,5 @@
 SECTION "MapLogic",ROM0
 
-HI_BYTE: MACRO
-\1
-ENDM
-
 
 ; Map -------------------------------------------------------------------------
 map_init: ; a = base value for background tiles
