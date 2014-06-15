@@ -13,7 +13,7 @@ sprite_animate_all:
     ld      a,[hl]
     push    af ; store sprite animation flags
     and     %00000101
-    cp      5
+    cp      5; active and animating
     jp      nz,.skip_sprite
 
     ; load animation frame number
@@ -193,7 +193,6 @@ sprite_animation_set: ; a = sprite index, b = animation id
     push    hl
     push    de
     push    bc
-    push    af
 
     call    _sprite_meta_offset
     inc     hl; skip flags
@@ -219,7 +218,6 @@ sprite_animation_set: ; a = sprite index, b = animation id
     inc     hl
 
     ; now update the sprite to the tile index
-    pop     af; restore sprite index
     ld      b,[hl] ; 16x16 sprite tile 
     call    sprite_set_tile_index
 
@@ -261,7 +259,7 @@ sprite_animation_start: ; a = sprite index
     add     hl,hl
 
     ; add base offset
-    ld      de,DataSpriteAnimation + 17
+    ld      de,DataSpriteAnimation + 17; get timing data of first frame
     add     hl,de
     ld      a,[hl]
     pop     hl; restore sprite data offset
@@ -276,75 +274,47 @@ sprite_animation_start: ; a = sprite index
 
 
 sprite_animation_pause: ; a = sprite index
-
-    push    af
     push    hl
-
     call    _sprite_meta_offset
-    ld      a,[hl]
-    and     %11111011 ; unset animating
-    ld      [hl],a
-
-    pop hl
-    pop     af
+    res     2,[hl] ; unset animating flag
+    pop     hl
     ret
 
 
 sprite_animation_resume: ; a = sprite index
-
-    push    af
     push    hl
-
     call    _sprite_meta_offset
-    ld      a,[hl]
-    or      %00000100 ; set animating
-    ld      [hl],a
-
+    set     2,[hl] ; set animating flag
     pop     hl
-    pop     af
     ret
 
 
 sprite_animation_stop: ; a = sprite index
 
-    push    af
     push    hl
 
     call    _sprite_meta_offset
-    ld      a,[hl]
-    and     %11111011 ; unset animating
-    ld      [hl],a
+    res     2,[hl] ; unset animating flag
 
     ; reset animation frame
     inc     hl
     ld      [hl],1 ; 0 and 15 are border frames
 
     pop     hl
-    pop     af
     ret
 
 
 sprite_animation_forward: ; a = sprite index
-
     push    hl
-
     call    _sprite_meta_offset
-    ld      a,[hl]
-    and     %11101111 ; unset backward flag
-    ld      [hl],a
-
+    res     4,[hl]; unset backwards flag
     pop     hl
     ret
 
 sprite_animation_backward: ; a = sprite index
-
     push    hl
-
     call    _sprite_meta_offset
-    ld      a,[hl]
-    or      %00010000 ; set backward
-    ld      [hl],a
-
+    set     4,[hl]; set backwards flag
     pop     hl
     ret
 
@@ -379,46 +349,36 @@ sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
 
 ; Sprite Control --------------------------------------------------------------
 sprite_enable: ; a = sprite index
-    push    af
     push    hl
     call    _sprite_meta_offset
     ld      [hl],1
     pop     hl
-    pop     af
     ret
 
 
 sprite_disable: ; a = sprite index
-    push    af
     push    hl
-    push    de
     push    bc
-    ld      e,a ; store sprite index
 
     ; reset all flags
     call    _sprite_meta_offset
     ld      [hl],0 
 
     ; reset tile index
-    ld      a,e
     ld      b,0
     call    sprite_set_tile_index
 
     ; reset position
-    ld      a,e
     ld      b,0
     ld      c,0
     call    sprite_set_position
 
     ; reset palette
-    ld      a,e
     ld      b,0
     call    sprite_set_palette
 
     pop     bc
-    pop     de
     pop     hl
-    pop     af
     ret
 
 
@@ -581,124 +541,50 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 
 
 sprite_set_mirror: ; a = sprite index
-
-    push    af
     push    hl
     call    _sprite_meta_offset
-    ld      a,[hl]
-    or      %00000010 ; set enabled flag
-    ld      [hl],a
+    set     1,[hl]; set mirror flag
     pop     hl
-    pop     af
-
     ret
 
 
 sprite_unset_mirror: ; a = sprite index
-
-    push    af
     push    hl
     call    _sprite_meta_offset
-    ld      a,[hl]
-    and     %11111101 ; unset mirror flag
-    ld      [hl],a
+    res     1,[hl]; unset mirror flag
     pop     hl
-    pop     af
-
     ret
 
 
 ; Helper ----------------------------------------------------------------------
-sprite_update:; a = sprite index
-
-    push    af
-    push    bc
-    push    de
-    push    hl
-
-    ld      b,a
-    call    _sprite_meta_offset
-
-    ; load animation frame number
-    inc     hl
-    ld      c,[hl] 
-
-    ; load animation id
-    inc     hl 
-    ld      l,[hl] 
-    ld      h,0
-
-    ; multiply by 32 to get into the animation table offset
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-
-    ; add the animation table base address
-    ld      de,DataSpriteAnimation
-    add     hl,de
-
-    ; add the current frame index
-    ld      d,0
-    ld      e,c
-    add     hl,de ; hl is the data offset
-
-    ; get tile for animation index
-    ld      e,[hl]
-
-    ; now update the sprite to the tile index
-    ld      a,b
-    ld      b,e ; 16x16 sprite tile 
-    call    sprite_set_tile_index
-
-    pop     hl
-    pop     de
-    pop     bc
-    pop     af
-    ret
-
-
 _sprite_get_left: ; e = raw index, d = value byte offset
-    push    de
-    ld      hl,spriteData 
+    ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
     ld      a,e
     sla     a
     sla     a
     sla     a
     add     a,d
-    ld      d,0
-    ld      e,a
-    add     hl,de
-    pop     de
+    ld      l,a
     ret
 
 
 _sprite_get_right: ; e = raw index, d = value byte offset
-    push    de
-    ld      hl,spriteData 
+    ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
     ld      a,e
     sla     a
     sla     a
     sla     a
     add     a,d
-    add     a,4; skipping one hardware sprite
-    ld      d,0
-    ld      e,a
-    add     hl,de
-    pop     de
+    add     a,4; skip one hardware sprite
+    ld      l,a
     ret
 
 
 _sprite_meta_offset: ; a = sprite index -> hl = offset
-    push    de
-    ld      hl,spriteMeta
-    ld      d,0
-    sla     a
-    sla     a
-    sla     a
-    ld      e,a
-    add     hl,de
-    pop     de
+    ld      h,spriteMeta >> 8; high byte, needs to be aligned at 256 bytes
+    ld      l,a
+    sla     l
+    sla     l
+    sla     l
     ret
 
