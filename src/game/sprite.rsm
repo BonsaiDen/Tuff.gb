@@ -190,10 +190,10 @@ sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
 ; Animation Controls ----------------------------------------------------------
 sprite_animation_set: ; a = sprite index, b = animation id
 
-    push    af
     push    hl
     push    de
     push    bc
+    push    af
 
     call    _sprite_meta_offset
     inc     hl; skip flags
@@ -217,17 +217,15 @@ sprite_animation_set: ; a = sprite index, b = animation id
     ld      de,DataSpriteAnimation
     add     hl,de
     inc     hl
-    ld      e,[hl]
 
     ; now update the sprite to the tile index
-    ld      a,b ; sprite index (counter)
-    ld      b,e ; 16x16 sprite tile 
+    pop     af; restore sprite index
+    ld      b,[hl] ; 16x16 sprite tile 
     call    sprite_set_tile_index
 
     pop     bc
     pop     de
     pop     hl
-    pop     af
     ret
 
 
@@ -263,10 +261,7 @@ sprite_animation_start: ; a = sprite index
     add     hl,hl
 
     ; add base offset
-    ld      de,DataSpriteAnimation
-    add     hl,de
-    inc     hl; goto first frame
-    ld      de,16; goto duration data
+    ld      de,DataSpriteAnimation + 17
     add     hl,de
     ld      a,[hl]
     pop     hl; restore sprite data offset
@@ -484,20 +479,14 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     call    _sprite_get_left
     ld      [hl],b
     inc     hl
-    ld      a,[hl]
-    and     %11011111
-    or      %00100000
-    ld      [hl],a
+    set     5,[hl]
 
     call    _sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
     inc     hl
-    ld      a,[hl]
-    and     %11011111
-    or      %00100000
-    ld      [hl],a
+    set     5,[hl]
 
     jp     .index_done
 
@@ -506,18 +495,14 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     call    _sprite_get_left
     ld      [hl],b
     inc     hl
-    ld      a,[hl]
-    and     %11011111
-    ld      [hl],a
+    res     5,[hl]
 
     call    _sprite_get_right
     ld      a,b
     add     a,2
     ld      [hl],a
     inc     hl
-    ld      a,[hl]
-    and     %11011111
-    ld      [hl],a
+    res     5,[hl]
 
 .index_done:
     pop     de
@@ -534,7 +519,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     ld      e,a ; store index
 
     ; add scroll offset
-    ld      a,[rSCX]
+    ld      a,[coreScrollX]
     cp      0
     jp      z,.no_x_offset
     ld      d,a
@@ -543,7 +528,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     ld      b,a
 
 .no_x_offset:
-    ld      a,[rSCY]
+    ld      a,[coreScrollY]
     cp      0
     jp      z,.no_y_offset
     ld      d,a
@@ -624,13 +609,63 @@ sprite_unset_mirror: ; a = sprite index
 
 
 ; Helper ----------------------------------------------------------------------
+sprite_update:; a = sprite index
+
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    ld      b,a
+    call    _sprite_meta_offset
+
+    ; load animation frame number
+    inc     hl
+    ld      c,[hl] 
+
+    ; load animation id
+    inc     hl 
+    ld      l,[hl] 
+    ld      h,0
+
+    ; multiply by 32 to get into the animation table offset
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+
+    ; add the animation table base address
+    ld      de,DataSpriteAnimation
+    add     hl,de
+
+    ; add the current frame index
+    ld      d,0
+    ld      e,c
+    add     hl,de ; hl is the data offset
+
+    ; get tile for animation index
+    ld      e,[hl]
+
+    ; now update the sprite to the tile index
+    ld      a,b
+    ld      b,e ; 16x16 sprite tile 
+    call    sprite_set_tile_index
+
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+    ret
+
+
 _sprite_get_left: ; e = raw index, d = value byte offset
     push    de
     ld      hl,spriteData 
     ld      a,e
-    add     a,a ; 2
-    add     a,a ; 4
-    add     a,a ; 8
+    sla     a
+    sla     a
+    sla     a
     add     a,d
     ld      d,0
     ld      e,a
@@ -643,9 +678,9 @@ _sprite_get_right: ; e = raw index, d = value byte offset
     push    de
     ld      hl,spriteData 
     ld      a,e
-    add     a,a ; 2
-    add     a,a ; 4
-    add     a,a ; 8
+    sla     a
+    sla     a
+    sla     a
     add     a,d
     add     a,4; skipping one hardware sprite
     ld      d,0
@@ -659,9 +694,9 @@ _sprite_meta_offset: ; a = sprite index -> hl = offset
     push    de
     ld      hl,spriteMeta
     ld      d,0
-    add     a,a ; 2
-    add     a,a ; 4
-    add     a,a ; 8
+    sla     a
+    sla     a
+    sla     a
     ld      e,a
     add     hl,de
     pop     de

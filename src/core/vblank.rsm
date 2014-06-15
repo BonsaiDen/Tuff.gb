@@ -17,18 +17,17 @@ core_vblank_handler:
     ld      a,[corePaletteSprite1]
     ld      [rOBP1],a
 
-
     ; game specific code ------------------------------------------------------
 
-    ; update the player animation so the player sprites show the correct frames
-    call    player_animation_update
-
-    ; call the DMA code for transfering sprite data to OAM
+    ; first load the sprite updates from the last frame
     call    $ff80 
 
-    ; now copy the new tile data into vram 
-    ; we need to do it in this order to prevent flicker
+    ; now copy the new tile data into vram so we pick up the updated sprite
+    ; tiles on screen
     call    player_animation_update_tile
+
+    ; now take care of the actual updating of the sprite data
+    call    player_animation_update
 
     ld      a,[coreScrollX]
     ld      [rSCX],a

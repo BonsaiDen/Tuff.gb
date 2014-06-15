@@ -43,7 +43,7 @@ player_animation_update: ; executed during vblank
 
     ; reset animation frame 
     ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_animation_start
+    call    sprite_update
 
     ld      a,[playerDirection]
     ld      [playerDirectionLast],a
