@@ -40,11 +40,7 @@ player_animation_update: ; executed during vblank
     jp      .direction_changed
 
 .direction_changed:
-
-    ; reset animation frame 
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_update
-
+    ; TODO reset animation frame?
     ld      a,[playerDirection]
     ld      [playerDirectionLast],a
 
