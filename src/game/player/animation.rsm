@@ -18,6 +18,10 @@ playerAnimationRowMap:
 
 player_animation_update: ; executed during vblank
 
+    ld      a,[rLY]
+    cp      148
+    ret     nc
+
     ; check for direction changes
     ld      a,[playerDirectionLast]
     ld      b,a
@@ -41,6 +45,8 @@ player_animation_update: ; executed during vblank
 
 .direction_changed:
     ; TODO reset animation frame?
+    ; right now this depends on the animate_all updating the tile 
+    ; we need a separate function here though
     ld      a,[playerDirection]
     ld      [playerDirectionLast],a
 
@@ -51,11 +57,7 @@ player_animation_update: ; executed during vblank
     ld      b,a
     ld      a,[playerAnimation]
     cp      b
-    ret     z
-    
-    ; stop current animation before updating tile data
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_animation_stop
+    jp      z,.done
 
     ; get new animation
     ld      a,[playerAnimation]
@@ -74,6 +76,7 @@ player_animation_update: ; executed during vblank
     ld      a,1
     ld      [playerAnimationUpdate],a
 
+.done:
     ret
 
 player_animation_update_tile:

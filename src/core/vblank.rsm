@@ -19,14 +19,13 @@ core_vblank_handler:
 
     ; game specific code ------------------------------------------------------
 
-    ; first load the sprite updates from the last frame
-    call    $ff80 
-
-    ; now copy the new tile data into vram so we pick up the updated sprite
-    ; tiles on screen
+    ; copy new player tiles into vram from the last update
     call    player_animation_update_tile
 
-    ; now take care of the actual updating of the sprite data
+    ; now copy OAM to match the sprites
+    call    $ff80 
+
+    ; update player animations during vblank to prevent flicker 
     call    player_animation_update
 
     ld      a,[coreScrollX]
