@@ -87,7 +87,7 @@ map_set_room: ; b = x, c = y
     ; RoomOffset = [MapOffset + RoomID * 2][0] and [1]
     ; MapData = (MapOffset + MapIndexSize + RoomOffset) - 1
 
-    ; Offset into Index ------------------------
+    ; Offset into Map Room Index 
 
     ; y * MAP_WIDTH
     ld      h,16
@@ -113,11 +113,9 @@ map_set_room: ; b = x, c = y
     ld      a,[hl]
     ld      c,a
 
-    ; MapOffset + Room Offset 
+    ; Offset for Room Data (MapOffset + Room Offset + MapIndexSize)
     ld      hl,DataMapMain
     add     hl,bc
-
-    ; + MapIndexSize
     ld      bc,MAP_INDEX_SIZE
     add     hl,bc ; hl = pointer to packed room data
 
@@ -135,7 +133,7 @@ map_set_room: ; b = x, c = y
     call    entity_store ; first store them
     call    entity_reset ; then reset them, as this will clear their active flag
 
-    ; draw the room
+    ; set redraw flag for the room (will be drawn during the next vblank)
     ld      a,1
     ld      [mapRoomUpdateRequired],a
 
@@ -144,7 +142,6 @@ map_set_room: ; b = x, c = y
     pop     hl
 
     ret
-
 
 
 ; Core Map Draw Routine -------------------------------------------------------
