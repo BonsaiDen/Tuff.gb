@@ -1,4 +1,4 @@
-SECTION "EntityRam",WRAM0[$CBB0]
+SECTION "EntityRam",WRAM0[$CC00]
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM           EQU 4
@@ -17,17 +17,17 @@ ENTITY_STORED_STATE_SIZE  EQU ENTITY_MAX_STORE_BUCKETS * 4
 
 ; RAM storage for entity positions / states -----------------------------------
 ; mapStorage format is 2 bytes per entity [ddtttttt] xxxxyyyy (type, direction, x, y)
-entityStoredState:      DS ENTITY_STORED_STATE_SIZE 
-                              ; 4 bytes per bucket entry
-                              ; [roomid] (1 based indexing)
-                              ; [ffff][dd][ii] flags and entity id
-                              ; [y position]
-                              ; [x position]
-
 entityScreenState:      DS  32 ; 8 bytes per entity 
                                ; [type][flags][direction][y] 
                                ; [x][tileslot][custom][custom]
                                ; type > 0 = entity is active
 
 entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into vram
+
+entityStoredState:      DS ENTITY_STORED_STATE_SIZE 
+                              ; 4 bytes per bucket entry
+                              ; [roomid] (1 based indexing)
+                              ; [ffff][dd][ii] flags and entity id
+                              ; [y position]
+                              ; [x position]
 

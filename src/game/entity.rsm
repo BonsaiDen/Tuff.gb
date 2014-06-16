@@ -557,37 +557,20 @@ _entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entit
 
 ; Helper ----------------------------------------------------------------------
 _entity_screen_offset_hl: ; b = entity index
-    push    bc
-
-    ld      c,b
-    ld      b,0
-    ld      hl,entityScreenState
-    sla     c ; multiply by 8
-    sla     c
-    sla     c
-    add     hl,bc
-
-    pop     bc
+    ld      h,entityScreenState >> 8; high byte, needs to be aligned at 256 bytes
+    ld      l,b
+    sla     l
+    sla     l
+    sla     l
     ret
 
 
 _entity_screen_offset_de: ; b = entity index
-    push    hl
-    push    bc
-
-    ld      c,b
-    ld      b,0
-    ld      hl,entityScreenState
-    sla     c ; multiply by 8
-    sla     c
-    sla     c
-    
-    add     hl,bc
-    ld      d,h
-    ld      e,l
-
-    pop     bc
-    pop     hl
+    ld      d,entityScreenState >> 8; high byte, needs to be aligned at 256 bytes
+    ld      e,b
+    sla     e
+    sla     e
+    sla     e
     ret
 
 
