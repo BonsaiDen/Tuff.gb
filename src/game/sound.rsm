@@ -582,35 +582,30 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
 _sound_get_effect_data: ; b = sound id to get -> de = data pointer
 
     push    hl
-    push    bc
-    dec     b; switch to 0 based indexing and multiply by 8 to get the offset
-    ld      h,b
-    ld      e,8
-    call    math_mul8b
-    
+
+    ld      l,b
+    ld      h,0
+    dec     l; switch to 0 based indexing and multiply by 8 to get the offset 
+
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+
     ; combine with the base address and move to de register
     ld      de,DataSoundDefinitions
     add     hl,de
     ld      d,h
     ld      e,l
 
-    pop     bc
     pop     hl
+
     ret
 
 _sound_get_channel; a = sound channel id, de -> address of soundChannelState
-    push    hl
     dec     a; switch to 0 based indexing and multiply by 4 to get the offset
     sla     a; x2
     sla     a; x4
-    ld      h,0
-    ld      l,a
-
-    ; combine with the base address and move to de register
-    ld      de,soundChannelState
-    add     hl,de
-    ld      d,h
-    ld      e,l
-    pop     hl
+    ld      d,soundChannelState >> 8
+    ld      e,a
     ret
 
