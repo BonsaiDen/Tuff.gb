@@ -11,15 +11,15 @@ core_unpack_raw: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      a,e
     cp      c 
     jp      z,.done ; c == e
-    jp      nc,.done ; c > e
+    ;jp      nc,.done ; c > e
 
 .next:
 
     ; fetch next instruction byte
     ld      a,[hli]
-    cp      127 ; a > 127
-    jr      z,.copy
-    jr      nc,.repeat
+    cp      127 
+    jr      nc,.repeat; a > 127
+    ;jr      .copy ; a <= 127
 
     ; copy X bytes
 .copy:
