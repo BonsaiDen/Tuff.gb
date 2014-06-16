@@ -1,4 +1,4 @@
-SECTION "SoundRam",WRAM0[$CB10]
+SECTION "SoundRam",WRAM0[$CB00]
 
 
 ; Constants -------------------------------------------------------------------
@@ -10,9 +10,9 @@ soundForceUpdate:       DB
 
 
 ; Sound State Buffer ----------------------------------------------------------
-SoundEffectQueue:       DS 32; maximum of 4 active sounds, 8 bytes per sound
-                             ; ID,Mode,Length,Channel,Priority,X,X,X
-
-SoundChannelState:      DS 16; 4 byte per channel
+soundChannelState:      DS 16; 4 byte per channel
                              ; sound ID, active priority, action flag, initial sound mode
+
+soundEffectQueue:       DS 32; maximum of 4 active sounds, 8 bytes per sound
+                             ; ID,Mode,Length,Channel,Priority,X,X,X
 
