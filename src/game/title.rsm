@@ -449,14 +449,16 @@ title_draw_cursor:
 
     ld      hl,$9800 + 518; " Continue"
     ld      bc,1
-    ld      a,$1C
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    sub     128
     call    core_vram_set
     ret
 
 .continue:
     ld      hl,$9800 + 487; "Start"
     ld      bc,1
-    ld      a,$1C
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    sub     128
     call    core_vram_set
 
     ld      hl,$9800 + 518; "> Continue"
