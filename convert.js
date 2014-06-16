@@ -585,10 +585,10 @@ var Parse = {
 
                 });
 
-                offsets[0].push(bytes[0]);
-                offsets[1].push(bytes[1]);
-                offsets[2].push(bytes[2]);
-                offsets[3].push(bytes[3]);
+                offsets[0].push(bytes[0] - 128);
+                offsets[1].push(bytes[1] - 128);
+                offsets[2].push(bytes[2] - 128);
+                offsets[3].push(bytes[3] - 128);
 
                 blockIndex++;
 

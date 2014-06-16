@@ -152,10 +152,10 @@ map_load_room:
     ld      [mapFallableBlockCount],a
 
     ; target is the screen buffer
-    ld      hl,$C400
+    ld      hl,mapRoomTileBuffer
 
     ; we read from the unpacked room data
-    ld      de,mapRoomBlockBuffer - 1; -1 offset is for looping purposes
+    ld      de,mapRoomBlockBuffer
 
     ; setup loop counts
     ld      b,8 ; row
@@ -174,9 +174,10 @@ map_load_room:
 
 .loop_x:
 
-    dec     c ; reduce column counter
-    inc     de
     ld      a,[de] ; fetch next 16x16 block
+    inc     de
+
+    dec     c ; reduce column counter
 
 .draw_block:
 
@@ -191,15 +192,13 @@ map_load_room:
     ld      c,d ; low byte index into block definitions
 
     ; upper left
-    ld      b,$40 ; block def row 0 offset
+    ld      b,DataBlockDef >> 8 ; block def row 0 offset
     ld      a,[bc] ; tile value
-    sub     a,128 ; tile data offset
     ld      [hli],a ;  draw + 0
 
     ; upper right
-    ld      b,$41 ; block def row 0 offset
+    ld      b,DataBlockDef >> 8 + 1 ; block def row 1 offset
     ld      a,[bc] ; tile value
-    sub     a,128 ; tile data offset
     ld      [hl],a ; draw +1
 
     ; skip one screen buffer row
@@ -209,15 +208,13 @@ map_load_room:
     ld      c,d
 
     ; lower left
-    ld      b,$42 ; block def row 0 offset
+    ld      b,DataBlockDef >> 8 + 2 ; block def row 2 offset
     ld      a,[bc] ; tile value
-    sub     a,128 ; tile data offset
     ld      [hli],a ; draw + 32
 
     ; lower right
-    ld      b,$43 ; block def row 0 offset
+    ld      b,DataBlockDef >> 8 + 3 ; block def row 2 offset
     ld      a,[bc] ; tile value
-    sub     a,128 ; tile data offset
     ld      [hl],a ; draw + 33
 
     pop     bc; restore row / col
@@ -287,7 +284,7 @@ map_load_room:
 
 
 .done:
-    ld      hl,$C400
+    ld      hl,mapRoomTileBuffer
     ld      de,$9800
     ld      bc,512
     call    core_vram_cpy_vblank
@@ -315,16 +312,8 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     srl     c
     srl     c
 
-
-    ; get offset into collision table
-    push    hl
-    call    _map_get_tile_value
-    pop     hl
-    ld      b,DataTileCol >> 8; high byte, needs to be aligned at 256 bytes
-    ld      c,a
-    ld      a,[bc]
-
     ; check type of collision
+    call    _map_get_tile_collision
     cp      1; normal blocks
     jp      z,.collision
     cp      5; breakable
@@ -528,7 +517,6 @@ map_check_breakable_block_bottom:
 
 map_get_block_value: ; b = x, c = y -> a block value
 
-    push    bc
     push    hl
     push    de
 
@@ -538,19 +526,17 @@ map_get_block_value: ; b = x, c = y -> a block value
     call    math_mul8b
 
     ; add x
-    ld      c,b
-    ld      b,0
-    add     hl,bc
+    ld      e,b
+    ld      d,0
+    add     hl,de
 
     ; add base offset
     ld      de,mapRoomBlockBuffer
     add     hl,de
-
     ld      a,[hl]
 
     pop     de
     pop     hl
-    pop     bc
 
     ret
 
@@ -583,6 +569,7 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    _map_set_tile_value; top left
     inc     b
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    _map_set_tile_value; top right
     pop     bc
     ret
@@ -617,6 +604,7 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    _map_set_tile_value; bottom left
     inc     b
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    _map_set_tile_value; bottom right
     pop     bc
     ret
@@ -906,7 +894,6 @@ map_update_falling_block: ; b = index
 
 ; Helpers ---------------------------------------------------------------------
 _map_get_tile_collision:
-    push    bc
     push    hl
 
     ; get offset into collision table
@@ -916,7 +903,6 @@ _map_get_tile_collision:
     ld      a,[hl]
 
     pop     hl
-    pop     bc
     ret
 
 
@@ -949,57 +935,49 @@ _map_get_tile_value: ; b = tile x, c = tile y -> a = value
 
 
 _map_set_tile_value: ; b = tile x, c = tile y, a = value
-    ; sets the tile value in the room data buffer AND in vram
+    ; sets the tile value in the both the room data buffer and the screen buffer
 
-    push    af
-    push    bc
-    push    hl
     push    de
+    push    hl
 
     ; convert tile into -127-128 range and store into d
     add     128
-    ld      d,a
+    ld      d,a ; store tile value
+    ld      e,b ; store xpos
 
-    ; y * 32
+    ; calculate base offset for the tile into either buffer
     ld      h,0 
     ld      l,c
+    add     hl,hl ; x2
+    add     hl,hl ; x4
+    add     hl,hl ; x8
+    add     hl,hl ; x16
+    add     hl,hl ; x32
 
-    add     hl,hl ; 2
-    add     hl,hl ; 4
-    add     hl,hl ; 8
-    add     hl,hl ; 16
-    add     hl,hl ; 32
-
-    ld      a,b ; store x
+    ; set tile value in map buffer
     push    hl
-    push    af
-
-    ; + mapRoomTileBuffer + x
-    ld      b,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
-    ld      c,a ; restore x
-    add     hl,bc
-    ld      a,d
-    ld      [hl],a; set tile in buffer
-
-    pop     af
+    ld      a,d; temp store tile value
+    ld      d,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
+    add     hl,de
+    ld      [hl],a; set tile in map buffer
     pop     hl
 
-    ; + VRAM buffer + x
-    ld      b,$98
-    ld      c,a ; restore x
-    add     hl,bc
+    ; set tile value in screen buffer
+    ld      d,$98
+    add     hl,de
+    ld      d,a; restore tile value
 
-    ; store tile value to background buffer
+    ; wait for vram to be safe
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
+
+    ; set tile value
     ld      a,d
     ld      [hl],a
 
-    pop     de
     pop     hl
-    pop     bc
-    pop     af
+    pop     de
 
     ret
 
