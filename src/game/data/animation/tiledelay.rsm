@@ -9,7 +9,6 @@ DB $03
 ; Waterfall
 DB $03
 DB $03
-DB $03
 
 ; Lava Top
 DB $04
@@ -17,6 +16,9 @@ DB $04
 
 ; Torch
 DB $04
+
+; Waterfall
+DB $03
 
 ; Lava Bottom
 DB $04

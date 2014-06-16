@@ -9,7 +9,6 @@ DB $c4,$c5,$c6,$c7
 ; Waterfall
 DB $c8,$c9,$ca,$cb
 DB $cc,$cd,$ce,$cf
-DB $dc,$dd,$de,$df
 
 ; Lava Top
 DB $d0,$d1,$d2,$d3
@@ -17,6 +16,9 @@ DB $d4,$d5,$d6,$d7
 
 ; Torch
 DB $d8,$d9,$da,$db
+
+; Waterfall
+DB $dc,$dd,$de,$df
 
 ; Lava Bottom
 DB $e0,$e1,$e2,$e3

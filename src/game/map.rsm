@@ -121,7 +121,7 @@ map_set_room: ; b = x, c = y
 
     ; unpack the data
     ld      de,mapRoomBlockBuffer
-    ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
+    ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ANIMATION_MAP_SIZE + MAP_ENTITY_SIZE
     call    core_unpack_raw
 
     ; bank switch
@@ -132,6 +132,29 @@ map_set_room: ; b = x, c = y
     ; unload entities
     call    entity_store ; first store them
     call    entity_reset ; then reset them, as this will clear their active flag
+
+    ; check active animations
+    ld      hl,mapRoomBlockBuffer + MAP_ROOM_SIZE
+    ld      a,[hl]
+    ld      b,a; store byte into b
+
+    ld      hl,mapAnimationUseMap
+    ld      c,8; 8 bits to check
+
+    ; each time we check bit 0 and flag two animations active
+.loop:
+    xor     a
+    bit     0,b
+    jp      z,.set; if not set, set the value to 0
+    ld      a,1; otherwise we load a 1
+
+.set:
+    ld      [hli],a
+    ld      [hli],a
+
+    srl     b; shift to next byte
+    dec     c
+    jp      nz,.loop
 
     ; set redraw flag for the room (will be drawn during the next vblank)
     ld      a,1
@@ -349,17 +372,22 @@ map_animate_tiles:
     push    de
     push    bc
 
-    ; TODO check what animations are used in the current room and limit
-    ; the updates?
-
-    ; there are 16 animations
-    ; so we need 2 bytes for the animation flags
-    ; saving per room might work
-
     ; loop and animate tiles
     ld      d,0
     ld      hl,mapAnimationIndexes
 .animate:
+
+    ; check if animation is used
+    ld      bc,mapAnimationUseMap
+    ld      a,d
+    add     a,c
+    ld      c,a
+    adc     a,b
+    sub     c
+    ld      b,a
+    ld      a,[bc] ; check if current tile is animated on this screen
+    cp      0
+    jp      z,.next
 
     ; load current delay count for this animation
     ld      bc,mapAnimationDelay

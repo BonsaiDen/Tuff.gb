@@ -585,6 +585,8 @@ var Parse = {
 
                 });
 
+                // save as direct indeces into the vram map
+                // this saves 16 cycles per tile load
                 offsets[0].push(bytes[0] - 128);
                 offsets[1].push(bytes[1] - 128);
                 offsets[2].push(bytes[2] - 128);
@@ -654,6 +656,7 @@ var Convert = {
 
         console.log('[blocks] Parsing 16x16 block defs "%s" using tileset "%s"...', file, tileset);
 
+        var defs = null;
         return Promise.props({
             blocks: IO.load(file),
             tiles: IO.load(tileset)
@@ -662,10 +665,14 @@ var Convert = {
             return Parse.blockDefsFromImage(Palette.Background, result.blocks, result.tiles);
 
         }).then(function(data) {
+            defs = data;
             return IO.saveAs('bin', file, data);
 
         }).then(function() {
             console.log('[blocks] Done!');
+            return defs.map(function(e) {
+                return e + 128;
+            });
 
         }).error(function(err) {
             console.error(('[blocks] Error: ' + err).red);
@@ -673,7 +680,7 @@ var Convert = {
 
     },
 
-    Map: function(file) {
+    Map: function(file, defs, animationOffset) {
 
         console.log('[map] Converting tiles JSON Map "%s"...', file);
         return IO.load(file).then(function(map) {
@@ -737,6 +744,33 @@ var Convert = {
                         }
 
                     });
+
+                    // Check which animations are used on this screen
+                    var animations = [
+                        0, 0, 0, 0, 0, 0, 0, 0
+                    ];
+                    tileBytes.forEach(function(b) {
+                        [
+                            defs[b],
+                            defs[b + 256],
+                            defs[b + 512],
+                            defs[b + 768]
+
+                        ].forEach(function(t) {
+
+                            if (t >= animationOffset) {
+                                t -= animationOffset;
+                                t /= 8;
+                                animations[7 - Math.floor(t)] = 1;
+                            }
+
+                        });
+
+                    });
+
+                    tileBytes.push.apply(tileBytes, [
+                        parseInt(animations.slice(0, 8).join(''), 2)
+                    ]);
 
                     tileBytes.push.apply(tileBytes, entities);
 
@@ -1101,8 +1135,8 @@ if (process.argv[4] === '-reverse') {
         Convert.TileRowMap('entities.ch.png'),
         Convert.Collision('tiles.col.png'),
         Convert.Sounds('sounds.js'),
-        Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function() {
-            return Convert.Map('main.map.json');
+        Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {
+            return Convert.Map('main.map.json', defs, 0xc0);
         })
 
     ]).then(function() {
