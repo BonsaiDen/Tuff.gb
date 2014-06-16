@@ -349,43 +349,46 @@ map_animate_tiles:
     push    de
     push    bc
 
+    ; TODO check what animations are used in the current room and limit
+    ; the updates?
+
+    ; there are 16 animations
+    ; so we need 2 bytes for the animation flags
+    ; saving per room might work
+
     ; loop and animate tiles
     ld      d,0
     ld      hl,mapAnimationIndexes
 .animate:
 
-    ; TODO check what animations are used in the current room and limit
-    ; the updates?
-    push    hl
-    push    de
+    ; load current delay count for this animation
+    ld      bc,mapAnimationDelay
+    ld      a,d
+    add     a,c
+    ld      c,a
+    adc     a,b
+    sub     c
+    ld      b,a
+    ld      a,[bc] ; delay for the current tile
+    cp      0 ; if we hit zero animate the tile
+    jp      nz,.delay ; if not decrease delay count by one
 
-    ; load current delay value
-    ld      hl,mapAnimationDelay
-    ld      e,d
-    ld      d,0
-    add     hl,de
-    ld      a,[hl] ; delay for the current tile
+    ; animate the tile -------------------------------------
 
-    ; check if we hit zero delay
-    cp      0
-    jp      nz,.delay ; if not decrease delay and animate the tile
+    ; get the default delay value 
+    push    bc; store delay point counter
+    ld      bc,DataTileAnimationDelay
+    ld      a,d
+    add     a,c
+    ld      c,a
+    adc     a,b
+    sub     c
+    ld      b,a
+    ld      a,[bc]
+    pop     bc; restore delay count pointer
 
-    ; otherwise reset the delay and animate
-    pop     de
-    push    de
-    push    hl
-    ld      hl,DataTileAnimationDelay
-    ld      e,d
-    ld      d,0
-    add     hl,de
-    ld      a,[hl]
-    pop     hl
-
-    ; restore delay
-    ld      [hl],a
-
-    pop     de
-    pop     hl
+    ; set index count to default delay
+    ld      [bc],a
 
     ; update current tile animation index
     ld      a,[hl]
@@ -393,11 +396,13 @@ map_animate_tiles:
     and     %00000011 ; modulo 4
     ld      [hl],a
 
+    ; update tile vram -------------------------------------
+
     ; update vram  (hl = source, de = dest, bc = size (16))
     push    hl
     push    de
 
-    ; store animation index
+    ; store animation index value
     ld      e,a 
 
     ; get base tile value of the animation (base + d * 4)
@@ -410,25 +415,27 @@ map_animate_tiles:
     ld      a,[hl] 
     ld      d,a ; base tile value $00 - $ff
 
-    ; get the current tile value of the animation (base + d * 4 + a)
+    ; get the current tile value of the animation into B (base + d * 4 + a)
     ld      c,e 
     add     hl,bc
-    ld      a,[hl] ; current tile value $00 - $ff
+    ld      b,[hl] ; store current tile value $00 - $ff
 
-    ; get the target address in vram (multiply the base tile by 16 + $8800)
+    ; get the target address in vram into DE (multiply the base tile by 16 + $8800)
     ld      h,0
     ld      l,d
     add     hl,hl
     add     hl,hl
     add     hl,hl
     add     hl,hl
-    ld      bc,$8800
-    add     hl,bc
-    ld      d,h
+    ld      a,h
+    add     a,$88; add screen vram base offset
+    ld      d,a ; store into DE
     ld      e,l
 
-    ; get the current animation address (multiply the current (tile - $c0) by 16 + DataTileImg)
-    sub     $c0 ; correct offset into ram buffer
+    ; get the current animation address into HL 
+    ; (multiply the current (tile - TILE_ANIMATION_BASE_OFFSET) by 16 + DataTileImg)
+    ld      a,b; restore tile value
+    sub     TILE_ANIMATION_BASE_OFFSET; correct for offset into TILE_ANIMATION_BUFFER buffer
     ld      h,0
     ld      l,a
     add     hl,hl
@@ -438,19 +445,19 @@ map_animate_tiles:
     ld      bc,TILE_ANIMATION_BUFFER
     add     hl,bc
 
-    ; set the length
-    ld      b,0
-    ld      c,16
+    ; copy 16 bytes from the tile buffer into vram
+    ld      bc,16
     call    core_vram_cpy
+
+    pop     de
+    pop     hl
     jp      .next
 
 .delay:
     dec     a
-    ld      [hl],a
+    ld      [bc],a
 
 .next:
-    pop     de
-    pop     hl
     ; end of vram update
 
     ; next animation
