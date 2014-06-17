@@ -1,7 +1,6 @@
 // Dependencies ---------------------------------------------------------------
 var path = require('path'),
     Promise = require('bluebird'),
-    streamifier = require('streamifier'),
     lz4 = require('lz4'),
     fs = Promise.promisifyAll(require('fs')),
     PNG = require('pngjs').PNG;
@@ -124,44 +123,12 @@ var IO = {
 // ----------------------------------------------------------------------------
 var Pack = {
 
-    lz4: function(buffer, storeSize) {
-
-        var deffered = Promise.pending(),
-            stream = streamifier.createReadStream(buffer),
-            output = new Buffer([]),
-            encoder = lz4.createEncoderStream({
-                blockIndependence: true,
-                highCompression: true,
-                streamSize: false,
-                blockChecksum: false,
-                streamChecksum: false
-            });
-
-        encoder.on('data', function(chunk) {
-            output = Buffer.concat([output, chunk]);
-        });
-
-        encoder.on('end', function() {
-
-            // Strip header and other things which are not related to the block
-            output = output.slice(11);
-
-            if (storeSize) {
-                var size = buffer.length;
-                deffered.fulfill(Buffer.concat([new Buffer([(size >> 8), size & 0xff]), output]));
-
-            } else {
-                deffered.fulfill(output);
-            }
-
-        });
-
-        stream.pipe(encoder);
-
-        return deffered.promise;
-
+    lz4Sync: function(data) {
+        var buffer = new Buffer(data);
+        var output = new Buffer(lz4.encodeBound(buffer.length));
+        var compressedSize = lz4.encodeBlock(buffer, output);
+        return output.slice(0, compressedSize);
     },
-
 
     pack: function(bytes, addSizePrefix) {
 
@@ -606,6 +573,149 @@ var Parse = {
 };
 
 
+// Map Parsing Functionality --------------------------------------------------
+// ----------------------------------------------------------------------------
+var Map = {
+
+    parseRoom: function(data, entityData, x, y, w, h, roomOffsets, mapBytes, blockDefinitions, animationOffset) {
+
+        var tileBytes = [],
+            entityBytes = [],
+            entities,
+            animations,
+            tiles,
+            header = 0;
+
+        for(var i = 0; i < 8; i++) {
+            var offset = ((y * 8 + i) * w) + x * 10;
+            tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
+            entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
+        }
+
+        // Push the data offset into the room index
+        roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
+
+        // Pack Entity Data
+        entities = Map.parseEntities(entityBytes, x, y);
+
+        // Pack Animation Data
+        animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
+
+        // Pack Tile Data
+        tiles = Pack.pack(tileBytes, false);
+
+        //Pack.lz4(new Buffer(tileBytes)).then(function(buf) {
+        //    buf = Pack.pack(buf, false);
+        //    if (buf.length < tiles.length) {
+        //        console.log('lz4 before', x,y, tiles.length, buf.length, '=', tiles.length - buf.length);
+        //    }
+        //});
+
+        if (animations.used) {
+            header |= 1;
+        }
+
+        if (entities.used) {
+            header |= (entities.count << 4);
+        }
+
+        // Write Room Header Byte
+        mapBytes.push(header);
+
+        // Write Animation Attribute Byte
+        if (animations.used) {
+            mapBytes.push(parseInt(animations.data.join(''), 2));
+        }
+
+        // Write Entity Bytes
+        if (entities.used) {
+            mapBytes.push.apply(mapBytes, entities.data.slice(0, entities.count * 2));
+        }
+
+        mapBytes.push.apply(mapBytes, tiles);
+
+    },
+
+    parseAnimations: function(tileBytes, blockDefinitions, animationOffset) {
+
+        // Check which animations are used on this screen
+        var animations = [
+                0, 0, 0, 0, 0, 0, 0, 0
+            ],
+            animationCount = 0;
+
+        tileBytes.forEach(function(b) {
+            [
+                blockDefinitions[b],
+                blockDefinitions[b + 256],
+                blockDefinitions[b + 512],
+                blockDefinitions[b + 768]
+
+            ].forEach(function(t) {
+
+                if (t >= animationOffset) {
+                    t -= animationOffset;
+                    t /= 8;
+                    animationCount++;
+                    animations[7 - Math.floor(t)] = 1;
+                }
+
+            });
+
+        });
+
+        return {
+            data: animations,
+            used: animationCount !== 0
+        };
+
+    },
+
+    parseEntities: function(entityBytes, x, y) {
+
+        // Find Entities
+        var entities = [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0
+            ],
+            entityIndex = -1,
+            entityCount = 0;
+
+        entityBytes.map(function(value, index) {
+
+            if (value > 256) {
+
+                if (entityIndex === 7) {
+                    throw new TypeError('More than 4 entities in map room ' + x + 'x' + y);
+                }
+
+                var ey = Math.floor(index / 10),
+                    ex = index - ey * 10,
+                    type = value - 256,
+                    direction = 0;
+
+                entities[++entityIndex] = (type & 0x3f) | ((direction & 0x03) << 6);
+                entities[++entityIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
+                entityCount++;
+
+            } else if (value < 256 && value > 0) {
+                throw new TypeError('Invalid entity ' + value + ' in map room ' + x + 'x' + y);
+            }
+
+        });
+
+        return {
+            data: entities,
+            count: entityCount,
+            used: entityIndex !== -1
+        };
+
+    },
+};
+
+
 // High Level Conversion ------------------------------------------------------
 // ----------------------------------------------------------------------------
 var Convert = {
@@ -638,7 +748,7 @@ var Convert = {
             return Parse.tilesFromImage(palette, r8x16, img);
 
         }).then(function(bytes) {
-            return Pack.lz4(new Buffer(bytes));
+            return Pack.lz4Sync(bytes);
 
         }).then(function(data) {
             return IO.saveAs('bin', file, data);
@@ -680,7 +790,7 @@ var Convert = {
 
     },
 
-    Map: function(file, defs, animationOffset) {
+    Map: function(file, blockDefinitions, animationOffset) {
 
         console.log('[map] Converting tiles JSON Map "%s"...', file);
         return IO.load(file).then(function(map) {
@@ -701,85 +811,15 @@ var Convert = {
             for(var y = 0; y < ry; y++) {
                 for(var x = 0; x < rx; x++) {
 
-                    var tileBytes = [],
-                        entityBytes = [];
-
-                    for(var i = 0; i < 8; i++) {
-                        var offset = ((y * 8 + i) * w) + x * 10;
-                        tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
-                        entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
-                    }
-
-
-                    // Push the data offset into the room index
-                    roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
-
-                    // Find Entities
-                    var entities = [
-                            0, 0,
-                            0, 0,
-                            0, 0,
-                            0, 0
-                        ],
-                        entityIndex = -1;
-
-                    entityBytes.map(function(value, index) {
-
-                        if (value > 256) {
-
-                            if (entityIndex === 7) {
-                                throw new TypeError('More than 4 entities in map room ' + x + 'x' + y);
-                            }
-
-                            var ey = Math.floor(index / 10),
-                                ex = index - ey * 10,
-                                type = value - 256,
-                                direction = 0;
-
-                            entities[++entityIndex] = (type & 0x3f) | ((direction & 0x03) << 6);
-                            entities[++entityIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
-
-                        } else if (value < 256 && value > 0) {
-                            throw new TypeError('Invalid entity ' + value + ' in map room ' + x + 'x' + y);
-                        }
-
-                    });
-
-                    // Check which animations are used on this screen
-                    var animations = [
-                        0, 0, 0, 0, 0, 0, 0, 0
-                    ];
-                    tileBytes.forEach(function(b) {
-                        [
-                            defs[b],
-                            defs[b + 256],
-                            defs[b + 512],
-                            defs[b + 768]
-
-                        ].forEach(function(t) {
-
-                            if (t >= animationOffset) {
-                                t -= animationOffset;
-                                t /= 8;
-                                animations[7 - Math.floor(t)] = 1;
-                            }
-
-                        });
-
-                    });
-
-                    tileBytes.push.apply(tileBytes, [
-                        parseInt(animations.slice(0, 8).join(''), 2)
-                    ]);
-
-                    tileBytes.push.apply(tileBytes, entities);
-
-                    // Pack the room data and append it to the map data
-                    mapBytes.push.apply(mapBytes, Pack.pack(tileBytes, false));
+                    Map.parseRoom(
+                        data, entityData, x, y, w, h,
+                        roomOffsets, mapBytes,
+                        blockDefinitions, animationOffset);
 
                 }
             }
 
+            console.log(roomOffsets.length + mapBytes.length);
             return roomOffsets.concat(mapBytes);
 
         }).then(function(data) {

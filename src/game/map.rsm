@@ -119,9 +119,56 @@ map_set_room: ; b = x, c = y
     ld      bc,MAP_INDEX_SIZE
     add     hl,bc ; hl = pointer to packed room data
 
-    ; unpack the data
+    ; get header and setup animations
+    ld      a,[hli]; load header byte
+    ld      d,a; store header byte
+    ld      b,0; per default animations are off
+    and     %00000001
+    cp      1
+    jp      nz,.skip_animation_byte
+    ld      a,[hli]; load animation attribute byte
+    ld      b,a; store into b
+
+.skip_animation_byte:
+
+    ; get number of entities in the room
+    ld      a,d
+    swap    a
+    and     %00001111
+    ld      [mapRoomEntityCount],a
+
+    ; set active animation data (b = animation attribute byte)
+    ld      de,mapAnimationUseMap
+    ld      c,8; 8 bits to check
+
+    ; each time we check bit 0 and flag two animations active
+.next:
+    xor     a
+    bit     0,b
+    jp      z,.set; if not set, set the value to 0
+    ld      a,1; otherwise we load a 1
+
+.set:
+    ld      [de],a
+    inc     de
+    ld      [de],a
+    inc     de
+
+    srl     b; shift to next byte
+    dec     c
+    jp      nz,.next
+
+    ; copy entity data after room tile buffer
+    ld      b,0
+    ld      a,[mapRoomEntityCount]
+    ld      c,a
+    sla     c ; each entity has two bytes so we multiple by two here
+    ld      de,mapRoomBlockBuffer + MAP_ROOM_SIZE
+    call    core_mem_cpy
+
+    ; unpack the tile data
     ld      de,mapRoomBlockBuffer
-    ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ANIMATION_MAP_SIZE + MAP_ENTITY_SIZE
+    ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE
     call    core_unpack_raw
 
     ; bank switch
@@ -133,29 +180,6 @@ map_set_room: ; b = x, c = y
     call    entity_store ; first store them
     call    entity_reset ; then reset them, as this will clear their active flag
 
-    ; check active animations
-    ld      hl,mapRoomBlockBuffer + MAP_ROOM_SIZE
-    ld      a,[hl]
-    ld      b,a; store byte into b
-
-    ld      hl,mapAnimationUseMap
-    ld      c,8; 8 bits to check
-
-    ; each time we check bit 0 and flag two animations active
-.loop:
-    xor     a
-    bit     0,b
-    jp      z,.set; if not set, set the value to 0
-    ld      a,1; otherwise we load a 1
-
-.set:
-    ld      [hli],a
-    ld      [hli],a
-
-    srl     b; shift to next byte
-    dec     c
-    jp      nz,.loop
-
     ; set redraw flag for the room (will be drawn during the next vblank)
     ld      a,1
     ld      [mapRoomUpdateRequired],a
@@ -164,6 +188,10 @@ map_set_room: ; b = x, c = y
     pop     de
     pop     hl
 
+    ret
+
+
+_map_set_animations:; b = animation attribute bytes
     ret
 
 
