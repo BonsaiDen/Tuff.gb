@@ -604,13 +604,6 @@ var Map = {
         // Pack Tile Data
         tiles = Pack.pack(tileBytes, false);
 
-        //Pack.lz4(new Buffer(tileBytes)).then(function(buf) {
-        //    buf = Pack.pack(buf, false);
-        //    if (buf.length < tiles.length) {
-        //        console.log('lz4 before', x,y, tiles.length, buf.length, '=', tiles.length - buf.length);
-        //    }
-        //});
-
         if (animations.used) {
             header |= 1;
         }
@@ -819,7 +812,6 @@ var Convert = {
                 }
             }
 
-            console.log(roomOffsets.length + mapBytes.length);
             return roomOffsets.concat(mapBytes);
 
         }).then(function(data) {
