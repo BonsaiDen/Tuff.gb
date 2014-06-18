@@ -62,10 +62,10 @@ DW 0                         ; $14e - Global checksum (not important)
 SECTION "CoreCode",ROM0[$0150]
     INCLUDE "core/include/gbhw.inc"
     INCLUDE "core/dma.rsm"
+    INCLUDE "core/decode.rsm"
     INCLUDE "core/init.rsm"
     INCLUDE "core/input.rsm"
     INCLUDE "core/loop.rsm"
-    INCLUDE "core/lz4.rsm"
     INCLUDE "core/math.rsm"
     INCLUDE "core/memory.rsm"
     INCLUDE "core/pack.rsm"

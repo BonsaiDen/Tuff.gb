@@ -63,7 +63,7 @@ game_continue:
 game_setup:
 
     ; load tile data
-    ld      de,DataTileImg
+    ld      hl,DataTileImg
     call    tileset_load
 
     ; Reset player

@@ -169,7 +169,7 @@ map_set_room: ; b = x, c = y
     ; unpack the tile data
     ld      de,mapRoomBlockBuffer
     ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE
-    call    core_unpack_raw
+    call    core_decode
 
     ; bank switch
     ld      hl,$2000
@@ -180,9 +180,8 @@ map_set_room: ; b = x, c = y
     call    entity_store ; first store them
     call    entity_reset ; then reset them, as this will clear their active flag
 
-    ; set redraw flag for the room (will be drawn during the next vblank)
-    ld      a,1
-    ld      [mapRoomUpdateRequired],a
+    ; load room data
+    call    map_load_room
 
     pop     bc
     pop     de
@@ -191,11 +190,6 @@ map_set_room: ; b = x, c = y
     ret
 
 
-_map_set_animations:; b = animation attribute bytes
-    ret
-
-
-; Core Map Draw Routine -------------------------------------------------------
 map_load_room:
     
     ld      a,0
@@ -335,6 +329,27 @@ map_load_room:
 
 
 .done:
+    ld      a,1
+    ld      [mapRoomUpdateRequired],a
+    ret
+
+
+; Core Map Draw Routine -------------------------------------------------------
+map_draw_room:
+
+    ; check if we need to draw the room data to screen ram
+    ld      a,[mapRoomUpdateRequired]
+    cp      1
+    ret     nz
+
+    ; unset
+    ld      a,0
+    ld      [mapRoomUpdateRequired],a
+
+    ; load new entities
+    call    entity_load
+
+    ; copy vram data
     ld      hl,mapRoomTileBuffer
     ld      de,$9800
     ld      bc,512

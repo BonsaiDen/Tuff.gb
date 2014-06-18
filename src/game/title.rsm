@@ -248,10 +248,10 @@ title_screen_movement:
 title_draw_logo:
 
     ; load title screen graphics into vram
-    ld      de,DataLogoImg
-    ld      hl,$8800; start target for decode write
+    ld      hl,DataLogoImg
+    ld      de,$8800; start target for decode write
     ld      bc,$8800 + 768; end target for decode write
-    call    lz4_decode_block
+    call    core_decode_vram
 
     ; clear screen buffer
     ld      a,$00
@@ -316,14 +316,14 @@ title_draw_room:
     call    core_vram_set
 
     ; setup title screen room graphics
-    ld      de,DataTileImg
+    ld      hl,DataTileImg
     call    tileset_load
 
     ; load additional text graphics
-    ld      de,DataTitleImg
-    ld      hl,$9100; start target for decode write
+    ld      hl,DataTitleImg
+    ld      de,$9100; start target for decode write
     ld      bc,$9100 + 192; end target for decode write
-    call    lz4_decode_block
+    call    core_decode_vram
 
     ; draw room
     ld      b,15
@@ -331,7 +331,7 @@ title_draw_room:
     call    map_set_room
 
     ; draw the room right away instead of waiting for the next vblank to draw it
-    call    map_load_room
+    call    map_draw_room
 
     ; setup title text
     ld      hl,DataTitleLayout
