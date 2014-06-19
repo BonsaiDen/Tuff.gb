@@ -12,67 +12,58 @@ BUTTON_A        EQU %00000001
 ; Input Handling --------------------------------------------------------------
 core_input:
 
-    ; store old input state
+    ; store old state into d and reset new state
     ld      a,[coreInput]
     ld      d,a
-
-    ; reset state
     xor     a
-    ld      [coreInput], a
+    ld      [coreInput],a
 
-    ; read the d-pad:
-    ld      a,%00100000    ; bit 4 = 0, bit 5 = 1 (d-pad on, buttons off)
+    ; toggle d-pad lines on
+    ld      a,%00100000
     ld      [rP1],a
 
-    ; read the status of the d-pad
-    ; we do several reads because of bouncing
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
-    ld      a, [rP1]
+    ; read dpad data
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    and     %00001111
+    swap    a               
+    ld      b,a ; store d-pad data into the high bits
 
-    and     $0F             ; just keep low nibble (d-pad status)
-    swap    a               ; swap low and high nibbles
-    ld      b,a            ; save d-pad status in b register
-
-    ; let's read the buttons
-    ld      a,%00010000    ; bit 4 = 1, bit 5 = 0 (buttons on, d-pad off)
+    ; toggle button lines on
+    ld      a,%00010000
     ld      [rP1],a
+    
+    ; read button data
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    ld      a,[rP1]
+    and     %00001111; just keep the button data
+    or      b; combine with dpad data
+    cpl     ; invert the data so active buttons are read as 1 
 
-    ; bouncing...
-    ld      a,[rP1]
-    ld      a,[rP1]
-    ld      a,[rP1]
-    ld      a,[rP1]
-    ld      a,[rP1]
-    ld      a,[rP1]
-
-    ; we have in "a" the status of the buttons
-    and     $0F             ; just keep low nibble.
-    or      b               ; OR with "b" to put in the high byte of "a"
-                            ; the d-pad status.
-
-    ; now we have in "a" the status of all the controls
-    ; make the complement of it (so activated buttons read as 1)
-    ; and save it 
-    cpl
-    ld      [coreInput],a; store new state
-    ld      c,a ; store a copy
+    ; store new state
+    ld      [coreInput],a
+    ld      c,a ; store a copy of the current button state
             
-    ; reset the joypad
-    ld      a,$30
+    ; reset the joypad by activating both buttons and dpad
+    ld      a,%00110000
     ld      [rP1],a
 
     ; get the buttons which were initially pressed on this frame
-    ld      a,c ; load the current state
-    xor     d; xor with the old state to get the state difference
-    and     c; and with the current state to only get inputs which were on this frame
+    ld      a,c; load the current state
+    xor     d; first XOR with the old state to get the state difference
+    and     c; now AND with the current state to only get inputs
     ld      [coreInputOn],a
 
     ; get the buttons released on this frame
     ld      a,c ; load the current state
-    xor     d; xor with the old state to get the state difference
-    and     d; and with the current state to only get inputs which were on last frame
+    xor     d; first XOR with the old state to get the state difference
+    and     d; now AND with the current state to only get inputs 
     ld      [coreInputOff],a
 
     ; a = [Down][Up][Left][Right][Start][Select][B][A]
