@@ -1,7 +1,6 @@
 // Dependencies ---------------------------------------------------------------
 var path = require('path'),
     Promise = require('bluebird'),
-    lz4 = require('lz4'),
     fs = Promise.promisifyAll(require('fs')),
     PNG = require('pngjs').PNG;
 
@@ -122,13 +121,6 @@ var IO = {
 // Data Compression -----------------------------------------------------------
 // ----------------------------------------------------------------------------
 var Pack = {
-
-    lz4Sync: function(data) {
-        var buffer = new Buffer(data);
-        var output = new Buffer(lz4.encodeBound(buffer.length));
-        var compressedSize = lz4.encodeBlock(buffer, output);
-        return output.slice(0, compressedSize);
-    },
 
     pack: function(bytes, addSizePrefix) {
 
@@ -317,10 +309,10 @@ var Pack = {
 
     // Constants --------------------------------------------------------------
     // ------------------------------------------------------------------------
-    var maxRepeatCount = 33,
+    var maxRepeatCount = 65,
         minRepeatLength = 2,
-        maxLiteralLength = 128,
-        maxCopyLength = 66,
+        maxLiteralLength = 64,
+        maxCopyLength = 67,
         minCopyLength = 3,
         maxCopyOffset = 255;
 
@@ -428,7 +420,8 @@ var Pack = {
         singleEncodeLength = 2,
         dualEncodeLength = 3;
 
-    function encode(data, addSizePrefix, debug) {
+
+    function encode(data, addSizePrefix) {
 
         var literalCount = 0,
             index = 0,
@@ -447,9 +440,9 @@ var Pack = {
             if (savedSingle > 0 || savedDual > 0 || savedCopy > 0 || literalCount === maxLiteralLength) {
                 if (literalCount > 0) {
 
-                    // 1 0000000
-                    //   1-128 literals
-                    output.push(((literalCount - 1) & 0x7f) | 0x80);
+                    // 01 0000000
+                    //   1-64 literals
+                    output.push(((literalCount - 1) & 0x3f) | 0x40);
                     output.push.apply(output, data.slice(index - literalCount, index));
 
                     literalCount = 0;
@@ -464,9 +457,9 @@ var Pack = {
                     throw new Error('Single Repeat Count out of Range: ' + singleRepeat);
                 }
 
-                // 01 0 00000
-                // repeat the next 1-2 bytes 2-33 times
-                output.push(0x40 | ((singleRepeat - minRepeatLength) & 0x1f));
+                // 10 000000
+                // repeat the next 1-2 bytes 2-65 times
+                output.push(0x80 | ((singleRepeat - minRepeatLength) & 0x3f));
                 output.push(data[index]);
 
                 index += singleRepeat;
@@ -478,9 +471,9 @@ var Pack = {
                     throw new Error('Dual Repeat Count out of Range: ' + dualRepeat);
                 }
 
-                // 01 1 00000
-                // repeat the next 1-2 bytes 2-33 times
-                output.push(0x40 | 0x20 | ((dualRepeat - minRepeatLength) & 0x1f));
+                // 11 000000
+                // repeat the next 1-2 bytes 2-65 times
+                output.push(0xc0 | ((dualRepeat - minRepeatLength) & 0x3f));
                 output.push(data[index]);
                 output.push(data[index + 1]);
 
@@ -512,7 +505,9 @@ var Pack = {
         }
 
         if (literalCount > 0) {
-            output.push(((literalCount - 1) & 0x7f) | 0x80);
+            // 01 0000000
+            //   1-64 literals
+            output.push(((literalCount - 1) & 0x3f) | 0x40);
             output.push.apply(output, data.slice(index - literalCount, index));
         }
 
@@ -632,7 +627,7 @@ var Parse = {
 
             var tileBytes = Parse.tilesFromImage(palette, true, subImage);
             rowOffsets.push((rowBytes.length >> 8), rowBytes.length & 0xff);
-            //console.log(Pack.pack(tileBytes, false).length, Pack.encode(tileBytes).length);
+            console.log(Pack.pack(tileBytes, false).length, Pack.encode(tileBytes, false).length);
             rowBytes.push.apply(rowBytes, Pack.pack(tileBytes, false));
 
         }
@@ -877,7 +872,7 @@ var Map = {
         animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
 
         // Pack Tile Data
-        tiles = Pack.encode(tileBytes, false);//Pack.pack(tileBytes, false);
+        tiles = Pack.encode(tileBytes, false);
 
         if (animations.used) {
             header |= 1;
@@ -1017,9 +1012,6 @@ var Convert = {
             return Parse.tilesFromImage(palette, r8x16, img);
 
         }).then(function(bytes) {
-
-            //console.log(Pack.lz4Sync(bytes).length, Pack.encode(bytes).length);
-            var b = Pack.encode(bytes, false, true);
             return Pack.encode(bytes, false);
 
         }).then(function(data) {
@@ -1433,16 +1425,7 @@ IO.setDest(path.join(process.cwd(), process.argv[3]));
 
 
 // Convert --------------------------------------------------------------------
-if (process.argv[4] === '-test') {
-
-    var data = [];
-    for(var i = 0, l = 80; i < l; i++) {
-        data.push(0);
-    }
-
-    console.log(Pack.encode(data));
-
-} else if (process.argv[4] === '-reverse') {
+if (process.argv[4] === '-reverse') {
     Reverse.TileDef();
 
 } else {
