@@ -3,7 +3,7 @@ CORE_DECODE_MIN_COPY_LENGTH     EQU 2
 CORE_DECODE_MIN_REPEAT_LENGTH   EQU 2
                                 
 core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
-core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
+core_decode_vram:
     jp      .next
 
 .loop:
