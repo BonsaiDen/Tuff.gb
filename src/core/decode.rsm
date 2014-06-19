@@ -4,7 +4,7 @@ CORE_DECODE_MIN_REPEAT_LENGTH   EQU 2
                                 
 core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
 core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
-    jr      .next
+    jp      .next
 
 .loop:
 
@@ -14,7 +14,7 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; (de >= bc)
     ld      a,d
     cp      b
-    jr      nz,.next
+    jp      nz,.next
 
     ; check low byte
     ld      a,e
@@ -27,7 +27,7 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ; fetch next instruction byte and goto first data byte
     ld      a,[hli]
     bit     7,a
-    jr      nz,.repeat ; if set we have a repeat token
+    jp      nz,.repeat ; if set we have a repeat token
     bit     6,a
     jr      nz,.literal ; if set we have a literal token
 
@@ -65,10 +65,10 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      [de],a
     inc     de
     dec     b
-    jr      nz,.copy_loop
+    jp      nz,.copy_loop
 
     pop     hl; restore next instruction offset
-    jr      .loop
+    jp      .loop
             
 
 ; Literals --------------------------------------------------------------------
@@ -88,8 +88,8 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      [de],a
     inc     de
     dec     b
-    jr      nz,.literal_copy
-    jr      .loop
+    jp      nz,.literal_copy
+    jp      .loop
 
 
 ; Repeating -------------------------------------------------------------------
@@ -115,8 +115,8 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      [de],a
     inc     de
     dec     b
-    jr      nz,.repeat_one_loop
-    jr      .loop
+    jp      nz,.repeat_one_loop
+    jp      .loop
 
 
 .repeat_two:
@@ -148,10 +148,9 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     inc     de
 
     dec     b
-    jr      nz,.repeat_two_loop
+    jp      nz,.repeat_two_loop
     inc     hl; goto second value byte
     inc     hl; goto next instruction byte
-    jr      .loop
-
+    jp      .loop
 
 
