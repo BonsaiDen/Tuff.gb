@@ -8,6 +8,7 @@ coreRandomHigh:     DB
 coreRandomLow:      DB
 coreVBlankDone:     DB
 coreLoopCounter:    DB
+coreTimerCounter:   DB
 coreTimer:          DB; ~60ms timer interrupt
 coreInput:          DB; [Down][Up][Left][Right][Start][Select][B][A]
 coreInputOn:        DB

@@ -13,11 +13,18 @@ core_timer_handler:
     ld      [coreTimer],a
     cp      4
     jp      nz,.skip
+
+    ; Timer counter which goes from 0-7
+    ld      a,[coreTimerCounter]
+    inc     a
+    and     %00000111
+    ld      [coreTimerCounter],a
+
     call    game_timer
     xor     a
     ld      [coreTimer],a
-.skip:
 
+.skip:
     pop     hl
     pop     de
     pop     bc

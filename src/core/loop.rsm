@@ -17,7 +17,7 @@ core_loop:
     ; Run the main game loop 
     call    game_loop 
 
-    ; Tick wrapper which goes from 0-7
+    ; Loop counter which goes from 0-7
     ld      a,[coreLoopCounter]
     inc     a
     and     %00000111
