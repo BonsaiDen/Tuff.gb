@@ -111,7 +111,7 @@ game_loop:
 ; Timer -----------------------------------------------------------------------
 game_timer:
 
-    ld      a,[gameTimerHalf]
+    ld      a,[gameTimerHalf]; TODO use core timer counter 
     cp      1
     jp      nz,.tick
 

@@ -1440,6 +1440,7 @@ if (process.argv[4] === '-reverse') {
         Convert.Tileset('title.bg.png'),
         Convert.TileRowMap('player.ch.png'),
         Convert.TileRowMap('entities.ch.png'),
+        Convert.Tileset('title.ch.png', true),
         Convert.Collision('tiles.col.png'),
         Convert.Sounds('sounds.js'),
         Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {

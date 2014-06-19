@@ -127,6 +127,8 @@ title_update:
     call    sprite_animate_all
     call    sound_update
 
+    call    title_animate_logo
+
     ret
 
 ; Fade out and continue a existing game
@@ -142,6 +144,7 @@ title_update:
     cp      0
     ret     nz
 
+    call    title_hide_logo
     call    game_continue
     call    screen_fade_in_light
 
@@ -160,6 +163,7 @@ title_update:
     cp      0
     ret     nz
 
+    call    title_hide_logo
     call    game_start
     call    screen_fade_in_light
     ret
@@ -325,6 +329,15 @@ title_draw_room:
     ld      bc,$9100 + 192; end target for decode write
     call    core_decode_vram
 
+    ; load title screen logo sprites
+    ld      hl,DataTitleSprite
+    ld      de,$8600
+    ld      bc,$8600 + 512; end target for decode write
+    call    core_decode_vram
+
+    ; setup title screen logo sprite
+    call    title_draw_logo_sprite
+
     ; draw room
     ld      b,15
     ld      c,15
@@ -351,6 +364,74 @@ title_draw_room:
     ld      bc,$06
     call    core_vram_cpy
 
+    ret
+
+
+title_draw_logo_sprite:
+    ld      a,0
+    ld      [titleSpriteOffsetIndex],a
+
+    ld      de,spriteData + $48
+    ld      hl,DataTitleSpriteLayout
+    ld      bc,DATA_TITLE_SPRITE_COUNT * 4
+    call    core_mem_cpy
+    call    title_animate_logo
+
+    ret
+
+
+title_animate_logo:
+
+    ; load offset from sine table
+    ld      hl,DataTitleSpriteLayoutAnimation
+    ld      a,[titleSpriteOffsetIndex]
+    ld      b,0
+    ld      c,a
+    add     hl,bc
+    ld      a,[hl]
+    sub     9
+    ld      c,a; store offset into c
+
+    ; setup sprite update loop
+    ld      de,spriteData + $48
+    ld      hl,DataTitleSpriteLayoutYOffsets
+    ld      b,DATA_TITLE_SPRITE_COUNT
+
+.loop:
+    ld      a,[hli]
+    add     DATA_TITLE_SPRITE_Y
+    add     c
+    ld      [de],a
+    inc     de
+    inc     de
+    inc     de
+    inc     de
+    dec     b
+    jp      nz,.loop
+
+    ; animate on every 3rd frame
+    ld      a,[coreLoopCounter]
+    and     %00000011
+    cp      %00000011
+    ret     nz
+        
+    ; update sine table index
+    ld      a,[titleSpriteOffsetIndex]
+    inc     a
+    cp      32
+    jp      nz,.no_reset
+    ld      a,0
+
+.no_reset:
+    ld      [titleSpriteOffsetIndex],a
+    ret
+
+
+title_hide_logo:
+    ld      a,0
+    ld      hl,spriteData + $48
+    ld      bc,DATA_TITLE_SPRITE_COUNT * 4
+    call    core_mem_set
     ret
 
 

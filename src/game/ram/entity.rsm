@@ -2,9 +2,8 @@ SECTION "EntityRam",WRAM0[$CC00]
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM           EQU 4
-ENTITY_BG_SPRITE_INDEX    EQU 11; start indexes to use for entity sprites that are in the background
-ENTITY_FG_SPRITE_INDEX    EQU 6 ; start indexes to use for entity sprites that are in the foreground
-ENTITY_SPRITE_ROWS        EQU 8 ; how many entity sprite rows are contained in the sprite map data
+ENTITY_BG_SPRITE_INDEX    EQU 5; start indexes to use for entity sprites that are in the background
+ENTITY_FG_SPRITE_INDEX    EQU 0; start indexes to use for entity sprites that are in the foreground
 
 ENTITY_ANIMATION_OFFSET   EQU 14
 ENTITY_ANIMATION_SAVE     EQU 0
