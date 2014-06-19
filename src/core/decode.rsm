@@ -10,16 +10,14 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 
     pop     bc; restore end pointer
 
-    ; check if we reached or passed the end of the data uncompressed data 
-    ; (de >= bc)
-    ld      a,d
-    cp      b
-    jp      nz,.next
-
-    ; check low byte
+    ; check if we reached the end of the data uncompressed data 
     ld      a,e
     cp      c 
-    ret     z; we're done here
+    jp      nz,.next ; check low byte
+
+    ld      a,d; check high byte
+    cp      b
+    ret     z
 
 .next:
     push    bc; store end pointer
@@ -46,12 +44,12 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
 
     ; hl = de - offset
     ld      a,e 
-    and     a ; clear carry
+    or      a ; clear carry
     sbc     c ; subtract offset from low byte
     ld      l,a
 
     ld      a,d ; subtract high byte
-    sbc     0; subtract with carry
+    sbc     0; subtract the carry if it exists
     ld      h,a
 
 .copy_loop:; b is our loop counter
@@ -132,14 +130,9 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     jr      nz,@-4          ; ----+
 
     ; first byte
-    ld      a,[hli];; goto second value byte
+    ld      a,[hli]; goto second value byte
     ld      [de],a
     inc     de
-
-    ; wait for vblank
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
 
     ; second byte
     ld      a,[hl];
@@ -152,5 +145,4 @@ core_decode_vram: ; HL = source, DE = target, BC = end (DE + size of data)
     inc     hl; goto second value byte
     inc     hl; goto next instruction byte
     jp      .loop
-
 

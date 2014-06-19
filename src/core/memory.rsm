@@ -46,13 +46,11 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
 	jp	    .skip
 .loop:
     push    af
-    di
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     pop     af
     ld      [hl+],a
-    ei
 .skip:
     dec	    c
 	jr	    nz,.loop
