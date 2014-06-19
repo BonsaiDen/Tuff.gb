@@ -521,6 +521,7 @@ var Pack = {
 
     }
 
+    // TODO Update to actually work again!
     function decode(data) {
 
         var output = [],
@@ -616,8 +617,10 @@ var Parse = {
             rowBytes = [];
 
         // Split img into rows
-        var bytesPerRow = 16 * 16 * 4 * columns; // 16x16 pixel, 4 channels (RGBA)
-        for(var y = 0; y < img.height / 16; y++) {
+        var bytesPerRow = 16 * 16 * 4 * columns, // 16x16 pixel, 4 channels (RGBA)
+            rowCount = img.height / 16;
+
+        for(var y = 0; y < rowCount; y++) {
 
             var subImage = {
                 width: img.width,
@@ -625,10 +628,11 @@ var Parse = {
                 data: img.data.slice(y * bytesPerRow, y * bytesPerRow + bytesPerRow)
             };
 
-            var tileBytes = Parse.tilesFromImage(palette, true, subImage);
-            rowOffsets.push((rowBytes.length >> 8), rowBytes.length & 0xff);
-            console.log(Pack.pack(tileBytes, false).length, Pack.encode(tileBytes, false).length);
-            rowBytes.push.apply(rowBytes, Pack.pack(tileBytes, false));
+            var tileBytes = Parse.tilesFromImage(palette, true, subImage),
+                rowOffset = ((rowCount * 2) - ((y + 1) * 2)) + rowBytes.length;
+
+            rowOffsets.push((rowOffset >> 8), rowOffset & 0xff);
+            rowBytes.push.apply(rowBytes, Pack.encode(tileBytes, false));
 
         }
 
