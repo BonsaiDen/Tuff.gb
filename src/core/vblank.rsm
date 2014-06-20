@@ -35,13 +35,7 @@ core_vblank_handler:
     ld      [rSCY],a
 
     ; check how far we're into vblank before drawing the room
-    ld      a,[rLY]
-    cp      146
-    jp      nz,.no_room_draw
-
     call    map_draw_room
-
-.no_room_draw:
 
     ; Set vblank flag, this will cause the core loop to run the game loop once
     ld      a,1

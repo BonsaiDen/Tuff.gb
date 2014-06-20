@@ -342,6 +342,10 @@ map_draw_room:
     cp      1
     ret     nz
 
+    ; reset scan line drawing
+    ld      a,0
+    ld      [rLY],a
+
     ; unset
     ld      a,0
     ld      [mapRoomUpdateRequired],a
