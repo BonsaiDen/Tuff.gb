@@ -77,8 +77,8 @@ DataTitleSpriteLayout:
     DB      0,64 + DATA_TITLE_SPRITE_X,$7E,$0F
 
 DataTitleSpriteLayoutAnimation:
-    DB      1, 1, 2, 2, 2, 3, 3, 4, 5, 6, 6, 7, 7, 7, 8, 8
-    DB      8, 8, 7, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 2, 1, 1
+    DB      0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6
+    DB      6, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 0
 
 DataTitleSpriteLayoutYOffsets:
     DB      8, 8, 8, 8, 8, 8,24,40,24,24,40,40,40,24,24,40,24,24,40

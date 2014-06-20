@@ -389,7 +389,7 @@ title_animate_logo:
     ld      c,a
     add     hl,bc
     ld      a,[hl]
-    sub     9
+    sub     3
     ld      c,a; store offset into c
 
     ; setup sprite update loop
