@@ -105,6 +105,12 @@ title_update:
     ld      a,GAME_MODE_TITLE
     ld      [gameMode],a
 
+    ld      a,SOUND_GAME_LOGO
+    call    sound_stop
+
+    ld      a,SOUND_GAME_MENU
+    call    sound_play
+
     ret
 
 ; Title screen logic

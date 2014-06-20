@@ -225,15 +225,15 @@ module.exports = [{
     "id": "GAME_LOGO",
     "channel": 1,
     "priority": 1,
-    "sweepShifts": 7,
+    "sweepShifts": 5,
     "sweepDir": 0,
     "sweepTime": 7,
     "soundLength": 0,
-    "dutyCycle": 2,
-    "envStepTime": 6,
+    "dutyCycle": 3,
+    "envStepTime": 4,
     "envStepDir": 0,
-    "envInitVol": 0x000A,
-    "frequency": 0x0760,
+    "envInitVol": 0x000C,
+    "frequency": 0x0700,
     "endless": true // don't make the sound stop after the calculated length
 
 }, {
@@ -289,5 +289,19 @@ module.exports = [{
     "envStepDir": 0,
     "envInitVol": 0x0F,
     "frequency": 0x0380
+
+}, {
+    "id": "GAME_MENU",
+    "channel": 1,
+    "priority": 1,
+    "sweepShifts": 3,
+    "sweepDir": 0,
+    "sweepTime": 4,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 7,
+    "envStepDir": 0,
+    "envInitVol": 0x000C,
+    "frequency": 0x02C0
 }];
 
