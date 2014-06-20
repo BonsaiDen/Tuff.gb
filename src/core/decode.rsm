@@ -28,21 +28,22 @@ core_decode_vram:
     jp      nz,.repeat ; if set we have a repeat token
     bit     6,a
     jr      nz,.literal ; if set we have a literal token
+    bit     5,a
+    jr      nz,.repeat_zero; if we have a zero repeater
 
 ; Copy ------------------------------------------------------------------------
 .copy:
     ; copy a number of bytes from a previous location in the stream to the current location
-    and     %00111111; number of bytes to copy (aka match length)
+    and     %00011111; number of bytes to copy (aka match length)
     add     a,CORE_DECODE_MIN_COPY_LENGTH + 1; the encoder also remove the min encode length
     ld      b,a; ; store the actual match size, this is also used as the loop counter for the copying
 
     ld      a,[hli]; load copy offset and goto instruction byte
-    add     a,b; add match size to get final offset
+    add     a,b; add match size to get final offset TODO is this really overflow safe?
     ld      c,a; store offset
 
-    push    hl; store next instruction offset
-
     ; hl = de - offset
+    push    hl; store next instruction offset
     ld      a,e 
     or      a ; clear carry
     sbc     c ; subtract offset from low byte
@@ -116,6 +117,22 @@ core_decode_vram:
     jp      nz,.repeat_one_loop
     jp      .loop
 
+.repeat_zero:
+    and     %00011111; number of times to repeat
+    add     a,CORE_DECODE_MIN_REPEAT_LENGTH
+    ld      b,a; store loop counter
+
+.repeat_zero_loop:
+
+    ; wait for vblank
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      [de],a
+    inc     de
+    dec     b
+    jp      nz,.repeat_zero_loop
+    jp      .loop
 
 .repeat_two:
     and     %00111111; number of times to repeat

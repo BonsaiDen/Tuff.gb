@@ -120,190 +120,7 @@ var IO = {
 
 // Data Compression -----------------------------------------------------------
 // ----------------------------------------------------------------------------
-var Pack = {
-
-    pack: function(bytes, addSizePrefix) {
-
-        var minRun = 3,
-            maxRun = 128 + minRun - 1,
-            maxCopy = 128,
-            maxRead = maxCopy + minRun - 1,
-            count = 0,
-            buffer = new Array(maxRead),
-            offset = 0,
-            cur = bytes[0],
-            compressed = [];
-
-        function write(value) {
-            compressed.push((value + 256) % 256);
-        }
-
-        function writeBuffer(length, offset) {
-            for(var i = offset || 0; i < length; i++) {
-                compressed.push(buffer[i]);
-            }
-        }
-
-        while(cur !== undefined) {
-
-            buffer[count] = cur;
-            count++;
-
-            if (count >= minRun) {
-
-                // check for run
-                for(var i = 2; i <= minRun; i++) {
-                    if (cur !== buffer[count - i]) {
-                        // no run
-                        i = 0;
-                        break;
-                    }
-                }
-
-                if (i !== 0) {
-
-                    // we have a run, write out buffer before run
-                    if (count > minRun) {
-                        write(count - minRun - 1);
-                        writeBuffer(count - minRun);
-                    }
-
-                    // determine run length
-                    count = minRun;
-
-                    var next;
-                    while((next = bytes[++offset]) === cur) {
-                        count++;
-                        if (maxRun === count) {
-                            break;
-                        }
-                    }
-
-                    // write out encoded run length and run symbol
-                    write((minRun - 1) - count);
-                    write(cur);
-
-                    if (next !== undefined && count !== maxRun) {
-                        buffer[0] = next;
-                        count = 1;
-
-                    } else {
-                        // file or max run ends in a run
-                        count = 0;
-                    }
-
-                }
-
-            }
-
-            if (maxRead === count) {
-
-                // write out buffer
-                write(maxCopy - 1);
-                writeBuffer(maxCopy);
-
-                // start new buffer
-                count = maxRead - maxCopy;
-
-                // copy excess front of buffer
-                for(var e = 0; e < count; e++) {
-                    buffer[e] = buffer[maxCopy + e];
-                }
-
-            }
-
-            cur = bytes[++offset];
-
-        }
-
-        // Write out last buffer
-        if (count !== 0) {
-
-            if (count <= maxCopy) {
-                write(count - 1);
-                writeBuffer(count);
-
-            } else {
-
-                // we read more than the maximum of a single copy buffer
-                write(maxCopy - 1);
-                writeBuffer(maxCopy);
-
-                // Write out remainder
-                count -= maxCopy;
-
-                write(count - 1);
-                writeBuffer(count, maxCopy);
-
-            }
-
-        }
-
-        // Verify
-        if (bytes.join(',') !== Pack.unpack(compressed).join(',')) {
-            throw new Error('Incorrect data compression');
-
-        } else if (addSizePrefix !== false) {
-            var size = bytes.length;
-            return [(size >> 8), size & 0xff].concat(compressed);
-
-        } else {
-            return compressed;
-        }
-
-    },
-
-    unpack: function(compressed) {
-
-        var bytes = [],
-            offset = 0,
-            count = 0,
-            //minRun = 3,
-            cur = 0;
-
-        while((count = compressed[offset++]) !== undefined) {
-
-            if (count > 127) {
-
-                //count = (minRun - 1) - (count - 256);
-                count = 255 - (count - 3);
-
-                if ((cur = compressed[offset++]) === undefined) {
-                    count = 0;
-                    throw new Error('Run block is too short');
-                }
-
-                while(count > 0) {
-                    bytes.push(cur);
-                    count--;
-                }
-
-            } else {
-
-                count++;
-
-                while(count > 0) {
-
-                    if ((cur = compressed[offset++]) !== undefined) {
-                        bytes.push(cur);
-
-                    } else {
-                        throw new Error('Copy block is too short');
-                    }
-
-                    count--;
-
-                }
-
-            }
-
-        }
-
-        return bytes;
-
-    }
-
-};
+var Pack = {};
 
 (function(exports) {
 
@@ -312,7 +129,7 @@ var Pack = {
     var maxRepeatCount = 65,
         minRepeatLength = 2,
         maxLiteralLength = 64,
-        maxCopyLength = 67,
+        maxCopyLength = 35,
         minCopyLength = 3,
         maxCopyOffset = 255;
 
@@ -457,10 +274,17 @@ var Pack = {
                     throw new Error('Single Repeat Count out of Range: ' + singleRepeat);
                 }
 
+                // 000 00000
+                // repeat the zero byte 2-33 times
+                if (data[index] === 0 && (singleRepeat - minRepeatLength) < 32) {
+                    output.push(0x20 | ((singleRepeat - minRepeatLength) & 0x1f));
+
                 // 10 000000
-                // repeat the next 1-2 bytes 2-65 times
-                output.push(0x80 | ((singleRepeat - minRepeatLength) & 0x3f));
-                output.push(data[index]);
+                // repeat the next byte 2-65 times
+                } else {
+                    output.push(0x80 | ((singleRepeat - minRepeatLength) & 0x3f));
+                    output.push(data[index]);
+                }
 
                 index += singleRepeat;
 
@@ -472,7 +296,7 @@ var Pack = {
                 }
 
                 // 11 000000
-                // repeat the next 1-2 bytes 2-65 times
+                // repeat the next 2 bytes 2-65 times
                 output.push(0xc0 | ((dualRepeat - minRepeatLength) & 0x3f));
                 output.push(data[index]);
                 output.push(data[index + 1]);
@@ -486,13 +310,13 @@ var Pack = {
                     throw new Error('Copy Length out of Range: ' + copy.length);
                 }
 
-                if (copy.length > maxCopyOffset) {
-                    throw new Error('Copy Offset out of Range: ' + copy.offset);
+                if (copy.offset + copy.length > maxCopyOffset) {
+                    throw new Error('Copy Offset out of Range: ' + (copy.offset + copy.length));
                 }
 
-                // 00 000000 00000000
-                // copy 3-67 bytes from offset 1-256 (+length)
-                output.push((copy.length - minCopyLength) & 0x3f);
+                // 00 0 00000 00000000
+                // copy 3-35 bytes from offset 1-256 (+length)
+                output.push(((copy.length - minCopyLength) & 0x1f));
                 output.push(copy.offset & 0xff);
 
                 index += copy.length;
