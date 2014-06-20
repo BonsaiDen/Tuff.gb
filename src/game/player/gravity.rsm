@@ -51,7 +51,16 @@ player_gravity:
     jp      z,.no_jump
 
     ; set jump animation
+    ld      a,[playerDoubleJumped]
+    cp      1
+    jp      z,.double_jump
+
     ld      a,PLAYER_ANIMATION_JUMP
+    ld      [playerAnimation],a
+    ret
+
+.double_jump:
+    ld      a,PLAYER_ANIMATION_DOUBLE_JUMP
     ld      [playerAnimation],a
     ret     
 

@@ -14,6 +14,7 @@ playerAnimationRowMap:
     DB 5; POUND START
     DB 5; POUND STOP
     DB 8; LANDING
+    DB 2; DOUBLE JUMP      
 
 
 player_animation_update: ; executed during vblank

@@ -7,7 +7,7 @@
 ; the animation behavior. FF means STOP, FE means loop, FD means bounce
 
 ; Idle
-DB $00, $00,$01,$00,$01, $00,$01,$00,$02, $00,$00, $ff,$ff,$ff,$ff,$ff
+DB $00, $03,$01,$03,$01, $03,$01,$03,$02, $03,$03, $ff,$ff,$ff,$ff,$ff
 DB $ff, $68,$0C,$C3,$0A, $08,$0A,$C0,$2f, $38,$fe, $ff,$ff,$ff,$ff,$ff
 
 ; Walking
@@ -47,7 +47,7 @@ DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
 ; Wall Sliding
-DB $00, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+DB $00, $00,$00,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $20,$ff,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
 ; Start Pound
@@ -61,4 +61,8 @@ DB $fd, $04,$04,$04,$04, $04,$04,$04,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 ; Player Landing
 DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $09,$05,$04,$03, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+; Double Jumping 
+DB $00, $02,$03,$00,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+DB $fd, $04,$07,$20,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
