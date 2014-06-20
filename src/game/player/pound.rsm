@@ -116,6 +116,9 @@ player_pound:
 .next:
     ld      a,c
     add     16
+    cp      144; if we leave screen space prevent dead lock
+    ret     nc
+
     ld      c,a
     jp      .loop_find
 
