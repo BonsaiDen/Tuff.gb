@@ -1,3 +1,4 @@
+
 # Gameplay
 
 ## Player
@@ -5,13 +6,16 @@
 - Run ability (twice the running speed) (hold b for some time during running)
 
     - Breaks blocks horizontally
-    - needs all sort of code
+    - bounces off when hitting a non-breakable wall
     - when active, won't trigger dissappearing blocks
-    - hidden in lava zone
+    - powerup placed in lava zone
+    - activated by holding B while on the ground
+    - stops after jumping and then takes some time additional time to decelerate
+    - how to activate pounding?
+    - when pressed after releasing and still having a specific acceleration factor above normal running
 
-- Double Jump
-
-    - 
+        - a horizontal pound is activated, smashing into the direction of the character
+        - and stopping at the next wall
 
 ## World
 
@@ -79,14 +83,15 @@
 
 ## Fixes
 
-- swimming bug across horizontal screens
+- double jump out of water does not work
+- fix random echo ram access during title screen and decompression of tile rows?
+
 
 ## Tweaks
 
-- For breakable blocks prevent patterns by checking x and y for default dark tiles
 - Pounding when diving is disabled (is not cancelled perfectly just yet player is left to deep in water when swimming after the pound was cancelled)
-- When starting pounding, move player away from top collision edge
-
+- Improve transition between pound end and diving up/down animation
+- Double jump animation at top of jump
 
 
 # Route
@@ -119,3 +124,4 @@
 - Portal Piece
 
 - Outro
+
