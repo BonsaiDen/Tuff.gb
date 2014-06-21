@@ -132,7 +132,6 @@ player_scroll_map:
 
     ld      a,157
     ld      [playerX],a
-    call    player_set_position
     call    map_scroll_left
 
     jp      .scrolled
@@ -146,7 +145,6 @@ player_scroll_map:
 
     ld      a,3
     ld      [playerX],a
-    call    player_set_position
     call    map_scroll_right
 
     jp      .scrolled
@@ -173,7 +171,6 @@ player_scroll_map:
     ld      a,125
     ld      [playerY],a
 
-    call    player_set_position
     call    map_scroll_up
 
     jp      .scrolled
@@ -188,7 +185,6 @@ player_scroll_map:
     ld      a,125
     ld      [playerY],a
 
-    call    player_set_position
     call    map_scroll_up
 
     jp      .scrolled
@@ -196,13 +192,21 @@ player_scroll_map:
 
     ; down ------------------------------
 .check_down:
+
+    ld      b,130; normal border when not under water
+
+    ld      a,[playerUnderWater]
+    cp      1
+    jp      nz,.check_down_ground
+    ld      b,126; under water we need to include the swim animation offset
+
+.check_down_ground:
     ld      a,[playerY]
-    cp      126 ; 
+    cp      b ; 
     jp      c,.done
 
     ld      a,6
     ld      [playerY],a
-    call    player_set_position
     call    map_scroll_down
 
     ld      a,PLAYER_GRAVITY_INTERVAL
@@ -214,6 +218,7 @@ player_scroll_map:
     ret
 
 .scrolled:
+    call    player_set_position
     ld      a,1
     ret
 

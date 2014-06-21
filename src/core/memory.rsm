@@ -13,7 +13,7 @@ core_mem_set: ; a = value, hl = address, bc = bytecount
 	inc	    c
 	jp	    .skip
 .loop:
-    ld	    [hl+],a
+    ld	    [hli],a
 .skip:
     dec	    c
 	jr	    nz,.loop
@@ -28,7 +28,7 @@ core_mem_cpy: ; hl = source, de = dest, bc = bytecount
 	inc	    c
 	jp	    .skip
 .loop:
-    ld	    a,[hl+]
+    ld	    a,[hli]
 	ld	    [de],a
 	inc	    de
 .skip:
@@ -50,7 +50,7 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     pop     af
-    ld      [hl+],a
+    ld      [hli],a
 .skip:
     dec	    c
 	jr	    nz,.loop
@@ -61,7 +61,6 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
 
 ; VRAM Copy -------------------------------------------------------------------
 core_vram_cpy: ; hl = source, de = dest, bc = bytecount
-    di
 	inc	    b
 	inc	    c
 	jp	    .skip
@@ -69,27 +68,7 @@ core_vram_cpy: ; hl = source, de = dest, bc = bytecount
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ld      a,[hl+]
-	ld	    [de],a
-	inc	    de
-.skip:
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
-    ei
-	ret
-
-
-core_vram_cpy_vblank: ; hl = source, de = dest, bc = bytecount
-	inc	    b
-	inc	    c
-	jp	    .skip
-.loop:
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-    ld      a,[hl+]
+    ld      a,[hli]
 	ld	    [de],a
 	inc	    de
 .skip:

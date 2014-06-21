@@ -28,6 +28,7 @@ mapRoomTileBuffer:          DS 512 ;
 mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomUpdateRequired:      DB
 mapRoomEntityCount:         DB
+mapCurrentScreenBuffer:     DB
 
 
 ; -----------------------------------------------------------------------------

@@ -34,7 +34,8 @@ core_vblank_handler:
     ld      a,[coreScrollY]
     ld      [rSCY],a
 
-    ; check how far we're into vblank before drawing the room
+    ; draw new before updating sprites so the player does not appear in
+    ; the wall of the previous room for one frame
     call    map_draw_room
 
     ; Set vblank flag, this will cause the core loop to run the game loop once

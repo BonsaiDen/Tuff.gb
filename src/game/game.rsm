@@ -134,7 +134,12 @@ game_timer:
 ; Hud -------------------------------------------------------------------------
 game_draw_hud:
     ld      a,$bf - 128
-    ld      hl,$9a00
+    ld      hl,$9800 + 512
+    ld      bc,20
+    call    core_vram_set
+
+    ld      a,$bf - 128
+    ld      hl,$9c00 + 512
     ld      bc,20
     call    core_vram_set
     ret

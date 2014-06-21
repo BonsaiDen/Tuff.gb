@@ -4,12 +4,18 @@ SECTION "MapLogic",ROM0
 ; Map -------------------------------------------------------------------------
 map_init: ; a = base value for background tiles
 
-    sub     128; add offset for tile buffer at $9800
+    sub     128; add offset for tile buffer at $8800
     ld      hl,mapRoomTileBuffer
     ld      bc,512
     call    core_mem_set
 
+    ; clear both screen buffers
     ld      hl,$9800
+    ld      bc,1024
+    call    core_mem_set
+
+    ; clear both screen buffers
+    ld      hl,$9c00
     ld      bc,1024
     call    core_mem_set
 
@@ -342,23 +348,44 @@ map_draw_room:
     cp      1
     ret     nz
 
-    ; reset scan line drawing
-    ld      a,0
-    ld      [rLY],a
-
-    ; unset
-    ld      a,0
-    ld      [mapRoomUpdateRequired],a
-
     ; load new entities
     call    entity_load
 
-    ; copy vram data
+    ; switch between the two screen buffers to prevent flickering
+    ld      a,[mapCurrentScreenBuffer]
+    cp      1
+    jp      z,.buffer_9c
+
+.buffer_98:
     ld      hl,mapRoomTileBuffer
     ld      de,$9800
     ld      bc,512
-    call    core_vram_cpy_vblank
+    call    core_vram_cpy
 
+    ld      a,[rLCDC]
+    and     LCDCF_BG_MASK
+    ld      [rLCDC],a
+    ld      a,1
+    ld      [mapCurrentScreenBuffer],a
+    jp      .entity
+
+.buffer_9c:
+    ld      hl,mapRoomTileBuffer
+    ld      de,$9C00
+    ld      bc,512
+    call    core_vram_cpy
+
+    ld      a,[rLCDC]
+    and     LCDCF_BG_MASK
+    or      LCDCF_BG9C00
+    ld      [rLCDC],a
+    ld      a,0
+    ld      [mapCurrentScreenBuffer],a
+
+.entity:
+    ; unset
+    ld      a,0
+    ld      [mapRoomUpdateRequired],a
     ret
 
 
