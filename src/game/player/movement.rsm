@@ -6,10 +6,6 @@ player_move:
     cp      0
     jp      nz,.landing
 
-    ; reset wall flag
-    ld      a,0
-    ld      [playerDirectionWall],a
-
     ; are we moving at all?
     ld      a,[playerSpeedLeft]
     ld      b,a
@@ -51,6 +47,10 @@ player_move:
     cp      0
     jp      z,.move_left
     ld      e,a
+
+    ; reset wall flag
+    ld      a,0
+    ld      [playerDirectionWall],a
 
 .loop_right:
 
@@ -105,6 +105,10 @@ player_move:
     cp      0
     jp      z,.moved
     ld      e,a
+
+    ; reset wall flag
+    ld      a,0
+    ld      [playerDirectionWall],a
 
 .loop_left:
 
