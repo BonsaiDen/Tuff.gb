@@ -18,6 +18,7 @@ corePaletteSprite0: DB
 corePaletteSprite1: DB
 coreScrollX:        DB
 coreScrollY:        DB
+coreDecodeLabel:    DS 3
 
 
 ; Code ------------------------------------------------------------------------

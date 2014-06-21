@@ -260,8 +260,8 @@ title_draw_logo:
     ; load title screen graphics into vram
     ld      hl,DataLogoImg
     ld      de,$8800; start target for decode write
-    ld      bc,$8800 + 768; end target for decode write
-    call    core_decode_vram
+    ;ld      bc,$8800 + 768; end target for decode write
+    call    core_decode_eom
 
     ; clear screen buffer
     ld      a,$00
@@ -332,14 +332,14 @@ title_draw_room:
     ; load additional text graphics
     ld      hl,DataTitleImg
     ld      de,$9100; start target for decode write
-    ld      bc,$9100 + 192; end target for decode write
-    call    core_decode_vram
+    ;ld      bc,$9100 + 192; end target for decode write
+    call    core_decode_eom
 
     ; load title screen logo sprites
     ld      hl,DataTitleSprite
     ld      de,$8600
-    ld      bc,$8600 + 512; end target for decode write
-    call    core_decode_vram
+    ;ld      bc,$8600 + 512; end target for decode write
+    call    core_decode_eom
 
     ; setup title screen logo sprite
     call    title_draw_logo_sprite

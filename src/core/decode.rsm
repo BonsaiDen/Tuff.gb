@@ -2,12 +2,19 @@
 CORE_DECODE_MIN_COPY_LENGTH     EQU 2
 CORE_DECODE_MIN_REPEAT_LENGTH   EQU 2
                                 
+
+; Wrapper for Decompression with custom end marker in BC ----------------------
+; -----------------------------------------------------------------------------
 core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
-core_decode_vram:
+
+    ; setup trampolin
+    ld      a,.loop & $0ff
+    ld      [coreDecodeLabel + 1],a
+    ld      a,.loop >> 8
+    ld      [coreDecodeLabel + 2],a
     jp      .next
 
 .loop:
-
     pop     bc; restore end pointer
 
     ; check if we reached the end of the data uncompressed data 
@@ -17,11 +24,24 @@ core_decode_vram:
 
     ld      a,d; check high byte
     cp      b
-    ret     z
+    jp      z,.done
 
 .next:
     push    bc; store end pointer
+    jp      core_decode_eom
 
+.done:
+    ; restore eom code marker trampolin
+    ld      a,core_decode_eom & $0ff
+    ld      [coreDecodeLabel + 1],a
+    ld      a,core_decode_eom >> 8
+    ld      [coreDecodeLabel + 2],a
+    ret
+
+
+; Decompression Algorithm -----------------------------------------------------
+; -----------------------------------------------------------------------------
+core_decode_eom:
     ; fetch next instruction byte and goto first data byte
     ld      a,[hli]
     bit     7,a
@@ -67,7 +87,7 @@ core_decode_vram:
     jp      nz,.copy_loop
 
     pop     hl; restore next instruction offset
-    jp      .loop
+    jp      coreDecodeLabel
             
 
 ; Literals --------------------------------------------------------------------
@@ -88,7 +108,7 @@ core_decode_vram:
     inc     de
     dec     b
     jp      nz,.literal_copy
-    jp      .loop
+    jp      coreDecodeLabel
 
 
 ; Repeating -------------------------------------------------------------------
@@ -115,10 +135,12 @@ core_decode_vram:
     inc     de
     dec     b
     jp      nz,.repeat_one_loop
-    jp      .loop
+    jp      coreDecodeLabel
 
 .repeat_zero:
-    and     %00011111; number of times to repeat
+    bit     4,a
+    ret     nz; %00110000 is the end of data marker
+    and     %00001111; number of times to repeat
     add     a,CORE_DECODE_MIN_REPEAT_LENGTH
     ld      b,a; store loop counter
 
@@ -132,7 +154,7 @@ core_decode_vram:
     inc     de
     dec     b
     jp      nz,.repeat_zero_loop
-    jp      .loop
+    jp      coreDecodeLabel
 
 .repeat_two:
     and     %00111111; number of times to repeat
@@ -161,5 +183,5 @@ core_decode_vram:
     jp      nz,.repeat_two_loop
     inc     hl; goto second value byte
     inc     hl; goto next instruction byte
-    jp      .loop
+    jp      coreDecodeLabel
 

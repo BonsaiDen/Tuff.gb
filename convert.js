@@ -238,7 +238,7 @@ var Pack = {};
         dualEncodeLength = 3;
 
 
-    function encode(data, addSizePrefix) {
+    function encode(data, addEndMarker) {
 
         var literalCount = 0,
             index = 0,
@@ -274,10 +274,10 @@ var Pack = {};
                     throw new Error('Single Repeat Count out of Range: ' + singleRepeat);
                 }
 
-                // 000 00000
+                // 00 1 0 0000
                 // repeat the zero byte 2-33 times
-                if (data[index] === 0 && (singleRepeat - minRepeatLength) < 32) {
-                    output.push(0x20 | ((singleRepeat - minRepeatLength) & 0x1f));
+                if (data[index] === 0 && (singleRepeat - minRepeatLength) < 16) {
+                    output.push(0x20 | ((singleRepeat - minRepeatLength) & 0x0f));
 
                 // 10 000000
                 // repeat the next byte 2-65 times
@@ -335,13 +335,13 @@ var Pack = {};
             output.push.apply(output, data.slice(index - literalCount, index));
         }
 
-        if (addSizePrefix !== false) {
-            var size = data.length;
-            return [(size >> 8), size & 0xff].concat(output);
+        //console.log('Compressed %s bytes to %s%% (%s bytes)', data.length, 100 / data.length * output.length, output.length);
 
-        } else {
-            return output;
+        if (addEndMarker === true) {
+            output.push(0x30);
         }
+
+        return output;
 
     }
 
@@ -456,7 +456,7 @@ var Parse = {
                 rowOffset = ((rowCount * 2) - ((y + 1) * 2)) + rowBytes.length;
 
             rowOffsets.push((rowOffset >> 8), rowOffset & 0xff);
-            rowBytes.push.apply(rowBytes, Pack.encode(tileBytes, false));
+            rowBytes.push.apply(rowBytes, Pack.encode(tileBytes, true));
 
         }
 
@@ -840,7 +840,7 @@ var Convert = {
             return Parse.tilesFromImage(palette, r8x16, img);
 
         }).then(function(bytes) {
-            return Pack.encode(bytes, false);
+            return Pack.encode(bytes, true);
 
         }).then(function(data) {
             return IO.saveAs('bin', file, data);

@@ -26,10 +26,10 @@ tileset_load_sprite_row: ; load a compressed sprite row into vram
     add     hl,bc
 
     ; end pointer = de + 256 bytes
-    ld      b,d
-    ld      c,e
-    inc     b; 256 bytes
-    call    core_decode_vram
+    ;ld      b,d
+    ;ld      c,e
+    ;inc     b; 256 bytes
+    call    core_decode_eom
 
     pop     bc
     ret
@@ -41,9 +41,9 @@ tileset_load: ; hl = source
     ld      de,$8800
     ld      a,d
     add     16; 4096 bytes
-    ld      b,a
-    ld      c,e
-    call    core_decode_vram
+    ;ld      b,a
+    ;ld      c,e
+    call    core_decode_eom
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
     ld      hl,$9400
