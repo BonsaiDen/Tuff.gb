@@ -32,9 +32,6 @@ player_move:
     cp      0
     jp      z,.not_in_water
 
-    ld      a,PLAYER_ANIMATION_SWIMMING
-    ld      [playerAnimation],a
-
     ; half speed when in water
     ld      a,[playerMoveTick]
     cp      1
@@ -88,6 +85,13 @@ player_move:
     jp      .move_left
 
 .not_blocked_right:
+    ld      a,[playerInWater]
+    cp      1
+    jp      nz,.not_in_water_right
+    ld      a,PLAYER_ANIMATION_SWIMMING
+    ld      [playerAnimation],a
+
+.not_in_water_right:
     inc     d
     ld      a,d
     ld      [playerX],a
@@ -135,6 +139,13 @@ player_move:
     jp      .moved
 
 .not_blocked_left:
+    ld      a,[playerInWater]
+    cp      1
+    jp      nz,.not_in_water_left
+    ld      a,PLAYER_ANIMATION_SWIMMING
+    ld      [playerAnimation],a
+
+.not_in_water_left:
     dec     d
     ld      a,d
     ld      [playerX],a
