@@ -318,6 +318,10 @@ title_draw_logo:
 
 title_draw_room:
 
+    ; force background buffer at $9800
+    ld      a,0
+    ld      [mapCurrentScreenBuffer],a
+
     ; clear screen buffer
     ld      a,$00
     sub     128
@@ -332,13 +336,11 @@ title_draw_room:
     ; load additional text graphics
     ld      hl,DataTitleImg
     ld      de,$9100; start target for decode write
-    ;ld      bc,$9100 + 192; end target for decode write
     call    core_decode_eom
 
     ; load title screen logo sprites
     ld      hl,DataTitleSprite
     ld      de,$8600
-    ;ld      bc,$8600 + 512; end target for decode write
     call    core_decode_eom
 
     ; setup title screen logo sprite
