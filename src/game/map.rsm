@@ -145,7 +145,7 @@ map_set_room: ; b = x, c = y
 
     ; set active animation data (b = animation attribute byte)
     ld      de,mapAnimationUseMap
-    ld      c,8; 8 bits to check
+    ld      c,TILE_ANIMATION_COUNT / 2; 8 bits to check
 
     ; each time we check bit 0 and flag two animations active
 .next:
@@ -548,7 +548,7 @@ map_animate_tiles:
     add     hl,bc
 
     ; copy 16 bytes from the tile buffer into vram
-    ld      bc,16
+    ld      bc,16; TODO add fast copy method here for low byte values
     call    core_vram_cpy
 
     pop     de

@@ -45,7 +45,7 @@ mapFallableBlockCount:      DB
 
 
 ; Tile Animations -------------------------------------------------------------
-TILE_ANIMATION_COUNT        EQU 11
+TILE_ANIMATION_COUNT        EQU 16
 TILE_ANIMATION_BASE_OFFSET  EQU $c0
 mapAnimationIndexes         DS TILE_ANIMATION_COUNT
 mapAnimationDelay           DS TILE_ANIMATION_COUNT
