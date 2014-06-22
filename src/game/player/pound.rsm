@@ -110,6 +110,11 @@ player_pound:
     jp      z,.next
     cp      5 ; found a block
     jp      z,.found
+
+    ; setup normal collision here to prevent hazard values leaking through
+    ; and triggering instant death in mid air
+    ld      a,1
+    ld      [mapCollisionFlag],a
     ret;    something other block, exit
     
     ; go to next block
