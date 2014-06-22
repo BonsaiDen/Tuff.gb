@@ -548,8 +548,8 @@ map_animate_tiles:
     add     hl,bc
 
     ; copy 16 bytes from the tile buffer into vram
-    ld      bc,16; TODO add fast copy method here for low byte values
-    call    core_vram_cpy
+    ld      b,16
+    call    core_vram_cpy_low
 
     pop     de
     pop     hl
