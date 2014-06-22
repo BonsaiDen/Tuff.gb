@@ -12,7 +12,7 @@ core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
     ld      [coreDecodeLabel + 1],a
     ld      a,.loop >> 8
     ld      [coreDecodeLabel + 2],a
-    jp      .next
+    jr      .next
 
 .loop:
     pop     bc; restore end pointer
@@ -20,15 +20,15 @@ core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
     ; check if we reached the end of the data uncompressed data 
     ld      a,e
     cp      c 
-    jp      nz,.next ; check low byte
+    jr      nz,.next ; check low byte
 
     ld      a,d; check high byte
     cp      b
-    jp      z,.done
+    jr      z,.done
 
 .next:
     push    bc; store end pointer
-    jp      core_decode_eom
+    jr      core_decode_eom
 
 .done:
     ; restore eom code marker trampolin
@@ -45,7 +45,7 @@ core_decode_eom:
     ; fetch next instruction byte and goto first data byte
     ld      a,[hli]
     bit     7,a
-    jp      nz,.repeat ; if set we have a repeat token
+    jr      nz,.repeat ; if set we have a repeat token
     bit     6,a
     jr      nz,.literal ; if set we have a literal token
     bit     5,a
@@ -84,7 +84,7 @@ core_decode_eom:
     ld      [de],a
     inc     de
     dec     b
-    jp      nz,.copy_loop
+    jr      nz,.copy_loop
 
     pop     hl; restore next instruction offset
     jp      coreDecodeLabel
@@ -107,7 +107,7 @@ core_decode_eom:
     ld      [de],a
     inc     de
     dec     b
-    jp      nz,.literal_copy
+    jr      nz,.literal_copy
     jp      coreDecodeLabel
 
 
@@ -134,7 +134,7 @@ core_decode_eom:
     ld      [de],a
     inc     de
     dec     b
-    jp      nz,.repeat_one_loop
+    jr      nz,.repeat_one_loop
     jp      coreDecodeLabel
 
 .repeat_zero:
@@ -153,7 +153,7 @@ core_decode_eom:
     ld      [de],a
     inc     de
     dec     b
-    jp      nz,.repeat_zero_loop
+    jr      nz,.repeat_zero_loop
     jp      coreDecodeLabel
 
 .repeat_two:
@@ -180,7 +180,7 @@ core_decode_eom:
     inc     de
 
     dec     b
-    jp      nz,.repeat_two_loop
+    jr      nz,.repeat_two_loop
     inc     hl; goto second value byte
     inc     hl; goto next instruction byte
     jp      coreDecodeLabel
