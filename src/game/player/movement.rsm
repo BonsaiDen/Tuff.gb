@@ -165,7 +165,15 @@ player_move:
 
 .stopped: 
 
+    ; reset wall flag when no direction is pressed
+    ld      a,[coreInput]
+    and     BUTTON_RIGHT | BUTTON_LEFT
+    jp      nz,.reset
+    ld      a,0
+    ld      [playerDirectionWall],a
+
     ; reset to idle animation if on ground
+.reset:
     ld      a,[playerOnGround]
     cp      0
     jp      z,.stopped_water
