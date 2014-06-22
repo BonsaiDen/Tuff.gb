@@ -24,20 +24,20 @@ _screen_shake_timer:
     dec     a
     ld      [screenShakeTicks],a
     cp      0
-    jp      z,.reset
+    jr      z,.reset
 
 .x:
     call    math_random
     ld      b,a
     and     %01000000 ; negative
     cp      %01000000
-    jp      z,.negative_x
+    jr      z,.negative_x
 
 .positive_x:
     ld      a,b
     and     %00000011 ; 0-8
     ld      [coreScrollX],a
-    jp      .y
+    jr      .y
 
 .negative_x:
     ld      a,b
@@ -50,13 +50,13 @@ _screen_shake_timer:
     ld      b,a
     and     %01000000 ; negative
     cp      %01000000
-    jp      z,.negative_y
+    jr      z,.negative_y
 
 .positive_y:
     ld      a,b
     and     %00000011 ; 0-8
     ld      [coreScrollY],a
-    jp      .done
+    jr      .done
 
 .negative_y:
     ld      a,b
@@ -125,12 +125,12 @@ _screen_fade_timer:
     ; fade mode
     ld      a,[screenFadeMode]
     cp      2
-    jp      z,.fade_in
+    jr      z,.fade_in
         
     ; fade out
     ld      a,[screenFadeIndex]
     cp      4
-    jp      z,.complete
+    jr      z,.complete
     inc     a
     ld      [screenFadeIndex],a
     ret
@@ -139,7 +139,7 @@ _screen_fade_timer:
 .fade_in:
     ld      a,[screenFadeIndex]
     cp      0
-    jp      z,.complete
+    jr      z,.complete
     dec     a
     ld      [screenFadeIndex],a
     ret
@@ -228,7 +228,7 @@ _screen_flash_timer:
     ; color
     ld      a,[screenFlashColor]
     cp      1
-    jp      z,.dark
+    jr      z,.dark
     
     ; bg mask
     ld      hl,screenFlashLightPaletteBG
@@ -246,7 +246,7 @@ _screen_flash_timer:
     add     hl,bc
     ld      a,[hl]
     ld      [corePaletteSprite1],a
-    jp      .update
+    jr      .update
 
 .dark:
     ; bg mask
@@ -265,14 +265,14 @@ _screen_flash_timer:
     add     hl,bc
     ld      a,[hl]
     ld      [corePaletteSprite1],a
-    jp      .update
+    jr      .update
 
 .update:
 
     ; update
     ld      a,[screenFlashIndex]
     cp      10
-    jp      z,.complete
+    jr      z,.complete
     inc     a
     ld      [screenFlashIndex],a
     ret

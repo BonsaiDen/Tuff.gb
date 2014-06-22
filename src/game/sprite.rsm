@@ -14,7 +14,7 @@ sprite_animate_all:
     push    af ; store sprite animation flags
     and     %00000101
     cp      5; active and animating
-    jp      nz,.skip_sprite
+    jr      nz,.skip_sprite
 
     ; load animation frame number
     inc     hl
@@ -53,7 +53,7 @@ sprite_animate_all:
     ; Restore flags
     pop     af
     call    _sprite_update_animation
-    jp      .next_sprite
+    jr      .next_sprite
 
 .skip_sprite:
     pop    af
@@ -62,7 +62,7 @@ sprite_animate_all:
     inc    b
     ld     a,b
     cp     20 ; 20 sprites overall
-    jp     nz,.update_loop
+    jr     nz,.update_loop
     ret
 
 
@@ -87,17 +87,17 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     ld      a,d ; store animation flags for bounce check
     and     %00010000
     cp      16
-    jp      nz,.forwards
+    jr      nz,.forwards
 
 .backwards:
     dec     c ; previous animation frame
     dec     hl ; previous frame value
-    jp      .update_mode
+    jr      .update_mode
 
 .forwards:
     inc     c ; next animation frame
     inc     hl ; next frame value
-    jp      .update_mode
+    jr      .update_mode
 
 
 .update_mode:
@@ -112,18 +112,18 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
 
     ; if it is a loop frame jump back to the first frame
     cp      $fe
-    jp      z,.loop
+    jr      z,.loop
 
     ; if it is a bounce frame toggle the bounce direction 
     cp      $fd
-    jp      z,.bounce
-    jp      .update
+    jr      z,.bounce
+    jr      .update
 
 
     ; reset frame number for looping
 .loop:
     ld      c,1
-    jp      .update
+    jr      .update
 
 
     ; toggle bounce direction
@@ -131,19 +131,19 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     ld      a,d
     and     %00010000 ; backwards flag
     cp      16
-    jp      nz,.switch_to_backwards
+    jr      nz,.switch_to_backwards
 
 .switch_to_forwards:
     ld      a,b
     call    sprite_animation_forward
     inc     c
-    jp      .update
+    jr      .update
 
 .switch_to_backwards:
     ld      a,b
     call    sprite_animation_backward
     dec     c
-    jp      .update
+    jr      .update
 
 
     ; store the new animation index
@@ -170,11 +170,11 @@ sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
 
     ; if zero frames are left, initialize them 
     cp      0
-    jp      nz,.decrease
+    jr      nz,.decrease
     ld      a,e
     dec     a; This is done since otherwise we'll get one extra frame playing
     ld      [hl],a
-    jp      .done
+    jr      .done
 
     ; otherwise decrease it and put the value into a
 .decrease:
@@ -431,7 +431,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     ; check flags
     ld      a,d
     and     %00000010
-    jp      z,.not_mirrored
+    jr      z,.not_mirrored
 
 .mirrored:
 
@@ -448,7 +448,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
     inc     hl
     set     5,[hl]
 
-    jp     .index_done
+    jr     .index_done
 
 .not_mirrored:
     ld      d,2
@@ -481,7 +481,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     ; add scroll offset
     ld      a,[coreScrollX]
     cp      0
-    jp      z,.no_x_offset
+    jr      z,.no_x_offset
     ld      d,a
     ld      a,b
     sub     d
@@ -490,7 +490,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
 .no_x_offset:
     ld      a,[coreScrollY]
     cp      0
-    jp      z,.no_y_offset
+    jr      z,.no_y_offset
     ld      d,a
     ld      a,c
     sub     d
@@ -501,7 +501,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     call    _sprite_meta_offset
     ld      a,[hl]
     and     %00000010
-    jp      z,.not_mirrored
+    jr      z,.not_mirrored
 .mirrored:
 
     ld      d,0
@@ -517,7 +517,7 @@ sprite_set_position: ; a = sprite index, b = xpos, c = ypos
     add     a,8
     ld      [hl],a
 
-    jp     .pos_done
+    jr     .pos_done
 
 .not_mirrored:
     ld      d,0

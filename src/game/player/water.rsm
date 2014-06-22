@@ -12,7 +12,7 @@ player_water_update:
     ; check for the intitial frame on which we hit the water
     ld      a,[playerInWater]
     cp      0
-    jp      nz,.not_initial
+    jr      nz,.not_initial
 
     ; save speed
     ld      a,[playerFallFrames]
@@ -27,10 +27,10 @@ player_water_update:
     ; play sound
     ld      a,[playerWasUnderWater]
     cp      1
-    jp      z,.sound_surface
+    jr      z,.sound_surface
 
     ld      a,SOUND_PLAYER_WATER_ENTER
-    jp      .sound
+    jr      .sound
 
 .sound_surface:
     ld      a,SOUND_PLAYER_WATER_LEAVE
@@ -41,7 +41,7 @@ player_water_update:
     ; check if we were previously under water, if so skip water offset
     ld      a,[playerWasUnderWater]
     cp      1
-    jp      nz,.not_initial
+    jr      nz,.not_initial
 
     ; if we are surfacing skip the offset, and correct the player y position
     ld      a,7
@@ -76,18 +76,18 @@ player_water_update:
     ; check if water hit done
     ld      a,[playerWaterHitDone]
     cp      1
-    jp      nz,.stop_fall
+    jr      nz,.stop_fall
 
     ; check ability
     ld      a,[playerCanDive]
     cp      0
-    jp      z,.stop_fall
+    jr      z,.stop_fall
 
     ; check button for diving
     ld      a,[coreInput]
     and     BUTTON_B
     cp      BUTTON_B
-    jp      nz,.stop_fall
+    jr      nz,.stop_fall
 
     ; animation and speed
     ld      a,PLAYER_ANIMATION_FALL
@@ -95,7 +95,7 @@ player_water_update:
 
     ld      a,PLAYER_JUMP_SWIM
     ld      [playerFallSpeed],a
-    jp      .offset
+    jr      .offset
 
 .stop_fall:
     ld      a,0
@@ -105,7 +105,7 @@ player_water_update:
 .offset:
     ld      a,[playerWaterHitDone]
     cp      1
-    jp      z,.animate_water
+    jr      z,.animate_water
     
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]
@@ -124,9 +124,9 @@ player_water_update:
 
     ; set diving / surfacing animation
     cp      14
-    jp      c,.down
+    jr      c,.down
     ld      a,PLAYER_ANIMATION_SURFACE
-    jp      .animate
+    jr      .animate
 .down:
     ld      a,PLAYER_ANIMATION_FALL
 
@@ -140,7 +140,7 @@ player_water_update:
     ; adjust the depth based on the fall speed
     ld      a,[playerWaterHitDepth]
     cp      15
-    jp      nc,.fast
+    jr      nc,.fast
     srl     b; divice depth by 2 if speed was low
 
     ; apply
@@ -172,7 +172,7 @@ player_water_update:
 
     ld      a,[playerWaterTick]
     cp      8
-    jp      c,.move_down ; if 4 is greater than the tick, move the player down (0, 1, 2, 3)
+    jr      c,.move_down ; if 4 is greater than the tick, move the player down (0, 1, 2, 3)
 
 .move_up: ; move the player up, 4, 5, 6, 7
     ld      a,[playerY] 
@@ -192,7 +192,7 @@ player_water_timer:
     ; check if in water
     ld      a,[playerInWater]
     cp      0
-    jp      z,.done
+    jr      z,.done
 
     ; check if we've finished the initial splash offseting
     ld      a,[playerWaterHitDone]
@@ -204,8 +204,8 @@ player_water_timer:
     ld      a,[playerWaterTick]
     inc     a
     cp      16
-    jp      nz,.done
-    jp      c,.done
+    jr      nz,.done
+    jr      c,.done
     ld      a,0
 
 .done:

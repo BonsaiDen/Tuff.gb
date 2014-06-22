@@ -6,12 +6,12 @@ math_mul8b:                     ; this routine performs the operation HL=H*E
 
 .Mul8bLoop:
     add     hl,hl               ; advancing a bit
-    jp      nc,.Mul8bSkip        ; if zero, we skip the addition (jp is used for speed)
+    jr      nc,.Mul8bSkip        ; if zero, we skip the addition (jr is used for speed)
     add     hl,de               ; adding to the product if necessary
 
 .Mul8bSkip:
     dec     a
-    jp      nz,.Mul8bLoop
+    jr      nz,.Mul8bLoop
     ret
 
 

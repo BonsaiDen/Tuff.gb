@@ -12,7 +12,7 @@ core_timer_handler:
     inc     a
     ld      [coreTimer],a
     cp      4
-    jp      nz,.skip
+    jr      nz,.skip
 
     ; Timer counter which goes from 0-7
     ld      a,[coreTimerCounter]

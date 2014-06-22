@@ -35,30 +35,30 @@ save_load_from_sram:; a = 1 triggers defaults
     ld      hl,$A000 
     ld      a,[hli]
     cp      b
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ; low byte
     ld      a,[hli]
     cp      c
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ; check header
     ld      a,[hli]
     cp      $12
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ld      a,[hli]
     cp      $34
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ld      a,[hli]
     cp      $56
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ; version
     ld      a,[hli]
     cp      SAVE_GAME_VERSION
-    jp      nz,.defaults
+    jr      nz,.defaults
 
     ; Map Data
     ld      a,[hli]
@@ -109,7 +109,7 @@ save_load_from_sram:; a = 1 triggers defaults
 
     ld      a,0
     call    save_load_player
-    jp      .end
+    jr      .end
 
 .defaults:
     ld      a,1
@@ -128,7 +128,7 @@ save_load_player:
 
     ; Check if we should use the game defaults
     cp     1; a = 1
-    jp     nz,.init
+    jr     nz,.init
 
     ; Positions
     ld      a,SAVE_DEFAULT_PLAYER_X
@@ -302,28 +302,28 @@ save_check_state: ; return 1 in a if a save state exists in sram
     ld      hl,$A000 
     ld      a,[hli]
     cp      b
-    jp      nz,.missing
+    jr      nz,.missing
 
     ; low byte
     ld      a,[hli]
     cp      c
-    jp      nz,.missing
+    jr      nz,.missing
 
     ; check header
     ld      a,[hli]
     cp      $12
-    jp      nz,.missing
+    jr      nz,.missing
 
     ld      a,[hli]
     cp      $34
-    jp      nz,.missing
+    jr      nz,.missing
 
     ld      a,[hli]
     cp      $56
-    jp      nz,.missing
+    jr      nz,.missing
 
     ld      a,1
-    jp      .done
+    jr      .done
 
 .missing:
     ld      a,0
@@ -365,7 +365,7 @@ _crc16:
 
 .next:
     dec     b
-    jp      nz,.crcByte
+    jr      nz,.crcByte
 
     pop     bc
     dec     c

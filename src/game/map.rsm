@@ -131,7 +131,7 @@ map_set_room: ; b = x, c = y
     ld      b,0; per default animations are off
     and     %00000001
     cp      1
-    jp      nz,.skip_animation_byte
+    jr      nz,.skip_animation_byte
     ld      a,[hli]; load animation attribute byte
     ld      b,a; store into b
 
@@ -151,7 +151,7 @@ map_set_room: ; b = x, c = y
 .next:
     xor     a
     bit     0,b
-    jp      z,.set; if not set, set the value to 0
+    jr      z,.set; if not set, set the value to 0
     ld      a,1; otherwise we load a 1
 
 .set:
@@ -162,7 +162,7 @@ map_set_room: ; b = x, c = y
 
     srl     b; shift to next byte
     dec     c
-    jp      nz,.next
+    jr      nz,.next
 
     ; copy entity data after room tile buffer
     ld      b,0
@@ -273,12 +273,12 @@ map_load_room:
     ; check for falling blocks -------------------------
     ld      a,d
     cp      MAP_FALLABLE_BLOCK_LIGHT
-    jp      nz,.normal_block
+    jr      nz,.normal_block
 
     ; get current index
     ld      a,[mapFallableBlockCount]
     cp      MAP_MAX_FALLABLE_BLOCKS
-    jp      z,.normal_block; maximum index reached skip
+    jr      z,.normal_block; maximum index reached skip
 
     ld      de,mapFallableBlocks
     ld      h,0
@@ -331,7 +331,7 @@ map_load_room:
     sub     l
     ld      h,a
 
-    jp      .loop_y
+    jr      .loop_y
 
 
 .done:
@@ -354,7 +354,7 @@ map_draw_room:
     ; switch between the two screen buffers to prevent flickering
     ld      a,[mapCurrentScreenBuffer]
     cp      1
-    jp      z,.buffer_9c
+    jr      z,.buffer_9c
 
 .buffer_98:
     ld      hl,mapRoomTileBuffer
@@ -367,7 +367,7 @@ map_draw_room:
     ld      [rLCDC],a
     ld      a,1
     ld      [mapCurrentScreenBuffer],a
-    jp      .entity
+    jr      .entity
 
 .buffer_9c:
     ld      hl,mapRoomTileBuffer
@@ -412,9 +412,9 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ; check type of collision
     call    _map_get_tile_collision
     cp      1; normal blocks
-    jp      z,.collision
+    jr      z,.collision
     cp      5; breakable
-    jp      z,.collision
+    jr      z,.collision
 
     ; everything that is not solid has no collision
 .no_collision:
@@ -461,7 +461,7 @@ map_animate_tiles:
     ld      b,a
     ld      a,[bc] ; check if current tile is animated on this screen
     cp      0
-    jp      z,.next
+    jr      z,.next
 
     ; load current delay count for this animation
     ld      bc,mapAnimationDelay
@@ -473,7 +473,7 @@ map_animate_tiles:
     ld      b,a
     ld      a,[bc] ; delay for the current tile
     cp      0 ; if we hit zero animate the tile
-    jp      nz,.delay ; if not decrease delay count by one
+    jr      nz,.delay ; if not decrease delay count by one
 
     ; animate the tile -------------------------------------
 
@@ -553,7 +553,7 @@ map_animate_tiles:
 
     pop     de
     pop     hl
-    jp      .next
+    jr      .next
 
 .delay:
     dec     a
@@ -567,7 +567,7 @@ map_animate_tiles:
     inc     d
     ld      a,d
     cp      TILE_ANIMATION_COUNT
-    jp      nz,.animate
+    jr      nz,.animate
     ; end of loop
 
     ; restore state
@@ -589,7 +589,7 @@ map_check_breakable_block_top:
     ; check if we actually need to break them
     call    _map_get_tile_collision
     cp      5
-    jp      nz,.no
+    jr      nz,.no
 
     ld      a,1
     pop     bc
@@ -612,7 +612,7 @@ map_check_breakable_block_bottom:
     ; check if we actually need to break them
     call    _map_get_tile_collision
     cp      5
-    jp      nz,.no
+    jr      nz,.no
 
     ld      a,1
     pop     bc
@@ -660,7 +660,7 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
     cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jp      z,.light
+    jr      z,.light
 
 .dark:
     ld      a,$70
@@ -695,7 +695,7 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
     sla     c; convert into 8x8 index
     inc     c; lower row
     cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jp      z,.light
+    jr      z,.light
 
 .dark:
     ld      a,$72
@@ -726,52 +726,52 @@ map_check_breakable_surrounding: ; b = tx, c = ty
 .left:
     ld      a,b; ignore blocks < 0
     cp      0
-    jp      z,.top
+    jr      z,.top
     push    bc
     dec     b
     call    _map_get_tile_value
     pop     bc
     
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jp      z,.found_left
+    jr      z,.found_left
 
 .top:
     ld      a,c; ignore blocks < 0
     cp      0
-    jp      z,.right
+    jr      z,.right
     push    bc
     dec     c
     call    _map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jp      z,.found_top
+    jr      z,.found_top
 
 .right:
 
     ld      a,b; ignore blocks > 20
     cp      20
-    jp      z,.bottom
+    jr      z,.bottom
     push    bc
     inc     b
     call    _map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jp      z,.found_right
+    jr      z,.found_right
 
 .bottom:
 
     ld      a,b; ignore blocks > 8
     cp      8
-    jp      z,.found_none
+    jr      z,.found_none
     push    bc
     inc     c
     call    _map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jp      z,.found_bottom
+    jr      z,.found_bottom
 
 .found_none:
     pop     af
@@ -824,12 +824,12 @@ map_check_fallable_blocks:
     add     hl,de; get offset address
 
     ; check if inactive
-    jp      .check_active
+    jr      .check_active
 .check_active:
     ld      a,[hli]
     and     %00000001
     cp      1
-    jp      z,.active
+    jr      z,.active
             
     ; skip frame
     inc     hl
@@ -845,7 +845,7 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     srl     a; divide by 16
     cp      c
-    jp      z,.found_x
+    jr      z,.found_x
 
     ld      a,[playerX]
     add     PLAYER_HALF_WIDTH - 3
@@ -854,7 +854,7 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     srl     a; divide by 16
     cp      c
-    jp      z,.found_x
+    jr      z,.found_x
 
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 2
@@ -863,9 +863,9 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     srl     a; divide by 16
     cp      c
-    jp      z,.found_x
+    jr      z,.found_x
 
-    jp      .active
+    jr      .active
 
     ; load block y coordinate
 .found_x:
@@ -881,7 +881,7 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     srl     a; divide by 16
     cp      c
-    jp      nz,.active
+    jr      nz,.active
 
     dec     hl
     dec     hl
@@ -903,7 +903,7 @@ map_check_fallable_blocks:
     inc     b
     ld      a,[mapFallableBlockCount]
     cp      b
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
@@ -930,7 +930,7 @@ map_update_falling_blocks:
     ld      a,[hli]
     and     %00000001
     cp      1
-    jp      nz,.inactive
+    jr      nz,.inactive
 
     call    map_update_falling_block
 
@@ -939,7 +939,7 @@ map_update_falling_blocks:
     inc     b
     ld      a,[mapFallableBlockCount]
     cp      b
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
@@ -976,12 +976,12 @@ map_update_falling_block: ; b = index
 .light:
     ld      a,d
     cp      4
-    jp      z,.done_light
+    jr      z,.done_light
     ld      a,MAP_FALLING_TILE_LIGHT
     add     d
     ld      e,a
     add     4
-    jp      .set
+    jr      .set
 
 .done_light:
     ld      a,MAP_BACKGROUND_TILE_LIGHT

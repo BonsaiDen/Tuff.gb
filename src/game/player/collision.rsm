@@ -7,9 +7,9 @@ player_collision_up:
     ; different height when diving
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.diving
+    jr      z,.diving
     ld      e,PLAYER_HEIGHT
-    jp      .check
+    jr      .check
 
 .diving:
     ld      e,PLAYER_HEIGHT + 2
@@ -54,9 +54,9 @@ player_collision_far_up:
     ; different height when diving
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.diving
+    jr      z,.diving
     ld      e,PLAYER_HEIGHT + 3
-    jp      .check
+    jr      .check
 
 .diving:
     ld      e,PLAYER_HEIGHT + 5
@@ -103,9 +103,9 @@ player_collision_down:
     ; different height when diving
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.diving
+    jr      z,.diving
     ld      e,0
-    jp      .check
+    jr      .check
 
 .diving:
     ld      e,2
@@ -121,7 +121,7 @@ player_collision_down:
     ; if pounding check for breaking blocks
     ld      a,[playerIsPounding]
     cp      1
-    jp      z,.pounding
+    jr      z,.pounding
     
     ; otherwise check for collision with breakable blocks
 .col_breakable:
@@ -146,7 +146,7 @@ _player_col_check_down:
     call    map_get_collision
     ld      a,[mapCollisionFlag]
     cp      h
-    jp      z,.col
+    jr      z,.col
 
     ; right half 
     ld      a,[playerY]
@@ -159,7 +159,7 @@ _player_col_check_down:
     call    map_get_collision
     ld      a,[mapCollisionFlag]
     cp      h
-    jp      z,.col
+    jr      z,.col
 
     ; left half 
     ld      a,[playerY]
@@ -172,7 +172,7 @@ _player_col_check_down:
     call    map_get_collision
     ld      a,[mapCollisionFlag]
     cp      h
-    jp      z,.col
+    jr      z,.col
 
     ld      a,0
     ret

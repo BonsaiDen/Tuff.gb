@@ -29,12 +29,12 @@ game_init:
     ld      a,[coreInput]
     and     BUTTON_START | BUTTON_SELECT | BUTTON_UP
     cp      BUTTON_START | BUTTON_SELECT | BUTTON_UP
-    jp      z,.debug
+    jr      z,.debug
     
     ; Debug More or Release Mode
     ld      a,GAME_DEBUG_MODE
     cp      1
-    jp      z,.debug
+    jr      z,.debug
 
 .release:
     call    title_init
@@ -91,7 +91,7 @@ game_loop:
     cp      GAME_MODE_PLAYING
 
     ; game logic
-    jp      z,.game
+    jr      z,.game
 
     ; title screen
     call    title_update
@@ -113,7 +113,7 @@ game_timer:
 
     ld      a,[gameTimerHalf]; TODO use core timer counter 
     cp      1
-    jp      nz,.tick
+    jr      nz,.tick
 
     call    player_water_timer
     call    player_sleep_timer

@@ -11,7 +11,7 @@ entity_update:
     ; load type / active
     ld      a,[de]
     cp      0
-    jp      z,.skip; not active skip
+    jr      z,.skip; not active skip
     ld      l,a ; store type
 
     ; get sprite index
@@ -48,7 +48,7 @@ entity_update:
     ; check if the update handler disabled the entity
     ld      a,[de]
     cp      0
-    jp      z,.disabled; not active skip
+    jr      z,.disabled; not active skip
 
     inc     de; skip type
     inc     de; skip flags
@@ -69,7 +69,7 @@ entity_update:
     inc     de
     inc     de
     inc     de
-    jp      .next
+    jr      .next
 
 .disabled:
     ld      a,c
@@ -90,7 +90,7 @@ entity_update:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
@@ -116,7 +116,7 @@ entity_load:
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
     cp      0
-    jp      z,.next ; entity is not set for room
+    jr      z,.next ; entity is not set for room
 
     ; init base state
     push    hl
@@ -199,7 +199,7 @@ entity_load:
     call    _entity_handler_jump
     pop     de
     cp      1
-    jp      z,.ignore_load
+    jr      z,.ignore_load
 
     ; set sprite position
     inc     de ; skip type
@@ -218,7 +218,7 @@ entity_load:
     pop     bc;  restore entity / loop index
     pop     hl
 
-    jp      .next
+    jr      .next
 
 .ignore_load:
     pop     bc;  restore entity / loop index
@@ -253,7 +253,7 @@ _entity_load:
     call    _entity_find_bucket ; c is the room id, b is the entity id, return a and hl
 
     cp      1
-    jp      nz,.load_defaults
+    jr      nz,.load_defaults
 
 .load_stored:
     
@@ -354,7 +354,7 @@ entity_store:
 .loop:
     ld      a,[de]
     cp      0
-    jp      z,.skip; entity is not loaded for this screen
+    jr      z,.skip; entity is not loaded for this screen
 
     ; find a bucket to store this entity in, either the bucket which already
     ; stores it, or a unused one
@@ -365,7 +365,7 @@ entity_store:
 
     ; did we find a bucket?
     cp      1
-    jp      nz,.next
+    jr      nz,.next
 
     ; store into bucket
     ; c is the room id, b is the entity id, hl is the pointer, de the screen data
@@ -408,7 +408,7 @@ entity_store:
     inc     de
     inc     de
     inc     de
-    jp      .next
+    jr      .next
 
 .skip:
     inc     de
@@ -424,7 +424,7 @@ entity_store:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
@@ -437,7 +437,7 @@ entity_reset:
 .loop:
     ld      a,[hl]
     cp      0
-    jp      z,.skip; not loaded
+    jr      z,.skip; not loaded
 
     ; disable sprite 
     call    _entity_sprite_offset
@@ -463,7 +463,7 @@ entity_reset:
     inc     b
     ld      a,b
     cp      ENTITY_PER_ROOM
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
@@ -479,7 +479,7 @@ _entity_sprite_offset: ; a = sprite type -> a = background offset
     call    _entity_defintion
     and     %10000000
     cp      %10000000
-    jp      z,.foreground
+    jr      z,.foreground
     ld      a,ENTITY_BG_SPRITE_INDEX
     ret
 
@@ -517,16 +517,16 @@ _entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entit
 
     ; check if tilerow at this offset is the row required by the entity
     cp      c 
-    jp      z,.done
+    jr      z,.done
 
     ; otherwise check if we got a free slow in vram to put the tilerow into
     cp      255
-    jp      z,.load
+    jr      z,.load
 
     inc     hl
     inc     b
     cp      4
-    jp      nz,.loop
+    jr      nz,.loop
 
     ; FIXME 
     ; we should never end up here because we got at most 4 different entity
@@ -644,7 +644,7 @@ _entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3)
     push    bc
     call    _entity_find_bucket; first check for a existing bucket that contains the entity
     cp      1
-    jp      z,.done ; found a used bucket for this entity
+    jr      z,.done ; found a used bucket for this entity
 
     ; find a free bucket, if possible
     call    _entity_find_free_bucket
@@ -667,11 +667,11 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
 .loop:
     ld      a,[hl]; get room id
     cp      0
-    jp      z,.skip; skip empty buckets
+    jr      z,.skip; skip empty buckets
 
     ; check for room id match
     cp      c
-    jp      nz,.skip
+    jr      nz,.skip
 
     ; check entity id match
     inc     hl
@@ -679,7 +679,7 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     and     %00000011
     dec     hl
     cp      b
-    jp      nz,.skip
+    jr      nz,.skip
 
     ; match found, hl is at the correct offset already
     ld      a,1
@@ -696,9 +696,9 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     inc     e
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
-    jp      z,.not_found
+    jr      z,.not_found
         
-    jp      .loop
+    jr      .loop
     
 .not_found:
     ld      a,0
@@ -719,7 +719,7 @@ _entity_find_free_bucket:
 .loop:
     ld      a,[hl]; get room id
     cp      0
-    jp      nz,.used; skip used buckets
+    jr      nz,.used; skip used buckets
 
     ; found a free spot, return the pointer
     ld      a,1

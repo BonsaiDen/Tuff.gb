@@ -415,7 +415,7 @@ title_animate_logo:
     inc     de
     inc     de
     dec     b
-    jp      nz,.loop
+    jr      nz,.loop
 
     ; animate on every 3rd frame
     ld      a,[coreLoopCounter]
@@ -427,7 +427,7 @@ title_animate_logo:
     ld      a,[titleSpriteOffsetIndex]
     inc     a
     cp      32
-    jp      nz,.no_reset
+    jr      nz,.no_reset
     ld      a,0
 
 .no_reset:
@@ -452,12 +452,12 @@ title_select_option:
     ld      a,[coreInputOn]
     and     BUTTON_UP
     cp      BUTTON_UP
-    jp      z,.start
+    jr      z,.start
 
     ld      a,[coreInputOn]
     and     BUTTON_DOWN
     cp      BUTTON_DOWN
-    jp      z,.continue
+    jr      z,.continue
     ret
 
 .start:
@@ -511,7 +511,7 @@ title_handle_button:
     ; check selected option
     ld      a,[titleCursorPos]
     cp      1
-    jp      z,.continue
+    jr      z,.continue
 
 .start:
     ld      a,GAME_MODE_START
@@ -528,7 +528,7 @@ title_draw_cursor:
 
     ld      a,[titleCursorPos]
     cp      1
-    jp      z,.continue
+    jr      z,.continue
 
 .start:
     ld      hl,$9800 + 487; "> Start"

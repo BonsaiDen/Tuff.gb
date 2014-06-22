@@ -31,52 +31,52 @@ sound_play: ; a = sound ID to play
     ld      hl,soundEffectQueue
     ld      a,[hl]
     cp      b
-    jp      z,.done
+    jr      z,.done
             
     ld      hl,soundEffectQueue + 8
     ld      a,[hl]
     cp      b
-    jp      z,.done
+    jr      z,.done
 
     ld      hl,soundEffectQueue + 16
     ld      a,[hl]
     cp      b
-    jp      z,.done
+    jr      z,.done
 
     ld      hl,soundEffectQueue + 24
     ld      a,[hl]
     cp      b
-    jp      z,.done
+    jr      z,.done
 
 
     ; if the sound is not yet in the queue, find a free spot to put it in
     ld      hl,soundEffectQueue
     ld      a,[hl] 
     cp      0 
-    jp      nz,.spot2 ; if the spot is not empty check the next one
+    jr      nz,.spot2 ; if the spot is not empty check the next one
 
     call    _sound_play_instance
-    jp      .done
+    jr      .done
 
 .spot2:
 
     ld      hl,soundEffectQueue + 8
     ld      a,[hl] 
     cp      0 
-    jp      nz,.spot3 ; if the spot is not empty check the next one
+    jr      nz,.spot3 ; if the spot is not empty check the next one
 
     call    _sound_play_instance
-    jp      .done
+    jr      .done
 
 .spot3:
 
     ld      hl,soundEffectQueue + 16
     ld      a,[hl] 
     cp      0 
-    jp      nz,.spot4 ; if the spot is not empty check the next one
+    jr      nz,.spot4 ; if the spot is not empty check the next one
 
     call    _sound_play_instance
-    jp      .done
+    jr      .done
 
 
 .spot4:
@@ -84,10 +84,10 @@ sound_play: ; a = sound ID to play
     ld      hl,soundEffectQueue + 24
     ld      a,[hl] 
     cp      0 
-    jp      nz,.done ; if the spot is not empty check the next one
+    jr      nz,.done ; if the spot is not empty check the next one
 
     call    _sound_play_instance
-    jp      .done
+    jr      .done
 
 .done:
     
@@ -262,11 +262,11 @@ sound_update_state: ; hl = soundEffectQueue address of sound
     ; check mode
     ld      a,[hli]
     cp      2
-    jp      z,.looping
+    jr      z,.looping
     cp      1
-    jp      z,.playing
+    jr      z,.playing
     cp      3
-    jp      z,.stopped
+    jr      z,.stopped
 
     ; this should normally not happen 
     ret
@@ -300,7 +300,7 @@ sound_update_state: ; hl = soundEffectQueue address of sound
     call    _sound_get_channel
     ld      a,[de]
     cp      b
-    jp      nz,.clear
+    jr      nz,.clear
 
     ; if the match up, clear the channel sound id
     ld      a,0
@@ -340,10 +340,10 @@ _sound_update_apply: ; hl = soundEffectQueue address of sound
     ; load the sound id that is currently playing on the target channel
     ld      a,[de]
     cp      0
-    jp      nz,.in_use
+    jr      nz,.in_use
 
     ; if the channel is not used, place the current sound id on it
-    jp      .set_channel
+    jr      .set_channel
 
 .in_use:
     ; if the sound is already playing on the target channel do nothing
@@ -415,12 +415,12 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
     ld      c,a;  store active sound id for load_channel
 
     cp      0 ; if there is no active sound id on the channel clear it
-    jp      z,.clear_channel
+    jr      z,.clear_channel
     
     inc     hl ; skip priority
     ld      a,[hl] ; load action flag
     cp      1
-    jp      z,.load_channel
+    jr      z,.load_channel
     
     ret
 
@@ -444,13 +444,13 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
     ; load channel number
     ld      a,b
     cp      1
-    jp      z,.clear_channel_1
+    jr      z,.clear_channel_1
     cp      2
-    jp      z,.clear_channel_2
+    jr      z,.clear_channel_2
     cp      3
-    jp      z,.clear_channel_3
+    jr      z,.clear_channel_3
     cp      4
-    jp      z,.clear_channel_4
+    jr      z,.clear_channel_4
     ret
 
 .clear_channel_1:
@@ -520,13 +520,13 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
 
     ; set specific channel
     cp      1
-    jp      z,.load_channel_1
+    jr      z,.load_channel_1
     cp      2  
-    jp      z,.load_channel_2
+    jr      z,.load_channel_2
     cp      3  
-    jp      z,.load_channel_3
+    jr      z,.load_channel_3
     cp      4  
-    jp      z,.load_channel_4
+    jr      z,.load_channel_4
     ret
 
 .load_channel_1:

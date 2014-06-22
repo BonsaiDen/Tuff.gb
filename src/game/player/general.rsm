@@ -104,7 +104,7 @@ player_dissolve:
     ; jump out if already dissolving
     ld      a,[playerDissolveTick]
     cp      255
-    jp      nz,.done
+    jr      nz,.done
 
     ; TODO check tile type and play corresponding sound
     ld      a,[mapCollisionFlag]
@@ -128,26 +128,26 @@ player_scroll_map:
     ; left ------------------------------
     ld      a,[playerX]
     cp      2 ; < 1
-    jp      nc,.check_right
+    jr      nc,.check_right
 
     ld      a,157
     ld      [playerX],a
     call    map_scroll_left
 
-    jp      .scrolled
+    jr      .scrolled
 
 
     ; right -----------------------------
 .check_right:
     ld      a,[playerX]
     cp      158 ; > 159
-    jp      c,.check_up
+    jr      c,.check_up
 
     ld      a,3
     ld      [playerX],a
     call    map_scroll_right
 
-    jp      .scrolled
+    jr      .scrolled
 
 
     ; up --------------------------------
@@ -156,11 +156,11 @@ player_scroll_map:
     ; add a boost to the jump to we can reach a platform or something
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.check_up_water
+    jr      z,.check_up_water
 
     ld      a,[playerY]
     cp      2 ; < 1
-    jp      nc,.check_down
+    jr      nc,.check_down
 
     ld      a,PLAYER_JUMP_SCREEN_BOOST
     ld      [playerJumpForce],a
@@ -173,21 +173,21 @@ player_scroll_map:
 
     call    map_scroll_up
 
-    jp      .scrolled
+    jr      .scrolled
 
 
 .check_up_water:
 
     ld      a,[playerY]
     cp      5 ; < 6
-    jp      nc,.check_down
+    jr      nc,.check_down
 
     ld      a,125
     ld      [playerY],a
 
     call    map_scroll_up
 
-    jp      .scrolled
+    jr      .scrolled
 
 
     ; down ------------------------------
@@ -197,13 +197,13 @@ player_scroll_map:
 
     ld      a,[playerUnderWater]
     cp      1
-    jp      nz,.check_down_ground
+    jr      nz,.check_down_ground
     ld      b,126; under water we need to include the swim animation offset
 
 .check_down_ground:
     ld      a,[playerY]
     cp      b ; 
-    jp      c,.done
+    jr      c,.done
 
     ld      a,6
     ld      [playerY],a

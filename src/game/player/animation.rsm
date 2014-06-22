@@ -28,21 +28,21 @@ player_animation_update: ; executed during vblank
     ld      b,a
     ld      a,[playerDirection]
     cp      b
-    jp      z,.no_direction_change
+    jr      z,.no_direction_change
 
     ; switch to new direction
     cp      PLAYER_DIRECTION_RIGHT
-    jp      z,.direction_right
+    jr      z,.direction_right
 
 .direction_left:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_unset_mirror
-    jp      .direction_changed
+    jr      .direction_changed
 
 .direction_right:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_set_mirror
-    jp      .direction_changed
+    jr      .direction_changed
 
 .direction_changed:
     ; TODO reset animation frame?
@@ -58,7 +58,7 @@ player_animation_update: ; executed during vblank
     ld      b,a
     ld      a,[playerAnimation]
     cp      b
-    jp      z,.done
+    jr      z,.done
 
     ; get new animation
     ld      a,[playerAnimation]
