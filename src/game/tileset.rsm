@@ -25,10 +25,7 @@ tileset_load_sprite_row: ; load a compressed sprite row into vram
     ; the offset value is pre calcuated to be relative from the table data pointer + 2
     add     hl,bc
 
-    ; end pointer = de + 256 bytes
-    ;ld      b,d
-    ;ld      c,e
-    ;inc     b; 256 bytes
+    ; decode with end marker in stream
     call    core_decode_eom
 
     pop     bc
@@ -39,11 +36,7 @@ tileset_load: ; hl = source
 
     ; copy tiles to character data
     ld      de,$8800
-    ld      a,d
-    add     16; 4096 bytes
-    ;ld      b,a
-    ;ld      c,e
-    call    core_decode_eom
+    call    core_decode
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
     ld      hl,$9400
