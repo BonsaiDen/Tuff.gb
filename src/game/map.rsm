@@ -522,10 +522,17 @@ map_animate_tiles:
 
     ; get the default delay value 
     push    bc; store delay point counter
-    ld      bc,mapAnimationDelay
-    ld      a,d
-    add     a,c
+    ld      bc,DataTileAnimation
+
+    ; offset into tile animation data
+    ld      a,d; base + d * 8 + 1
+    sla     a
+    sla     a
+    sla     a
     inc     a
+
+    ; add to bc
+    add     a,c
     ld      c,a
     adc     a,b
     sub     c
