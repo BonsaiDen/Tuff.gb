@@ -433,6 +433,54 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ret
 
 
+; same as the nomral collision check
+; and also treat everything except for 0 as collision
+map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1 if collision, 0 = no collision
+    push    bc
+
+    ; check bottom screen border
+    ld      a,c
+    cp      127
+    jr      nc,.collision 
+
+    ; check top screen border
+    ld      a,0
+    cp      c
+    jr      nc,.collision 
+
+    ; check right screen border
+    ld      a,b
+    cp      159
+    jr      nc,.collision 
+
+    ; check left screen border
+    ld      a,0
+    cp      b
+    jr      nc,.collision 
+
+    ; divide x by 8
+    srl     b
+    srl     b
+    srl     b
+
+    ; divide y by 8
+    srl     c
+    srl     c
+    srl     c
+
+    ; check type of collision
+    call    _map_get_tile_collision
+    cp      0
+    jr      nz,.collision
+    pop     bc
+    ret
+
+.collision:
+    pop     bc
+    ld      a,1
+    ret
+
+
 ; Animation -------------------------------------------------------------------
 map_animate_tiles:
 
@@ -1072,7 +1120,19 @@ _map_set_tile_value: ; b = tile x, c = tile y, a = value
     pop     hl
 
     ; set tile value in screen buffer
+    ld      d,a
+    ld      a,[mapCurrentScreenBuffer]
+    cp      0
+    jp      z,.screen_9c
+    ld      a,d; restore
     ld      d,$98
+    jp      .set
+
+.screen_9c:
+    ld      a,d; restore
+    ld      d,$9c
+
+.set:
     add     hl,de
     ld      d,a; restore tile value
 
