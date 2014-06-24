@@ -6,3 +6,6 @@ build
 vis
 *.avi
 *.mov
+*.webm
+branch.js
+

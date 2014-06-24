@@ -81,9 +81,11 @@
 
 # Other
 
+- Split animations from tile data
+- Configure target animation tile
+
 ## Fixes
 
-- double jump out of water does not work
 - fix random echo ram access during title screen and decompression of tile rows?
 
 
@@ -92,6 +94,8 @@
 - Pounding when diving is disabled (is not cancelled perfectly just yet player is left to deep in water when swimming after the pound was cancelled)
 - Improve transition between pound end and diving up/down animation
 - Double jump animation at top of jump
+- disable double jump after wall jump, need to hit the ground before we can double jump again
+- double jump out of water does not work (issue with jump threshold not being reached)
 
 
 # Route
