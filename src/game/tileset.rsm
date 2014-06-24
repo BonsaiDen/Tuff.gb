@@ -32,17 +32,16 @@ tileset_load_sprite_row: ; load a compressed sprite row into vram
     ret
 
 
+; copy tiles to character data in vram
 tileset_load: ; hl = source
-
-    ; copy tiles to character data
     ld      de,$8800
     call    core_decode
+    ret
+
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
-    ld      hl,$9400
+tileset_load_animations:; hl = source
     ld      de,TILE_ANIMATION_BUFFER
-    ld      bc,1024
-    call    core_vram_cpy
-
+    call    core_decode
     ret
 

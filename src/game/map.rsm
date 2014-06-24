@@ -522,9 +522,10 @@ map_animate_tiles:
 
     ; get the default delay value 
     push    bc; store delay point counter
-    ld      bc,DataTileAnimationDelay
+    ld      bc,mapAnimationDelay
     ld      a,d
     add     a,c
+    inc     a
     ld      c,a
     adc     a,b
     sub     c
@@ -548,19 +549,22 @@ map_animate_tiles:
     push    de
 
     ; store animation index value
+    inc     a; offset into animation data
+    inc     a
     ld      e,a 
 
-    ; get base tile value of the animation (base + d * 4)
+    ; get base tile value of the animation (base + d * 8)
     ld      hl,DataTileAnimation
     ld      b,0
     ld      c,d
+    sla     c
     sla     c
     sla     c
     add     hl,bc
     ld      a,[hl] 
     ld      d,a ; base tile value $00 - $ff
 
-    ; get the current tile value of the animation into B (base + d * 4 + a)
+    ; get the current tile value of the animation into B (base + d * 8 + a + 2)
     ld      c,e 
     add     hl,bc
     ld      b,[hl] ; store current tile value $00 - $ff
@@ -580,7 +584,6 @@ map_animate_tiles:
     ; get the current animation address into HL 
     ; (multiply the current (tile - TILE_ANIMATION_BASE_OFFSET) by 16 + DataTileImg)
     ld      a,b; restore tile value
-    sub     TILE_ANIMATION_BASE_OFFSET; correct for offset into TILE_ANIMATION_BUFFER buffer
     ld      h,0
     ld      l,a
     add     hl,hl

@@ -62,9 +62,11 @@ game_continue:
 
 game_setup:
 
-    ; load tile data
+    ; load tile data and animations
     ld      hl,DataTileImg
     call    tileset_load
+    ld      hl,DataTileAnimationImg
+    call    tileset_load_animations
 
     ; Reset player
     call    player_init

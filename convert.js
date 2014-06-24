@@ -746,7 +746,7 @@ var Map = {
 
                 if (t >= animationOffset) {
                     t -= animationOffset;
-                    t /= 8;
+                    t /= 2;
                     animationCount++;
                     animations[7 - Math.floor(t)] = 1;
                 }
@@ -1262,13 +1262,14 @@ if (process.argv[4] === '-reverse') {
         Convert.Tileset('tiles.bg.png'),
         Convert.Tileset('logo.bg.png'),
         Convert.Tileset('title.bg.png'),
+        Convert.Tileset('animation.bg.png'),
         Convert.TileRowMap('player.ch.png'),
         Convert.TileRowMap('entities.ch.png'),
         Convert.Tileset('title.ch.png', true),
         Convert.Collision('tiles.col.png'),
         Convert.Sounds('sounds.js'),
         Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {
-            return Convert.Map('main.map.json', defs, 0xc0);
+            return Convert.Map('main.map.json', defs, 0xf0);
         })
 
     ]).then(function() {

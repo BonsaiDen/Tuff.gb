@@ -12,6 +12,9 @@ DataTileCol: ; placed specifically @ 0x4400 for collision checks
 DataTileImg:
     INCBIN  "../data/bin/tiles.bg.bin" 
 
+DataTileAnimationImg:
+    INCBIN  "../data/bin/animation.bg.bin" 
+
 
 ; Logo ------------------------------------------------------------------------
 DataLogoImg:
@@ -97,9 +100,6 @@ DataSpriteAnimation:
 
 DataTileAnimation:
     INCLUDE "game/data/animation/tile.rsm"
-
-DataTileAnimationDelay:
-    INCLUDE "game/data/animation/tiledelay.rsm"
 
 DataEntityDefinitions:
     INCLUDE "game/data/entities/entities.rsm"
