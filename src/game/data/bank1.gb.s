@@ -95,15 +95,15 @@ DataEntityRows:
     INCBIN  "../data/bin/entities.ch.bin" 
 
 DataSpriteAnimation:
-    INCLUDE "game/data/animation/player.rsm"
-    INCLUDE "game/data/animation/entity.rsm"
+    INCLUDE "game/data/animation/player.gb.s"
+    INCLUDE "game/data/animation/entity.gb.s"
 
 DataTileAnimation:
-    INCLUDE "game/data/animation/tile.rsm"
+    INCLUDE "game/data/animation/tile.gb.s"
 
 DataEntityDefinitions:
-    INCLUDE "game/data/entities/entities.rsm"
+    INCLUDE "game/data/entities/entities.gb.s"
 
 DataSoundDefinitions:
-    INCLUDE "../data/bin/sounds.data.rsm"
+    INCLUDE "../data/bin/sounds.data.gb.s"
 

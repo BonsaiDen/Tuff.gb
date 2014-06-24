@@ -2,7 +2,7 @@ SECTION "SoundRam",WRAM0[$CB00]
 
 
 ; Constants -------------------------------------------------------------------
-INCLUDE     "../data/bin/sounds.def.rsm"
+INCLUDE     "../data/bin/sounds.def.gb.s"
 
 ; Sound State Buffer ----------------------------------------------------------
 soundChannelState:      DS 16; 4 byte per channel

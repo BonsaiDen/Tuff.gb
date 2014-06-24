@@ -12,37 +12,37 @@ CART_DEST       EQU        ROM_DEST_OTHER
 
 
 ; Include Core Library --------------------------------------------------------
-INCLUDE     "core/core.rsm"
+INCLUDE     "core/core.gb.s"
 
 
 ; Constants and Variables -----------------------------------------------------
-INCLUDE     "game/ram/sprite.rsm"
-INCLUDE     "game/ram/map.rsm"
-INCLUDE     "game/ram/game.rsm"
-INCLUDE     "game/ram/title.rsm"
-INCLUDE     "game/ram/screen.rsm"
-INCLUDE     "game/ram/player.rsm"
-INCLUDE     "game/ram/entity.rsm"
-INCLUDE     "game/ram/sound.rsm"
+INCLUDE     "game/ram/sprite.gb.s"
+INCLUDE     "game/ram/map.gb.s"
+INCLUDE     "game/ram/game.gb.s"
+INCLUDE     "game/ram/title.gb.s"
+INCLUDE     "game/ram/screen.gb.s"
+INCLUDE     "game/ram/player.gb.s"
+INCLUDE     "game/ram/entity.gb.s"
+INCLUDE     "game/ram/sound.gb.s"
 
 
 ; Modules ---------------------------------------------------------------------
-INCLUDE     "game/entity.rsm"
-INCLUDE     "game/map.rsm"
-INCLUDE     "game/player.rsm"
-INCLUDE     "game/save.rsm"
-INCLUDE     "game/sprite.rsm"
-INCLUDE     "game/screen.rsm"
-INCLUDE     "game/sound.rsm"
-INCLUDE     "game/title.rsm"
-INCLUDE     "game/tileset.rsm"
+INCLUDE     "game/entity.gb.s"
+INCLUDE     "game/map.gb.s"
+INCLUDE     "game/player.gb.s"
+INCLUDE     "game/save.gb.s"
+INCLUDE     "game/sprite.gb.s"
+INCLUDE     "game/screen.gb.s"
+INCLUDE     "game/sound.gb.s"
+INCLUDE     "game/title.gb.s"
+INCLUDE     "game/tileset.gb.s"
 
 
 ; Main Game -------------------------------------------------------------------
-INCLUDE     "game/game.rsm"
+INCLUDE     "game/game.gb.s"
 
 
 ; Data ------------------------------------------------------------------------
-INCLUDE     "game/data/bank1.rsm"
-INCLUDE     "game/data/bank2.rsm"
+INCLUDE     "game/data/bank1.gb.s"
+INCLUDE     "game/data/bank2.gb.s"
 

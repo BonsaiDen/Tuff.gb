@@ -1090,8 +1090,8 @@ var Convert = {
 
         }).then(function(data) {
             return Promise.all([
-                IO.saveAs('data.rsm', file, data.data),
-                IO.saveAs('def.rsm', file, data.defs)
+                IO.saveAs('data.gb.s', file, data.data),
+                IO.saveAs('def.gb.s', file, data.defs)
             ]);
 
         }).then(function() {

@@ -1,7 +1,7 @@
 # Build
 rom: convert
 	@mkdir -p build
-	@cd src && rgbasm -o ../build/main.o main.rsm
+	@cd src && rgbasm -o ../build/main.o main.gb.s
 	@rgblink -o build/game.gb build/main.o -m build/game.map
 	@rgbfix -v -p 0 build/game.gb
 	@node stat build/game.map
