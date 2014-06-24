@@ -467,6 +467,123 @@ entity_reset:
     ret
 
 
+; Collision Wrappers ----------------------------------------------------------
+; -----------------------------------------------------------------------------
+entity_col_up:; b = x, c = y
+    push    bc
+
+    ld      a,c
+    sub     17
+    ld      c,a
+
+    ; middle
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; left
+    ld      a,b
+    sub     7
+    ld      b,a
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; right
+    ld      a,b
+    add     14
+    ld      b,a
+    call    map_get_collision_simple
+
+.done:
+    pop     bc
+    ret
+    
+
+entity_col_down:; b = x, c = y
+    push    bc
+
+    ; middle
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; left
+    ld      a,b
+    sub     7
+    ld      b,a
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; right
+    ld      a,b
+    add     14
+    ld      b,a
+    call    map_get_collision_simple
+
+.done:
+    pop     bc
+    ret
+    
+
+entity_col_left:; b = x, c = y
+    push    bc
+
+    ; border
+    ld      a,b
+    sub     9
+    ld      b,a
+
+    ; bottom
+    dec     c
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; middle
+    ld      a,c
+    sub     7
+    ld      c,a
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; top
+    ld      a,c
+    sub     8
+    ld      c,a
+    call    map_get_collision_simple
+
+.done:
+    pop     bc
+    ret
+    
+
+entity_col_right:; b = x, c = y
+    push    bc
+
+    ld      a,b
+    add     8
+    ld      b,a
+
+    ; bottom
+    dec     c
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; middle
+    ld      a,c
+    sub     7
+    ld      c,a
+    call    map_get_collision_simple
+    jr      nz,.done
+
+    ; top
+    ld      a,c
+    sub     8
+    ld      c,a
+    call    map_get_collision_simple
+
+.done:
+    pop     bc
+    ret
+
+
 ; Trampolin for entity logic handler ------------------------------------------
 ; -----------------------------------------------------------------------------
 _entity_handler_jump:
@@ -736,9 +853,9 @@ _entity_find_free_bucket:
     inc     e
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
-    jp      z,.not_found
+    jr      z,.not_found
         
-    jp      .loop
+    jr      .loop
     
 .not_found:
     ld      a,0

@@ -10,6 +10,11 @@ ENTITY_ANIMATION_SAVE     EQU 0
 ENTITY_ANIMATION_GLOW     EQU 1
 ENTITY_ANIMATION_POWERUP  EQU 2
 
+ENTITY_DIRECTION_UP       EQU 0
+ENTITY_DIRECTION_RIGHT    EQU 1
+ENTITY_DIRECTION_DOWN     EQU 2
+ENTITY_DIRECTION_LEFT     EQU 3
+
 ENTITY_MAX_STORE_BUCKETS  EQU 128
 ENTITY_STORED_STATE_SIZE  EQU ENTITY_MAX_STORE_BUCKETS * 4
 
@@ -25,8 +30,4 @@ entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into
 
 entityStoredState:      DS ENTITY_STORED_STATE_SIZE 
                               ; 4 bytes per bucket entry
-                              ; [roomid] (1 based indexing)
-                              ; [ffff][dd][ii] flags and entity id
-                              ; [y position]
-                              ; [x position]
 

@@ -9,19 +9,117 @@ entity_handler_load_glow:
 
 entity_handler_update_glow: ; generic, b = entity index, c = sprite index, de = screen data
 
-    ; only run every second frame
+    ; only run every third frame
     ld      a,[coreLoopCounter]
-    and     %00000011
-    cp      %00000011
+    and     %00000001
+    cp      %00000001
     ret     nz
 
     inc     de; skip type
     inc     de; skip flags
-    inc     de; skip direction
-
-    ld      a,[de] ; y position
-    inc     a
-    ld      [de],a ; y position
-
+    call    entity_glow_movement
     ret
+
+
+entity_glow_movement:; de = pointer at direction flag
+
+    ; randomly switch the direction 
+    call    math_random
+    cp      8
+    jr      nc,.move
+    call    math_random
+    and     %00000011
+    ld      [de],a
+    ret
+
+.move:
+    push    bc
+    push    de
+
+    inc     de; skip direction
+    ld      a,[de]; load y position and store into c
+    ld      c,a
+    inc     de
+    ld      a,[de]; load x position and store into b
+    ld      b,a
+
+    dec     de
+    dec     de
+    ld      a,[de]; load direction flag
+
+    ; 1. check current direction
+    cp      ENTITY_DIRECTION_UP
+    jr      z,.up
+    cp      ENTITY_DIRECTION_RIGHT
+    jr      z,.right
+    cp      ENTITY_DIRECTION_DOWN
+    jr      z,.down
+    cp      ENTITY_DIRECTION_LEFT
+    jr      z,.left
+    
+.done:
+    ; set y and x direction
+    inc     de
+    ld      a,c
+    ld      [de],a
+
+    inc     de
+    ld      a,b
+    ld      [de],a
+
+    pop     de
+    pop     bc
+    ret
+
+.direction:
+    call    math_random
+    and     %00000011
+    ld      [de],a
+    pop     de
+    pop     bc
+    ret
+
+; Left ------------------------------------------------------------------------
+.left:
+    call    entity_col_left
+    jr      z,.left_move
+    jr      .direction
+    
+.left_move:
+    dec     b
+    dec     b
+    jr      .done
+
+; Right -----------------------------------------------------------------------
+.right:
+    call    entity_col_right
+    jr      z,.right_move
+    jr      .direction
+
+.right_move:
+    inc     b
+    inc     b
+    jr      .done
+
+; Up --------------------------------------------------------------------------
+.up:
+    call    entity_col_up
+    jr      z,.up_move
+    jr      .direction
+
+.up_move:
+    dec     c
+    dec     c
+    jr      .done
+    
+; Down ------------------------------------------------------------------------
+.down:
+    call    entity_col_down
+    jr      z,.down_move
+    jr      .direction
+
+.down_move:
+    inc     c
+    inc     c
+    jr      .done
 
