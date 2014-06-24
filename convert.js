@@ -614,11 +614,13 @@ var Parse = {
     },
 
     /** Decompose image with 16x16 tiles into a mapping of four 8x8 tiles per 16x16 block. */
-    blockDefsFromImage: function(palette, blocks, tiles) {
+    blockDefsFromImage: function(palette, blocks, tiles, map) {
 
         var offsets = [[], [], [], []],
             tileMap = Parse.hashImageBlocks(palette, true, tiles),
             blockMap = Parse.hashImageBlocks(palette, false, blocks),
+            mapped = {},
+            mappedReverse = {},
             blockIndex = 0;
 
         for(var y = 0; y < blockMap.height; y += 2) {
@@ -650,6 +652,13 @@ var Parse = {
 
                 });
 
+                if (map) {
+                    if (!mappedReverse.hasOwnProperty(bytes.join(','))) {
+                        mappedReverse[bytes.join(',')] = blockIndex;
+                    }
+                    mapped[blockIndex] = bytes.join(',');
+                }
+
                 // save as direct indeces into the vram map
                 // this saves 16 cycles per tile load
                 offsets[0].push(bytes[0] - 128);
@@ -662,8 +671,16 @@ var Parse = {
             }
         }
 
-        // Merge the offset arrays into one big array (removing and sub level arrays)
-        return [].concat.apply([], offsets);
+        if (map) {
+            return {
+                map: mapped,
+                reverse: mappedReverse
+            };
+
+        } else {
+            // Merge the offset arrays into one big array (removing and sub level arrays)
+            return [].concat.apply([], offsets);
+        }
 
     }
 
@@ -882,6 +899,23 @@ var Convert = {
 
     },
 
+    BlockMap: function(file, tileset) {
+
+        console.log('[blocks] Parsing 16x16 block map "%s" using tileset "%s"...', file, tileset);
+
+        return Promise.props({
+            blocks: IO.load(file),
+            tiles: IO.load(tileset)
+
+        }).then(function(result) {
+            return Parse.blockDefsFromImage(Palette.Background, result.blocks, result.tiles, true);
+
+        }).error(function(err) {
+            console.error(('[blocks] Error: ' + err).red);
+        });
+
+    },
+
     Map: function(file, blockDefinitions, animationOffset) {
 
         console.log('[map] Converting tiles JSON Map "%s"...', file);
@@ -1066,6 +1100,10 @@ var Convert = {
         }).error(function(err) {
             console.error(('[snd] Error: ' + err).red);
         });
+
+    },
+
+    MapToNew: function() {
 
     }
 
@@ -1271,6 +1309,35 @@ if (process.argv[4] === '-reverse') {
         Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {
             return Convert.Map('main.map.json', defs, 0xf0);
         })
+
+        //Convert.BlockMap('blocks.def.png', 'tiles.bg.png').then(function(defsOld) {
+        //    Convert.BlockMap('blocksSorted.def.png', 'tiles.bg.png').then(function(defsNew) {
+
+        //        return IO.load('main.map.json').then(function(map) {
+        //            var data = map.layers[0].data;
+
+        //            data = data.map(function(tile) {
+        //                if (tile === 0) {
+        //                    return 0;
+
+        //                } else {
+        //                    var oldValue = defsOld.map[tile - 1],
+        //                        newValue = defsNew.reverse[oldValue];
+
+        //                    return +newValue + 1;
+        //                }
+        //            });
+
+        //            map.layers[0].data = data;
+        //            map.tilesets[0].image = 'blocksSorted.def.png';
+        //            return map;
+
+        //        }).then(function(map) {
+        //            return fs.writeFile(path.join(IO._source, 'copy.map.json'), JSON.stringify(map));
+        //        });
+
+        //    });
+        //})
 
     ]).then(function() {
         console.log('Complete!');
