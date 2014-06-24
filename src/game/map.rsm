@@ -189,6 +189,12 @@ map_set_room: ; b = x, c = y
     ; load room data
     call    map_load_room
 
+    ; reset animation delays to keep everything in sync
+    ld      hl,mapAnimationDelay
+    ld      a,0
+    ld      bc,TILE_ANIMATION_COUNT
+    call    core_mem_set
+
     pop     bc
     pop     de
     pop     hl
