@@ -484,11 +484,6 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
 ; Animation -------------------------------------------------------------------
 map_animate_tiles:
 
-    ; check if there are any tile animations
-    ld      a,TILE_ANIMATION_COUNT
-    cp      0
-    ret     z
-
     ; store state
     push    hl
     push    de
@@ -614,7 +609,7 @@ map_animate_tiles:
     inc     hl
     inc     d
     ld      a,d
-    cp      TILE_ANIMATION_COUNT
+    cp      TILE_ANIMATION_DATA_COUNT
     jr      nz,.animate
     ; end of loop
 
