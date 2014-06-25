@@ -5,17 +5,13 @@
 
 - Run ability (twice the running speed) (hold b for some time during running)
 
+    - hold b to charge up and start running after some time
+        - only works on ground, jumps cancels
+
+    - stops after landing from a jump
     - Breaks blocks horizontally
     - bounces off when hitting a non-breakable wall
     - when active, won't trigger dissappearing blocks
-    - powerup placed in lava zone
-    - activated by holding B while on the ground
-    - stops after jumping and then takes some time additional time to decelerate
-    - how to activate pounding?
-    - when pressed after releasing and still having a specific acceleration factor above normal running
-
-        - a horizontal pound is activated, smashing into the direction of the character
-        - and stopping at the next wall
 
 ## World
 
