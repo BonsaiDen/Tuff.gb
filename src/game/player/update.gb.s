@@ -1,6 +1,11 @@
 ; Main Player Update Logic ----------------------------------------------------
 player_update:
 
+    ; do not update during screen transitions
+    ld      a,[mapRoomUpdateRequired]
+    cp      1
+    ret     z
+
     ; check if we're dissolving
     ld      a,[playerDissolveTick]
     cp      255

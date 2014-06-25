@@ -218,7 +218,10 @@ player_scroll_map:
     ret
 
 .scrolled:
-    call    player_set_position
+    ld      b,255
+    ld      c,255
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_position
     ld      a,1
     ret
 
