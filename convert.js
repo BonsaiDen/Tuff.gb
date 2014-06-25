@@ -699,9 +699,10 @@ var Map = {
             entities,
             animations,
             tiles,
-            header = 0;
+            header = 0,
+            i;
 
-        for(var i = 0; i < 8; i++) {
+        for(i = 0; i < 8; i++) {
             var offset = ((y * 8 + i) * w) + x * 10;
             tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
             entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
@@ -718,6 +719,33 @@ var Map = {
 
         }).length;
 
+        if (tileBlocksUsed > 4) {
+            throw new TypeError('Room ' + x + 'x' + y + ' uses more than the maximum of 4 mapped tile blocks.');
+        }
+
+        // Setup block mapping
+        var tileBlockMapping = [],
+            blockMappingByte = 0;
+
+        for(i = 0; i < 8; i++) {
+            if (tileBlocks[i]) {
+                tileBlockMapping.push(i);
+                blockMappingByte |= (1 << i);
+            }
+        }
+
+        // Convert tile bytes into mapping space of current screen
+        /*
+        tileBytes = tileBytes.map(function(t) {
+            var originBlock = Math.floor(t / 64),
+                targetBlock = tileBlockMapping.indexOf(originBlock);
+
+            return (t - originBlock * 64) + targetBlock * 64;
+        });
+        */
+
+        var customTileMapping = [1, 3, 7, 15].indexOf(blockMappingByte) === -1;
+
         // Push the data offset into the room index
         roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
 
@@ -730,8 +758,13 @@ var Map = {
         // Pack Tile Data
         tiles = Pack.encode(tileBytes, false);
 
+        var roomBytes = [];
         if (animations.used) {
             header |= 1;
+        }
+
+        if (customTileMapping) {
+            header |= 2;
         }
 
         if (entities.used) {
@@ -739,19 +772,24 @@ var Map = {
         }
 
         // Write Room Header Byte
-        mapBytes.push(header);
+        roomBytes.push(header);
 
         // Write Animation Attribute Byte
         if (animations.used) {
-            mapBytes.push(parseInt(animations.data.join(''), 2));
+            roomBytes.push(parseInt(animations.data.join(''), 2));
+        }
+
+        if (customTileMapping) {
+            //roomBytes.push(blockMappingByte);
         }
 
         // Write Entity Bytes
         if (entities.used) {
-            mapBytes.push.apply(mapBytes, entities.data.slice(0, entities.count * 2));
+            roomBytes.push.apply(roomBytes, entities.data.slice(0, entities.count * 2));
         }
 
-        mapBytes.push.apply(mapBytes, tiles);
+        roomBytes.push.apply(roomBytes, tiles);
+        mapBytes.push.apply(mapBytes, roomBytes);
 
     },
 
