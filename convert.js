@@ -747,7 +747,7 @@ var Map = {
         var customTileMapping = [1, 3, 7, 15].indexOf(blockMappingByte) === -1;
 
         // Push the data offset into the room index
-        roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
+        //roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
 
         // Pack Entity Data
         entities = Map.parseEntities(entityBytes, x, y);
@@ -789,6 +789,7 @@ var Map = {
         }
 
         roomBytes.push.apply(roomBytes, tiles);
+        mapBytes.push(roomBytes.length);
         mapBytes.push.apply(mapBytes, roomBytes);
 
     },
