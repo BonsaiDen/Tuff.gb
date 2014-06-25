@@ -707,6 +707,17 @@ var Map = {
             entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
         }
 
+        // Record mapped tile blocks
+        var tileBlocks = [false, false, false, false, false, false, false];
+        tileBytes.forEach(function(t) {
+            tileBlocks[Math.floor(t / 64)] = true;
+        });
+
+        var tileBlocksUsed = tileBlocks.filter(function(t) {
+            return t === true;
+
+        }).length;
+
         // Push the data offset into the room index
         roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
 
