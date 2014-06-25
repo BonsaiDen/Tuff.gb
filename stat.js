@@ -130,7 +130,7 @@ banks.filter(function(b) {
 
     var left = (bank.end - 1) - (prev.end + 1);
     if (left > 0) {
-        console.log('    - %s-%s ........ (%s bytes free)'.grey, toHex(prev.end - 1), toHex(bank.end - 1), ljust(left, 5));
+        console.log('    - %s-%s ........ (%s bytes free)'.grey, toHex(prev.end + 1), toHex(bank.end - 1), ljust(left, 5));
     }
 
     console.log('\n');
