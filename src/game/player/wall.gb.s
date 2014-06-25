@@ -209,6 +209,9 @@ player_slide_wall:
     ld      a,1
     ld      [playerWallJumpPressed],a
 
+    ; disable double jump during wall jump
+    ld      [playerDoubleJumped],a
+
     ; play sound
     ld      a,SOUND_PLAYER_WALL_JUMP
     call    sound_play
