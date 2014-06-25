@@ -1,4 +1,4 @@
-SECTION "MapRam",WRAM0[$C400]
+SECTION "MapRam",WRAM0[$CF24]; must be aligned at 256 bytes for tile buffer
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE              EQU     512
@@ -24,7 +24,6 @@ MAP_FALLING_TILE_LIGHT      EQU     $30
 
 
 ; Room drawing ----------------------------------------------------------------
-mapRoomTileBuffer:          DS 512 ; 
 mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomUpdateRequired:      DB
 mapRoomEntityCount:         DB
@@ -52,6 +51,9 @@ mapAnimationDelay           DS TILE_ANIMATION_COUNT
 mapAnimationUseMap          DS TILE_ANIMATION_COUNT
 
 
-; Tile Animation RAM Buffer ---------------------------------------------------
-TILE_ANIMATION_BUFFER       DS 1024
+; RAM Buffers -----------------------------------------------------------------
+SECTION "MapBufferRam",WRAM0[$C100]; must be aligned at 256 bytes for tile buffer
+mapRoomTileBuffer:          DS 512; tile buffer for the current room (8x8 tiles)
+mapBlockDefinitionBuffer    DS 1024; buffer for tile definitions of the current room
+mapTileAnimationBuffer      DS 1024; buffer for tile animation graphics
 

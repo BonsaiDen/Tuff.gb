@@ -1,4 +1,4 @@
-SECTION "SoundRam",WRAM0[$CB00]
+SECTION "SoundRam",WRAM0[$CB00]; must be aligned at 256 bytes for soundChannelState
 
 
 ; Constants -------------------------------------------------------------------

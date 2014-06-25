@@ -1,4 +1,4 @@
-SECTION "GameRam",WRAM0[$C3D0]
+SECTION "GameRam",WRAM0[$C0D8]
 
 
 ; Game Constants --------------------------------------------------------------
@@ -10,9 +10,8 @@ GAME_MODE_CONTINUE  EQU 4
 GAME_MODE_START     EQU 5
 GAME_MODE_PLAYING   EQU 6
 
-GAME_DEBUG_MODE     EQU 0
+GAME_DEBUG_MODE     EQU 1
 
 ; Game State ------------------------------------------------------------------
-gameTimerHalf:      DB
 gameMode:           DB
 

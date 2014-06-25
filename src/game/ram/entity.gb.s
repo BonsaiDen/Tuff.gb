@@ -1,4 +1,4 @@
-SECTION "EntityRam",WRAM0[$CC00]
+SECTION "EntityRam",WRAM0[$CD00]; must be aligned at 256 bytes for screenState
 
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM           EQU 4

@@ -1,4 +1,4 @@
-SECTION "ScreenRam",WRAM0[$C3F0]
+SECTION "ScreenRam",WRAM0[$C0E0]
 
 ; Screen State ----------------------------------------------------------------
 screenFadeMode:     DB

@@ -1,4 +1,4 @@
-SECTION "TitleRam",WRAM0[$C3E0]
+SECTION "TitleRam",WRAM0[$C0D9]
 
 ; Constants -------------------------------------------------------------------
 DATA_TITLE_SPRITE_X      EQU 48
