@@ -450,14 +450,8 @@ entity_reset:
     ld      [hl],a
 
 .skip:
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
+    ld      de,8
+    add     hl,de
 
 .next:
     inc     b

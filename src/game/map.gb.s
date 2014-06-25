@@ -724,12 +724,10 @@ map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
 .dark:
     ld      a,$70
     call    map_check_breakable_surrounding
-    call    _map_set_tile_value; top left
     inc     b
 
     ld      a,$71
     call    map_check_breakable_surrounding
-    call    _map_set_tile_value; top right
     pop     bc
     ret
 
@@ -759,12 +757,10 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
 .dark:
     ld      a,$72
     call    map_check_breakable_surrounding
-    call    _map_set_tile_value; bottom left
     inc     b
 
     ld      a,$73
     call    map_check_breakable_surrounding
-    call    _map_set_tile_value; bottom right
     pop     bc
     ret
 
@@ -774,6 +770,72 @@ map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or 
     inc     b
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    _map_set_tile_value; bottom right
+    pop     bc
+    ret
+
+
+map_destroy_breakable_block_left: ; b = block x, c = block y -> a = broken or not
+
+    ; break the four 8x8 blocks
+    push    bc
+    
+    ; get the 16x16 block tile
+    call    map_get_block_value
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    cp      MAP_BREAKABLE_BLOCK_LIGHT
+    jr      z,.light
+
+.dark:
+    ld      a,$70
+    call    map_check_breakable_surrounding
+    inc     c
+
+    ld      a,$72
+    call    map_check_breakable_surrounding
+    pop     bc
+    ret
+
+.light:
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    _map_set_tile_value; top left
+    inc     c
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    _map_set_tile_value; bottom left
+    pop     bc
+    ret
+
+
+map_destroy_breakable_block_right: ; b = block x, c = block y -> a = broken or not
+
+    ; break the four 8x8 blocks
+    push    bc
+    
+    ; get the 16x16 block tile
+    call    map_get_block_value
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    cp      MAP_BREAKABLE_BLOCK_LIGHT
+    jr      z,.light
+
+.dark:
+    inc     b
+    ld      a,$71
+    call    map_check_breakable_surrounding
+    inc     c
+
+    ld      a,$73
+    call    map_check_breakable_surrounding
+    pop     bc
+    ret
+
+.light:
+    inc     b
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    _map_set_tile_value; top left
+    inc     c
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    call    _map_set_tile_value; bottom left
     pop     bc
     ret
 
@@ -834,31 +896,30 @@ map_check_breakable_surrounding: ; b = tx, c = ty
 
 .found_none:
     pop     af
-    pop     hl
-    ret
+    jr      .done
 
 .found_left:
     pop     af
     ld      a,MAP_BACKGROUND_FADE_LEFT
-    pop     hl
-    ret
+    jr      .done
 
 .found_top:
     pop     af
     ld      a,MAP_BACKGROUND_FADE_TOP
-    pop     hl
-    ret
+    jr      .done
 
 .found_right:
     pop     af
     ld      a,MAP_BACKGROUND_FADE_RIGHT
-    pop     hl
-    ret
+    jr      .done
 
 .found_bottom:
     pop     af
     ld      a,MAP_BACKGROUND_FADE_BOTTOM
+
+.done:
     pop     hl
+    call    _map_set_tile_value; top left
     ret
 
 
