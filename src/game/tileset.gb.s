@@ -41,7 +41,7 @@ tileset_load: ; hl = source
 
     ; copy animated tiles into WRAM buffer (the last 64 tiles, 1024 bytes)
 tileset_load_animations:; hl = source
-    ld      de,TILE_ANIMATION_BUFFER
+    ld      de,mapTileAnimationBuffer
     call    core_decode
     ret
 

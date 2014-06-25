@@ -112,20 +112,13 @@ game_loop:
 
 ; Timer -----------------------------------------------------------------------
 game_timer:
-
-    ld      a,[gameTimerHalf]; TODO use core timer counter 
-    cp      1
-    jr      nz,.tick
-
+    ld      a,[coreTimerCounter]
+    and     %00000001
+    jr      z,.tick; skip the timers below every other tick
     call    player_water_timer
     call    player_sleep_timer
 
 .tick:
-    ld      a,[gameTimerHalf]
-    inc     a
-    and     %00000001
-    ld      [gameTimerHalf],a
-
     call    map_update_falling_blocks
     call    map_animate_tiles
     call    screen_timer

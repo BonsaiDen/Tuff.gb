@@ -603,7 +603,7 @@ map_animate_tiles:
     add     hl,hl
     add     hl,hl
     add     hl,hl
-    ld      bc,TILE_ANIMATION_BUFFER
+    ld      bc,mapTileAnimationBuffer
     add     hl,bc
 
     ; copy 16 bytes from the tile buffer into vram
