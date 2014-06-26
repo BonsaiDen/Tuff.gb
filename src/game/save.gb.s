@@ -13,8 +13,8 @@ SAVE_COMPLETE_SIZE         EQU SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_PLAYE
 
 SAVE_DEFAULT_PLAYER_X      EQU 24
 SAVE_DEFAULT_PLAYER_Y      EQU 48
-SAVE_DEFAULT_ROOM_X        EQU 3
-SAVE_DEFAULT_ROOM_Y        EQU 2
+SAVE_DEFAULT_ROOM_X        EQU 2
+SAVE_DEFAULT_ROOM_Y        EQU 0
 
 
 ; SRAM Handling Routines ------------------------------------------------------
@@ -172,7 +172,7 @@ save_load_player:
     ld      a,[mapRoomY]
     ld      c,a
 
-    call    map_set_room
+    call    map_load_room
     call    player_reset
 
     ret
