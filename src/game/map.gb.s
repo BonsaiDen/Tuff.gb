@@ -31,7 +31,7 @@ map_scroll_left:
     ld      a,[mapRoomY]
     ld      [mapRoomLastY],a
     ld      c,a
-    call    map_set_room
+    call    map_load_room
     ret
 
 
@@ -43,7 +43,7 @@ map_scroll_right:
     ld      a,[mapRoomY]
     ld      [mapRoomLastY],a
     ld      c,a
-    call    map_set_room
+    call    map_load_room
     ret
 
 
@@ -55,7 +55,7 @@ map_scroll_down:
     ld      [mapRoomLastY],a
     inc     a
     ld      c,a
-    call    map_set_room
+    call    map_load_room
     ret
 
 
@@ -67,12 +67,12 @@ map_scroll_up:
     ld      [mapRoomLastY],a
     dec     a
     ld      c,a
-    call    map_set_room
+    call    map_load_room
     ret
 
 
 ; Map -------------------------------------------------------------------------
-map_set_room: ; b = x, c = y
+map_load_room: ; b = x, c = y
 
     push    hl
     push    de
@@ -111,12 +111,14 @@ map_set_room: ; b = x, c = y
     ld      [hl],$01
     ei
 
+    ; setup block definitions
+    call    _map_load_block_definitions
+
     ; unload entities
     call    entity_store ; first store them
-    call    entity_reset ; then reset them, as this will clear their active flag
+    call    entity_reset 
 
     ; load room data into vram
-    call    _map_load_block_definitions
     call    _map_load_room_data
 
     ; reset animation delays to keep everything in sync
@@ -149,33 +151,36 @@ map_draw_room:
     jr      z,.buffer_9c
 
 .buffer_98:
-    ld      hl,mapRoomTileBuffer
     ld      de,$9800
-    ld      bc,512
-    call    core_vram_cpy
-
-    ld      a,[rLCDC]
-    and     LCDCF_BG_MASK
-    ld      [rLCDC],a
-    ld      a,1
-    ld      [mapCurrentScreenBuffer],a
-    jr      .entity
+    jr      .copy
 
 .buffer_9c:
-    ld      hl,mapRoomTileBuffer
     ld      de,$9C00
-    ld      bc,512
+
+.copy:
+    ld      hl,mapRoomTileBuffer
+    ld      bc,256
     call    core_vram_cpy
 
-    ld      a,[rLCDC]
-    and     LCDCF_BG_MASK
-    or      LCDCF_BG9C00
-    ld      [rLCDC],a
-    ld      a,0
+    ; flip buffer
+    ld      a,[mapCurrentScreenBuffer]
+    xor     1
     ld      [mapCurrentScreenBuffer],a
 
-.entity:
-    ; unset
+    ; adjust for or mask
+    xor     1
+    sla     a
+    sla     a
+    sla     a
+    ld      b,a
+
+    ; flip bg data used for screen
+    ld      a,[rLCDC]
+    and     LCDCF_BG_MASK
+    or      b
+    ld      [rLCDC],a
+
+    ; mark as updated
     ld      a,0
     ld      [mapRoomUpdateRequired],a
     ret

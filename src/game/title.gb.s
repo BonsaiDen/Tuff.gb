@@ -349,7 +349,7 @@ title_draw_room:
     ; draw room
     ld      b,15
     ld      c,15
-    call    map_set_room
+    call    map_load_room
 
     ; draw the room right away instead of waiting for the next vblank to draw it
     call    map_draw_room
@@ -357,8 +357,8 @@ title_draw_room:
     ; setup title text
     ld      hl,DataTitleLayout
     ld      de,$9800 + 488; "Start"
-    ld      bc,$04
-    call    core_vram_cpy
+    ld      b,$04
+    call    core_vram_cpy_low
 
     ; check for existing save data before displaying the continue option
     call    save_check_state
@@ -369,8 +369,8 @@ title_draw_room:
 
     ld      hl,DataTitleLayout + 4
     ld      de,$9800 + 519; "Continue"
-    ld      bc,$06
-    call    core_vram_cpy
+    ld      b,$06
+    call    core_vram_cpy_low
 
     ret
 
