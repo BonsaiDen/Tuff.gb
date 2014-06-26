@@ -6,7 +6,7 @@ playerAnimationRowMap:
     DB 4; PUSHING   
     DB 2; JUMP      
     DB 2; FALL      
-    DB 1; RUNNING   
+    DB 9; RUNNING   
     DB 6; SWIMMING  
     DB 7; DISSOLVE  
     DB 2; SURFACE   
