@@ -90,57 +90,16 @@ map_set_room: ; b = x, c = y
     ld      [hl],MAP_ROOM_DATA_BANK
 
     ; get room pointer offset into bc
-    call    _map_find_room_pointer
+    call    _map_load_room_pointer
+    inc     hl; skip length byte
 
-    ; get header and setup animations
-.load_room:
-    inc     hl
-    ld      a,[hli]; load header byte
-    ld      d,a; store header byte
-    ld      b,0; per default animations are off
-    and     %00000001
-    cp      1
-    jr      nz,.skip_animation_byte
-    ld      a,[hli]; load animation attribute byte
-    ld      b,a; store into b
+    ; store room flags here for later use
+    ld      a,[hli]
+    ld      [mapRoomHeaderFlags],a
 
-.skip_animation_byte:
-
-    ; get number of entities in the room
-    ld      a,d
-    swap    a
-    and     %00001111
-    ld      [mapRoomEntityCount],a
-
-    ; set active animation data (b = animation attribute byte)
-    ld      de,mapAnimationUseMap
-    ld      c,TILE_ANIMATION_COUNT / 2; 8 bits to check
-
-    ; each time we check bit 0 and flag two animations active
-.next_animation_byte:
-    xor     a
-    bit     0,b
-    jr      z,.set_animation_byte; if not set, set the value to 0
-    ld      a,1; otherwise we load a 1
-
-.set_animation_byte:
-    ld      [de],a
-    inc     de
-    ld      [de],a
-    inc     de
-
-    srl     b; shift to next byte
-    dec     c
-    jr      nz,.next_animation_byte
-
-    ; copy entity data after room tile buffer
-.load_room_entities:
-    ld      b,0
-    ld      a,[mapRoomEntityCount]
-    ld      c,a
-    sla     c ; each entity has two bytes so we multiple by two here
-    ld      de,mapRoomBlockBuffer + MAP_ROOM_SIZE
-    call    core_mem_cpy
+    call    _map_load_animations
+    call    _map_load_tile_map
+    call    _map_load_entities
 
     ; unpack the tile data
     ld      de,mapRoomBlockBuffer
@@ -157,7 +116,8 @@ map_set_room: ; b = x, c = y
     call    entity_reset ; then reset them, as this will clear their active flag
 
     ; load room data into vram
-    call    _map_parse_room_data
+    call    _map_load_block_definitions
+    call    _map_load_room_data
 
     ; reset animation delays to keep everything in sync
     ld      hl,mapAnimationDelay
@@ -1049,7 +1009,211 @@ _map_set_tile_value: ; b = tile x, c = tile y, a = value
     ret
 
 
-_map_parse_room_data:
+; Map Loading Helpers ---------------------------------------------------------
+; -----------------------------------------------------------------------------
+_map_load_room_pointer:; b = x, c = y -> bc = pointer to packed room data
+
+    ; base pointer for the map
+    ld      hl,DataMapMain
+
+    ; id = x * (y * 16)
+    sla     c; x2
+    sla     c; x4
+    sla     c; x8
+    sla     c; x16
+    ld      a,c
+    add     b;
+    ld      b,a
+
+.next:
+    ; check if we found the room we're looking for
+    ret     z; compare against the result of add b / dec b
+
+    ; else read length byte and skip room data
+    ld      a,[hli]
+    add     a,l
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    ; check next room
+    dec     b
+    jr      .next
+    ret
+
+
+_map_load_animations:
+    ld      a,[mapRoomHeaderFlags]
+    and     %00000001
+    ld      b,0; per default animations are off
+    cp      1
+    jr      nz,.skip_animation_byte
+
+    ; load animation attribute byte
+    ld      a,[hli]
+    ld      b,a; store into b
+
+.skip_animation_byte:
+
+    ; set active animation data (b = animation attribute byte)
+    ld      de,mapAnimationUseMap
+    ld      c,TILE_ANIMATION_COUNT / 2; 8 bits to check
+
+    ; each time we check bit 0 and flag two animations active
+.next_animation_byte:
+    xor     a
+    bit     0,b
+    jr      z,.set_animation_byte; if not set, set the value to 0
+    ld      a,1; otherwise we load a 1
+
+.set_animation_byte:
+    ld      [de],a
+    inc     de
+    ld      [de],a
+    inc     de
+    srl     b; shift to next byte
+    dec     c
+    jr      nz,.next_animation_byte
+    ret
+
+
+_map_load_tile_map:
+
+    ; load and setup the rooms tile block definition mapping
+    ld      a,[mapRoomHeaderFlags]
+    bit     1,a; check if this room has a custom tile block map
+    ld      a,$0f; default mapping 
+    jr      z,.skip_tile_map_byte
+    ld      a,[hli]
+
+.skip_tile_map_byte:
+    ld      [mapRoomTileBlockMap],a; store mapping
+    ret
+
+
+_map_load_block_definitions:
+
+    ; compare with old room mapping
+    ld      a,[mapRoomTileLastBlockMap]
+    ld      b,a
+
+    ; check if the mapping changed
+    ld      a,[mapRoomTileBlockMap]
+    cp      b
+    ret     z
+
+    ld      [mapRoomTileLastBlockMap],a
+    ld      c,a
+    ld      b,0
+
+    ; now setup the tile mappings into the corresponding ram section
+    ld      a,0
+.next:
+    bit     0,c
+    jr      z,.not_mapped; if not set, skip this mapping
+
+    ; load the 4 8x8 tiles for the 64 corresponding blocks
+    call    _map_load_tile_block
+    inc     b
+
+.not_mapped:
+    srl     c; shift to next bit
+
+    ; we check 8 bits we DO not expect more than 4 blocks to be active
+    inc     a
+    cp      8
+    jr      nz,.next
+
+    ret
+
+
+_map_load_tile_block: ; a = origin block, b = target block
+    push    af
+    push    bc
+
+    ; setup target location
+    ld      h,0
+    ld      l,b
+    add     hl,hl; x64
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    ld      bc,mapBlockDefinitionBuffer
+    add     hl,bc; add data location
+    ld      b,h; move into bc
+    ld      c,l
+
+    ; setup origin
+    ld      h,0
+    ld      l,a
+    add     hl,hl; x64
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    ld      de,DataBlockDef
+    add     hl,de; add data location
+
+    ; copy
+	ld      d,64
+.loop:
+    ld	    a,[hl]
+	ld	    [bc],a
+    inc     h
+    inc     b
+
+    ld	    a,[hl]
+	ld	    [bc],a
+    inc     h
+    inc     b
+
+    ld	    a,[hl]
+	ld	    [bc],a
+    inc     h
+    inc     b
+
+    ld	    a,[hl]
+	ld	    [bc],a
+
+    dec     h
+    dec     h
+    dec     h
+    dec     b
+    dec     b
+    dec     b
+
+    inc     hl
+	inc	    bc
+
+.skip:
+	dec	    d
+	jr	    nz,.loop
+
+    pop     bc
+    pop     af
+    ret
+    
+
+_map_load_entities:
+
+    ; copy entity data after room tile buffer
+    ld      a,[mapRoomHeaderFlags]; restore room flags
+    swap    a
+    and     %00001111
+    ld      [mapRoomEntityCount],a
+    ld      b,0
+    ld      c,a
+    sla     c ; each entity has two bytes so we multiple by two here
+    ld      de,mapRoomBlockBuffer + MAP_ROOM_SIZE
+    call    core_mem_cpy
+    ret
+
+
+_map_load_room_data:
     
     ld      a,0
     ld      [mapRoomUpdateRequired],a
@@ -1096,12 +1260,12 @@ _map_parse_room_data:
     ld      c,d ; low byte index into block definitions
 
     ; upper left
-    ld      b,DataBlockDef >> 8 ; block def row 0 offset
+    ld      b,mapBlockDefinitionBuffer >> 8 ; block def row 0 offset
     ld      a,[bc] ; tile value
     ld      [hli],a ;  draw + 0
 
     ; upper right
-    ld      b,DataBlockDef >> 8 + 1 ; block def row 1 offset
+    ld      b,mapBlockDefinitionBuffer >> 8 + 1 ; block def row 1 offset
     ld      a,[bc] ; tile value
     ld      [hl],a ; draw +1
 
@@ -1112,12 +1276,12 @@ _map_parse_room_data:
     ld      c,d
 
     ; lower left
-    ld      b,DataBlockDef >> 8 + 2 ; block def row 2 offset
+    ld      b,mapBlockDefinitionBuffer >> 8 + 2 ; block def row 2 offset
     ld      a,[bc] ; tile value
     ld      [hli],a ; draw + 32
 
     ; lower right
-    ld      b,DataBlockDef >> 8 + 3 ; block def row 2 offset
+    ld      b,mapBlockDefinitionBuffer >> 8 + 3 ; block def row 2 offset
     ld      a,[bc] ; tile value
     ld      [hl],a ; draw + 33
 
@@ -1190,38 +1354,5 @@ _map_parse_room_data:
 .done:
     ld      a,1
     ld      [mapRoomUpdateRequired],a
-    ret
-
-
-_map_find_room_pointer:; b = x, c = y -> bc = pointer to packed room data
-
-    ; base pointer for the map
-    ld      hl,DataMapMain
-
-    ; id = x * (y * 16)
-    sla     c; x2
-    sla     c; x4
-    sla     c; x8
-    sla     c; x16
-    ld      a,c
-    add     b;
-    ld      b,a
-
-.next:
-    ; check if we found the room we're looking for
-    ret     z; compare against the result of add b / dec b
-
-    ; else read length byte and skip room data
-    ld      a,[hli]
-    add     a,l
-    ld      l,a
-    adc     a,h
-    sub     l
-    ld      h,a
-
-    ; check next room
-    dec     b
-    jr      .next
-
     ret
 

@@ -734,26 +734,20 @@ var Map = {
             }
         }
 
+        // Pack Entity Data
+        entities = Map.parseEntities(entityBytes, x, y);
+
+        // Pack Animation Data
+        animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
+
         // Convert tile bytes into mapping space of current screen
-        /*
+        var customTileMapping = [1, 3, 7, 15].indexOf(blockMappingByte) === -1;
         tileBytes = tileBytes.map(function(t) {
             var originBlock = Math.floor(t / 64),
                 targetBlock = tileBlockMapping.indexOf(originBlock);
 
             return (t - originBlock * 64) + targetBlock * 64;
         });
-        */
-
-        var customTileMapping = [1, 3, 7, 15].indexOf(blockMappingByte) === -1;
-
-        // Push the data offset into the room index
-        //roomOffsets.push((mapBytes.length >> 8), mapBytes.length & 0xff);
-
-        // Pack Entity Data
-        entities = Map.parseEntities(entityBytes, x, y);
-
-        // Pack Animation Data
-        animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
 
         // Pack Tile Data
         tiles = Pack.encode(tileBytes, false);
@@ -780,7 +774,7 @@ var Map = {
         }
 
         if (customTileMapping) {
-            //roomBytes.push(blockMappingByte);
+            roomBytes.push(blockMappingByte);
         }
 
         // Write Entity Bytes

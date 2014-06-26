@@ -8,6 +8,9 @@ MAP_ROOM_DATA_BANK          EQU     2
 MAP_WIDTH                   EQU     16
 MAP_HEIGHT                  EQU     16
 
+TILE_ANIMATION_COUNT        EQU     16
+TILE_ANIMATION_DATA_COUNT   EQU     11
+
 MAP_BACKGROUND_TILE_LIGHT   EQU     $5f
 MAP_BACKGROUND_TILE_DARK    EQU     $70
 MAP_BACKGROUND_FADE_LEFT    EQU     $65
@@ -23,11 +26,15 @@ MAP_FALLABLE_BLOCK_LIGHT    EQU     $2a
 MAP_FALLING_TILE_LIGHT      EQU     $30
 
 
+
 ; Room drawing ----------------------------------------------------------------
 mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
 mapRoomUpdateRequired:      DB
 mapRoomEntityCount:         DB
 mapCurrentScreenBuffer:     DB
+mapRoomHeaderFlags:         DB
+mapRoomTileBlockMap:        DB
+mapRoomTileLastBlockMap:    DB
 
 
 ; -----------------------------------------------------------------------------
@@ -44,8 +51,6 @@ mapFallableBlockCount:      DB
 
 
 ; Tile Animations -------------------------------------------------------------
-TILE_ANIMATION_COUNT        EQU 16
-TILE_ANIMATION_DATA_COUNT   EQU 11
 mapAnimationIndexes         DS TILE_ANIMATION_COUNT
 mapAnimationDelay           DS TILE_ANIMATION_COUNT
 mapAnimationUseMap          DS TILE_ANIMATION_COUNT
