@@ -49,11 +49,11 @@ player_update:
 
     ; check for hazard (checked before gravity so we actually overlap a few pixels)
     ld      a,[mapCollisionFlag]
-    cp      4; lava
+    cp      MAP_COLLISION_LAVA
     jp      z,player_dissolve
-    cp      6; spikes
+    cp      MAP_COLLISION_SPIKES
     jp      z,player_dissolve
-    cp      7; electricity
+    cp      MAP_COLLISION_ELECTRIC
     jp      z,player_dissolve
 
     ; pounding logic
@@ -65,13 +65,14 @@ player_update:
 
     ; check for hazard once more after gravity got applied
     ld      a,[mapCollisionFlag]
-    cp      4; lava
+    cp      MAP_COLLISION_LAVA
     jp      z,player_dissolve
-    cp      6; spikes
+    cp      MAP_COLLISION_SPIKES
     jp      z,player_dissolve
-    cp      7; electricity
+    cp      MAP_COLLISION_ELECTRIC
     jp      z,player_dissolve
 
+    ; check for map scrolling
     call    player_scroll_map
     cp      1
     ret     z; exit if the map got scrolled to prevent glitched collision access
@@ -91,11 +92,11 @@ player_update:
     call    map_get_collision
 
     ld      a,[mapCollisionFlag]
-    cp      3
+    cp      MAP_COLLISION_WATER_DEEP
     jr      z,.under_water
 
     ; check if swimming
-    cp      2 
+    cp      MAP_COLLISION_WATER
     jr      z,.water
 
     ; check if was diving
@@ -123,7 +124,7 @@ player_update:
     ld      b,a
     call    map_get_collision
     ld      a,[mapCollisionFlag]
-    cp      3
+    cp      MAP_COLLISION_WATER_DEEP
     jr      z,.under_water
 
     ; reset water variables when on land

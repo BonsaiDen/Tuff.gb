@@ -34,7 +34,7 @@ var Palette = {
         '0,0,255': 3,  // water full (diving)
         '255,0,0': 4,  // hazard lava
         '255,128,0': 6,  // hazard spikes
-        '255,255,0': 7,  // hazard electic
+        '255,255,0': 7,  // hazard electric
         '0,255,0': 5 // breakable
     }
 

@@ -69,6 +69,7 @@ player_reset:
     ld      [playerMoveTick],a
     ld      [playerLandingFrames],a
     ld      [playerWaterTick],a
+    ld      [playerRunningTick],a
 
     ; Sliding
     ld      a,0
@@ -99,6 +100,17 @@ player_set_position:
     ret
 
 
+PlayerDissolveSounds:
+    DB      $00; none
+    DB      $00; block
+    DB      SOUND_PLAYER_DEATH_LAVA; water
+    DB      $00; water deep
+    DB      SOUND_PLAYER_DEATH_LAVA; lava
+    DB      $00; breakable
+    DB      SOUND_PLAYER_DEATH_LAVA; spikes
+    DB      SOUND_PLAYER_DEATH_ELECTRIC
+
+
 player_dissolve:
 
     ; jump out if already dissolving
@@ -106,9 +118,13 @@ player_dissolve:
     cp      255
     jr      nz,.done
 
-    ; TODO check tile type and play corresponding sound
+    ; get sound to play
     ld      a,[mapCollisionFlag]
-    ld      a,SOUND_PLAYER_DEATH_LAVA
+    ld      hl,PlayerDissolveSounds
+    ld      b,0
+    ld      c,a
+    add     hl,bc
+    ld      a,[hl]
     call    sound_play
 
     ; dissolve player when hitting a hazard

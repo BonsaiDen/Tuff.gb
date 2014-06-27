@@ -10,11 +10,6 @@ player_pound:
     ld      a,[playerIsPounding]
     cp      0
     jp      nz,.delay
-
-    ; check if falling for at least 3 frames
-    ;ld      a,[playerFallFrames]
-    ;cp      1
-    ;ret     c
     
     ; check if on ground
     ld      a,[playerOnGround]
@@ -106,14 +101,14 @@ player_pound:
     call    map_get_collision
     pop     bc
     ld      a,[mapCollisionFlag]
-    cp      0; no collision, check next
+    cp      MAP_COLLISION_NONE; no collision, check next
     jp      z,.next
-    cp      5 ; found a block
+    cp      MAP_COLLISION_BREAKABLE ; found a block
     jp      z,.found
 
     ; setup normal collision here to prevent hazard values leaking through
     ; and triggering instant death in mid air
-    ld      a,1
+    ld      a,MAP_COLLISION_BLOCK
     ld      [mapCollisionFlag],a
     ret;    something other block, exit
     
@@ -400,10 +395,10 @@ player_pounding_collision:
     ld      b,a
     call    map_get_collision
     ld      a,[mapCollisionFlag]
-    cp      1
+    cp      MAP_COLLISION_BLOCK
     jp      z,.collision
 
-    cp      5
+    cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_right
 
     ; store M block x coordinate
@@ -424,10 +419,10 @@ player_pounding_collision:
     ld      b,a
     call    map_get_collision
     ld      a,[mapCollisionFlag]
-    cp      1
+    cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
-    cp      5
+    cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_left
 
     ; store R block x coordinate
