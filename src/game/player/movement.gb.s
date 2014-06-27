@@ -21,16 +21,23 @@ player_move:
 
     ; check if we're running at full speed
     ld      a,[playerIsRunning]
+    cp      1
+    jr      z,.running_half
     cp      2
-    jr      z,.running
+    jr      z,.running_full
 
 .not_running:
     ld      a,PLAYER_ANIMATION_WALKING
     ld      [playerAnimation],a
     jr      .not_on_ground
     
-.running:
-    ld      a,PLAYER_ANIMATION_RUNNING
+.running_half:
+    ld      a,PLAYER_ANIMATION_RUNNING_HALF
+    ld      [playerAnimation],a
+    jr      .not_on_ground
+
+.running_full:
+    ld      a,PLAYER_ANIMATION_RUNNING_FULL
     ld      [playerAnimation],a
 
 .not_on_ground:

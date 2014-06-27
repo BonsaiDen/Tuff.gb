@@ -30,7 +30,7 @@ DB $fd, $05,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 DB $00, $02,$01,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $02,$20,$ff,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
-; Running
+; Running Full
 DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $02,$03,$02,$03, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 
@@ -65,4 +65,8 @@ DB $fd, $09,$05,$04,$03, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 ; Double Jumping 
 DB $00, $02,$03,$00,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 DB $fd, $04,$07,$20,$ff, $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+
+; Running Half
+DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
+DB $fd, $03,$04,$03,$05, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
 

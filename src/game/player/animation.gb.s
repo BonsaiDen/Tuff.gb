@@ -6,7 +6,7 @@ playerAnimationRowMap:
     DB 4; PUSHING   
     DB 2; JUMP      
     DB 2; FALL      
-    DB 9; RUNNING   
+    DB 9; RUNNING FULL
     DB 6; SWIMMING  
     DB 7; DISSOLVE  
     DB 2; SURFACE   
@@ -15,6 +15,7 @@ playerAnimationRowMap:
     DB 5; POUND STOP
     DB 8; LANDING
     DB 2; DOUBLE JUMP      
+    DB 1; RUNNING HALF
 
 
 player_animation_update: ; executed during vblank
