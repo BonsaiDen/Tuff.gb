@@ -260,8 +260,7 @@ player_accelerate:
 
     ld      a,[coreInput]; and hold the B button
     and     BUTTON_B
-    cp      BUTTON_B
-    jr      nz,.is_not_running
+    jr      z,.is_not_running
 
     ld      a,[coreInput]; and either direction is still pressed
     and     BUTTON_RIGHT | BUTTON_LEFT
@@ -307,7 +306,24 @@ player_accelerate:
     cp      PLAYER_RUNNING_DELAY; >= 
     jr      nc,.check_direction
 
+    ; check for matching direction button
+    ld      a,[playerDirection]
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.check_running_end_right
+
+    ; left
+    ld      a,[coreInput]
+    and     BUTTON_LEFT
+    jr      z,.stop_running
+    jr      .check_running_state
+
+.check_running_end_right:
+    ld      a,[coreInput]
+    and     BUTTON_RIGHT
+    jr      z,.stop_running
+
     ; if not running check for ground or water or wall slide
+.check_running_state:
     ld      a,[playerWallSlideDir]
     ld      c,a
     ld      a,[playerOnGround]
@@ -319,6 +335,7 @@ player_accelerate:
     jr      z,.check_direction; if both are false keep running
     
     ; if either is true reset running mode
+.stop_running:
     ld      a,0
     ld      [playerIsRunning],a
 
