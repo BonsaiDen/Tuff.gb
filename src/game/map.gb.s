@@ -716,9 +716,20 @@ map_check_breakable_surrounding: ; b = tx, c = ty
 
 ; Fallable blocks -------------------------------------------------------------
 map_check_fallable_blocks:
+
+    ; check if there are any blocks on the current screen
     ld      a,[mapFallableBlockCount]
     cp      0
     ret     z
+
+    ; check if player is at running speed
+    ld      a,[playerSpeedRight]
+    cp      2
+    ret     nc
+
+    ld      a,[playerSpeedLeft]
+    cp      2
+    ret     nc
 
     ; setup loop counter
     ld      a,0
