@@ -100,7 +100,7 @@ player_slide_wall:
 .sliding_done:
 
     call    player_slide_wall_stop
-    ld      a,0
+    xor     a
     ld      [playerWallSlideTick],a
 
     ld      a,PLAYER_WALL_JUMP_WINDOW
@@ -141,7 +141,7 @@ player_slide_wall:
 
     ; otherwise reset the sliding state and switch the direction
     call    player_slide_wall_stop
-    ld      a,0
+    xor     a
     ld      [playerWallSlideDir],a
 
     ret
@@ -187,7 +187,7 @@ player_slide_wall:
     ld      [playerGravityTick],a
 
     ; reset jump variables
-    ld      a,0
+    xor     a
     ld      [playerFallFrames],a
     ld      [playerFallSpeed],a
     ld      [playerJumpFrames],a
@@ -199,7 +199,7 @@ player_slide_wall:
     ld      [playerWallJumpDir],a
 
     ; reset old slide dir
-    ld      a,0
+    xor     a
     ld      [playerWallSlideDir],a
 
     ld      a,PLAYER_WALL_JUMP_DURATION
@@ -236,19 +236,19 @@ player_slide_wall:
 .left:
     ld      a,2
     ld      [playerSpeedLeft],a
-    ld      a,0
+    xor     a
     ld      [playerSpeedRight],a
     ret
 
 .right:
     ld      a,2
     ld      [playerSpeedRight],a
-    ld      a,0
+    xor     a
     ld      [playerSpeedLeft],a
     ret
 
 .stop:
-    ld      a,0
+    xor     a
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ret
@@ -269,7 +269,7 @@ player_slide_wall_stop:
     ld      [playerAnimation],a
 
     ; reset tick
-    ld      a,0
+    xor     a
     ld      [playerWallSlideTick],a
     ld      [playerWallJumpWindow],a
 

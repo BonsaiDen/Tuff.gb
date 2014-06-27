@@ -42,7 +42,7 @@ player_pound:
     ld      [playerPoundTick],a
 
     ; reset movement 
-    ld      a,0
+    xor     a
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ld      [playerFallSpeed],a
@@ -60,7 +60,7 @@ player_pound:
     ld      [playerGravityMax],a
 
     ; reset x centering for block beneath
-    ld      a,0
+    xor     a
     ld      [playerPoundCenterX],a
 
     ; check if there's a breakable block below us to align with
@@ -172,7 +172,7 @@ player_pound:
     ld      [playerPoundTick],a
 
     ; disable gravity during delay
-    ld      a,0
+    xor     a
     ld      [playerFallSpeed],a
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
@@ -294,7 +294,7 @@ player_pound:
     ld      [playerAnimation],a
 
     ; no more falling
-    ld      a,0
+    xor     a
     ld      [playerFallSpeed],a
 
     ; switch to end mode
@@ -367,7 +367,7 @@ player_pound:
 .end:
     
     ; unset pound
-    ld      a,0
+    xor     a
     ld      [playerIsPounding],a
     ld      [playerPoundYBlock],a
 
@@ -488,7 +488,7 @@ player_pounding_collision:
     call    nz,player_destroy_breakable_block
     pop     bc
 
-    ld      a,0; fall through breakable blocks
+    xor     a; fall through breakable blocks
     ret
 
 .collision:
@@ -532,7 +532,7 @@ player_destroy_breakable_block:; a = block x, c = block y
     ret     nz
 
     ; reset delay
-    ld      a,0
+    xor     a
     ld      [playerBreakDelayed],a
 
     ; break block
@@ -560,7 +560,7 @@ player_destroy_breakable_block:; a = block x, c = block y
     ret     nz
 
     ; reset delay
-    ld      a,0
+    xor     a
     ld      [playerBreakDelayed],a
 
     ; break block

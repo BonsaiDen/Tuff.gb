@@ -187,7 +187,7 @@ player_jump:
 .jump_water:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
-    ld      a,0; unset under water flag when jumping out of water
+    xor     a; unset under water flag when jumping out of water
     ld      [playerWasUnderWater],a
     ld      a,6 ; setup gravity tick delay so we do not jump as high as normally
     jr      .jump
@@ -200,13 +200,13 @@ player_jump:
     ; if we are, set the initial jump force and reset the gravity ticker
 .jump:
     ld      [playerGravityTick],a
-    ld      a,0
+    xor     a
     ld      [playerJumpFrames],a
     jp      .no_ground
 
     ; reset the jump state
 .not_pressed:
-    ld      a,0
+    xor     a
     ld      [playerJumpPressed],a
     ld      [playerJumpHold],a
     ld      [playerWallJumpPressed],a
@@ -252,7 +252,7 @@ player_jump:
     ld      a,SOUND_PLAYER_JUMP_DOUBLE
     call    sound_play
 
-    ld      a,0
+    xor     a
     ld      [playerFallSpeed],a
     ld      [playerFallFrames],a
 
@@ -287,7 +287,7 @@ player_jump:
 .apply_force:
     
     ; reset on ground flag
-    ld      a,0
+    xor     a
     ld      [playerOnGround],a
 
     ; move player upwards
@@ -322,7 +322,7 @@ player_jump:
     ret      
 
 .collision:
-    ld      a,0
+    xor     a
     ld      [playerJumpPressed],a
 
     ld      a,[playerJumpForce]
@@ -386,7 +386,7 @@ player_fall:
     jr      z,.collision ; unlikely jump, thus jr and not jp
 
     ; reset ground state
-    ld      a,0
+    xor     a
     ld      [playerOnGround],a
     
     ; increase player position
@@ -402,7 +402,7 @@ player_fall:
 .collision:
 
     ; reset player state to ground after collision
-    ld      a,0
+    xor     a
     ld      [playerFallSpeed],a
 
     ld      a,[playerOnGround]
@@ -414,7 +414,7 @@ player_fall:
     ld      [playerOnGround],a
 
     ; reset double jump flag
-    ld      a,0
+    xor     a
     ld      [playerDoubleJumped],a
 
     ; check how long we've been falling
@@ -449,7 +449,7 @@ player_fall:
     jp      .done
 
 .done:
-    ld      a,0
+    xor     a
     ld      [playerFallFrames],a
     ld      [playerJumpFrames],a
     ret

@@ -95,7 +95,7 @@ sound_play: ; a = sound ID to play
     ld      a,1
     ld      [soundForceUpdate],a
     call    sound_update
-    ld      a,0
+    xor     a
     ld      [soundForceUpdate],a
 
     pop     bc
@@ -130,7 +130,7 @@ sound_stop: ; a = sound ID to stop
     ld      a,1
     ld      [soundForceUpdate],a
     call    sound_update
-    ld      a,0
+    xor     a
     ld      [soundForceUpdate],a
 
     pop     bc
@@ -303,7 +303,7 @@ sound_update_state: ; hl = soundEffectQueue address of sound
     jr      nz,.clear
 
     ; if the match up, clear the channel sound id
-    ld      a,0
+    xor     a
     ld      [de],a
     inc     de; skip sound id
     inc     de; skip sound priority
@@ -434,7 +434,7 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
     ret     nz
 
     ; clear action flag
-    ld      a,0
+    xor     a
     ld      [hli],a
 
     ; load initial sound mode
@@ -459,7 +459,7 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
     cp      2
     ret     nz
 
-    ld      a,0
+    xor     a
     ld      [$ff10],a
     ld      [$ff11],a
     ld      [$ff12],a
@@ -498,7 +498,7 @@ _sound_update_channel: ; hl = soundChannelState, a = channel number 1-4
 .load_channel: ; hl = soundChannelState + 2
 
     ; reset load flag
-    ld      a,0
+    xor     a
     ld      [hl],a
 
     ; get sound effect data pointer

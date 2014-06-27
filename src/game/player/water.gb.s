@@ -21,7 +21,7 @@ player_water_update:
     ld      a,1
     ld      [playerInWater],a
 
-    ld      a,0
+    xor     a
     ld      [playerFallFrames],a
 
     ; play sound
@@ -51,7 +51,7 @@ player_water_update:
     ld      [playerWaterHitDone],a
     ld      [playerGravityTick],a
 
-    ld      a,0
+    xor     a
     ld      [playerWasUnderWater],a
     ld      [playerUnderWater],a
     ld      [playerJumpForce],a
@@ -70,7 +70,7 @@ player_water_update:
     ret     nz
 
     ; prevent sleep and reset fall speed
-    ld      a,0
+    xor     a
     ld      [playerSleepTick],a
 
     ; check if water hit done
@@ -98,7 +98,7 @@ player_water_update:
     jr      .offset
 
 .stop_fall:
-    ld      a,0
+    xor     a
     ld      [playerFallSpeed],a
 
     ; check swimming offset or initial hit offset
@@ -206,7 +206,7 @@ player_water_timer:
     cp      16
     jr      nz,.done
     jr      c,.done
-    ld      a,0
+    xor     a
 
 .done:
     ld      [playerWaterTick],a

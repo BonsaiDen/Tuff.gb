@@ -10,7 +10,7 @@ player_init:
     ; Direction
     ld      a,PLAYER_DIRECTION_RIGHT
     ld      [playerDirection],a
-    ld      a,0
+    xor     a
     ld      [playerDirectionLast],a
 
     ; Animation
@@ -42,7 +42,7 @@ player_reset:
     ld      a,PLAYER_GRAVITY_MAX
     ld      [playerGravityMax],a
 
-    ld      a,0
+    xor     a
     ld      [playerJumpForce],a
     ld      [playerJumpPressed],a
     ld      [playerGravityDelay],a
@@ -62,7 +62,7 @@ player_reset:
     ld      [playerOnGround],a
 
     ; Movement
-    ld      a,0
+    xor     a
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ld      [playerDecTick],a
@@ -72,7 +72,7 @@ player_reset:
     ld      [playerRunningTick],a
 
     ; Sliding
-    ld      a,0
+    xor     a
     ld      [playerDirectionWall],a
     ld      [playerWallSlideDir],a
     ld      [playerWallSlideTick],a
@@ -130,7 +130,7 @@ player_dissolve:
     ; dissolve player when hitting a hazard
     ld      a,PLAYER_ANIMATION_DISSOLVE
     ld      [playerAnimation],a
-    ld      a,0
+    xor     a
     ld      [playerDissolveTick],a
     ld      [mapCollisionFlag],a
 
@@ -230,7 +230,7 @@ player_scroll_map:
     jp      .scrolled
 
 .done:
-    ld      a,0
+    xor     a
     ret
 
 .scrolled:

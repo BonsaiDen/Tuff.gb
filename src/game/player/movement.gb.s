@@ -51,7 +51,7 @@ player_move:
     ld      a,[playerMoveTick]
     cp      1
     jp      nz,.delay
-    ld      a,0
+    xor     a
     ld      [playerMoveTick],a
 
 .not_in_water:
@@ -68,7 +68,7 @@ player_move:
     ld      e,a
 
     ; reset wall flag
-    ld      a,0
+    xor     a
     ld      [playerDirectionWall],a
 
 .loop_right:
@@ -126,7 +126,7 @@ player_move:
     ld      e,a
 
     ; reset wall flag
-    ld      a,0
+    xor     a
     ld      [playerDirectionWall],a
 
 .loop_left:
@@ -188,7 +188,7 @@ player_move:
     ld      a,[coreInput]
     and     BUTTON_RIGHT | BUTTON_LEFT
     jr      nz,.reset
-    ld      a,0
+    xor     a
     ld      [playerDirectionWall],a
 
     ; reset to idle animation if on ground
@@ -294,7 +294,7 @@ player_accelerate:
 
     ; reset the running ticks if the conditions are not met
 .is_not_running:
-    ld      a,0
+    xor     a
     ld      [playerRunningTick],a
 
 .check_running_end:
@@ -336,7 +336,7 @@ player_accelerate:
     
     ; if either is true reset running mode
 .stop_running:
-    ld      a,0
+    xor     a
     ld      [playerIsRunning],a
 
     ; check which direction is pressed
@@ -456,7 +456,7 @@ player_decelerate:
     ld      [playerSpeedLeft],a
 
 .no_decrease:
-    ld      a,0
+    xor     a
     ld      [playerDecTick],a
     ret
 

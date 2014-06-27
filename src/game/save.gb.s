@@ -1,7 +1,7 @@
 SECTION "SaveLogic",ROM0
 
 ; Constants -------------------------------------------------------------------
-SAVE_GAME_VERSION          EQU 4
+SAVE_GAME_VERSION          EQU 5
 
 SAVE_HEADER_SIZE           EQU 3
 SAVE_VERSION_SIZE          EQU 1
@@ -13,8 +13,8 @@ SAVE_COMPLETE_SIZE         EQU SAVE_HEADER_SIZE + SAVE_VERSION_SIZE + SAVE_PLAYE
 
 SAVE_DEFAULT_PLAYER_X      EQU 24
 SAVE_DEFAULT_PLAYER_Y      EQU 48
-SAVE_DEFAULT_ROOM_X        EQU 2
-SAVE_DEFAULT_ROOM_Y        EQU 0
+SAVE_DEFAULT_ROOM_X        EQU 10
+SAVE_DEFAULT_ROOM_Y        EQU 1
 
 
 ; SRAM Handling Routines ------------------------------------------------------
@@ -107,7 +107,7 @@ save_load_from_sram:; a = 1 triggers defaults
     ld      de,entityStoredState
     call    core_mem_cpy
 
-    ld      a,0
+    xor     a
     call    save_load_player
     jr      .end
 
@@ -326,7 +326,7 @@ save_check_state: ; return 1 in a if a save state exists in sram
     jr      .done
 
 .missing:
-    ld      a,0
+    xor     a
 
 .done:
 

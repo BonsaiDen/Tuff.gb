@@ -128,7 +128,7 @@ entity_load:
     ld      [hli],a
 
     ; reset flags
-    ld      a,0
+    xor     a
     ld      [hli],a
 
     ; set default direction 
@@ -446,7 +446,7 @@ entity_reset:
     ;call    sprite_unset_mirror ; TODO needed?
 
     ; unset type
-    ld      a,0
+    xor     a
     ld      [hl],a
 
 .skip:
@@ -812,7 +812,7 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     jr      .loop
     
 .not_found:
-    ld      a,0
+    xor     a
     ret
 
 
@@ -852,6 +852,6 @@ _entity_find_free_bucket:
     jr      .loop
     
 .not_found:
-    ld      a,0
+    xor     a
     ret
 

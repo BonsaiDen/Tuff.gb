@@ -110,7 +110,7 @@ player_update:
     jp      nc,.water
 
     ; detect surfacing
-    ld      a,0
+    xor     a
     ld      [playerUnderWater],a
     ld      [playerInWater],a
     jp      .water
@@ -129,7 +129,7 @@ player_update:
 
     ; reset water variables when on land
 .land:
-    ld      a,0
+    xor     a
     ld      [playerInWater],a
     ld      [playerUnderWater],a
     ld      [playerWaterHitDone],a

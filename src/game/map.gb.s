@@ -123,7 +123,7 @@ map_load_room: ; b = x, c = y
 
     ; reset animation delays to keep everything in sync
     ld      hl,mapAnimationDelay
-    ld      a,0
+    xor     a
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
 
@@ -181,7 +181,7 @@ map_draw_room:
     ld      [rLCDC],a
 
     ; mark as updated
-    ld      a,0
+    xor     a
     ld      [mapRoomUpdateRequired],a
     ret
 
@@ -216,7 +216,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ; everything that is not solid has no collision
 .no_collision:
     ld      [mapCollisionFlag],a
-    ld      a,0
+    xor     a
     ret
 
 .collision:
@@ -225,7 +225,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ret
 
 .off_screen:
-    ld      a,0
+    xor     a
     ld      [mapCollisionFlag],a
     ret
 
@@ -241,7 +241,7 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     jr      nc,.collision 
 
     ; check top screen border
-    ld      a,0
+    xor     a
     cp      c
     jr      nc,.collision 
 
@@ -251,7 +251,7 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     jr      nc,.collision 
 
     ; check left screen border
-    ld      a,0
+    xor     a
     cp      b
     jr      nc,.collision 
 
@@ -446,7 +446,7 @@ map_check_breakable_block_top:
     ret
 
 .no:
-    ld      a,0
+    xor     a
     pop     bc
     ret
 
@@ -469,7 +469,7 @@ map_check_breakable_block_bottom:
     ret
 
 .no:
-    ld      a,0
+    xor     a
     pop     bc
     ret
 
@@ -732,7 +732,7 @@ map_check_fallable_blocks:
     ret     nc
 
     ; setup loop counter
-    ld      a,0
+    xor     a
     ld      b,a
 
 .loop:
@@ -835,7 +835,7 @@ map_update_falling_blocks:
     ret     z
 
     ; setup loop counter
-    ld      a,0
+    xor     a
     ld      b,a
 
 .loop:
@@ -1124,7 +1124,7 @@ _map_load_block_definitions:
     ld      b,0
 
     ; now setup the tile mappings into the corresponding ram section
-    ld      a,0
+    xor     a
 .next:
     bit     0,c
     jr      z,.not_mapped; if not set, skip this mapping
@@ -1231,7 +1231,7 @@ _map_load_entities:
 
 _map_load_room_data:
     
-    ld      a,0
+    xor     a
     ld      [mapRoomUpdateRequired],a
     ld      [mapFallableBlockCount],a
 
@@ -1325,7 +1325,7 @@ _map_load_room_data:
     ld      [hli],a
 
     ; reset frames 
-    ld      a,0;
+    xor     a;
     ld      [hli],a
 
     ; store x and y coordinates

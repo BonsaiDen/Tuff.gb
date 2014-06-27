@@ -3,7 +3,7 @@ entity_handler_load_glow:
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
     call    sprite_animation_set
     call    sprite_animation_start
-    ld      a,0; 
+    xor     a; 
     ret
     
 

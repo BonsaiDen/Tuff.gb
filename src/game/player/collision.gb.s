@@ -174,7 +174,7 @@ _player_col_check_down:
     cp      h
     jr      z,.col
 
-    ld      a,0
+    xor     a
     ret
 
 .col:

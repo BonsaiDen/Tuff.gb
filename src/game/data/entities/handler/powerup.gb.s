@@ -65,7 +65,7 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
     dec     de
     dec     de
     dec     de
-    ld      a,0
+    xor     a
     ld      [de],a
 
     call    screen_flash_light

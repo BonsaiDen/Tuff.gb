@@ -68,7 +68,7 @@ _screen_shake_timer:
     ret
 
 .reset:
-    ld      a,0
+    xor     a
     ld      [coreScrollX],a
     ld      [coreScrollY],a
     ret
@@ -79,7 +79,7 @@ _screen_shake_timer:
 screen_fade_out_light:
     ld      a,1
     ld      [screenFadeMode],a
-    ld      a,0
+    xor     a
     ld      [screenFadeIndex],a
     ret
 
@@ -145,7 +145,7 @@ _screen_fade_timer:
     ret
 
 .complete:
-    ld      a,0
+    xor     a
     ld      [screenFadeMode],a
     ret
 
@@ -157,7 +157,7 @@ screen_flash_light:
     push    bc
     ld      a,1
     ld      [screenFlashMode],a
-    ld      a,0
+    xor     a
     ld      [screenFlashColor],a
     ld      [screenFlashIndex],a
     call    _screen_flash_timer
@@ -172,7 +172,7 @@ screen_flash_fast_light:
     push    bc
     ld      a,1
     ld      [screenFlashMode],a
-    ld      a,0
+    xor     a
     ld      [screenFlashColor],a
     ld      a,2
     ld      [screenFlashIndex],a
@@ -189,7 +189,7 @@ screen_flash_dark:
     ld      a,1
     ld      [screenFlashMode],a
     ld      [screenFlashColor],a
-    ld      a,0
+    xor     a
     ld      [screenFlashIndex],a
     call    _screen_flash_timer
     pop     bc
@@ -278,7 +278,7 @@ _screen_flash_timer:
     ret
 
 .complete:
-    ld      a,0
+    xor     a
     ld      [screenFlashMode],a
     ret
 

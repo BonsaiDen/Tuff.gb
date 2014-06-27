@@ -51,9 +51,9 @@ player_animation_update: ; executed during vblank
     ; we need a separate function here though
     ld      a,[playerDirection]
     ld      [playerDirectionLast],a
-    ld      a,0
+    xor     a
     ld      [playerIsRunning],a
-    ld      a,0
+    xor     a
     ld      [playerRunningTick],a
 
 .no_direction_change:
@@ -108,7 +108,7 @@ player_animation_update_tile:
     ld      de,$8000
     call    tileset_load_sprite_row
 
-    ld      a,0
+    xor     a
     ld      [playerAnimationUpdate],a
 
     ret

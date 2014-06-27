@@ -121,7 +121,7 @@ title_update:
     call    title_handle_button
     
     ; disable inputs
-    ld      a,0
+    xor     a
     ld      [coreInput],a
     ld      [coreInputOn],a
     ld      [coreInputOff],a
@@ -244,7 +244,7 @@ title_screen_movement:
     jp      .control
 
 .switch_to_left:
-    ld      a,0
+    xor     a
     ld      [titlePlayerDir],a
     jp      .left
 
@@ -319,7 +319,7 @@ title_draw_logo:
 title_draw_room:
 
     ; force background buffer at $9800
-    ld      a,0
+    xor     a
     ld      [mapCurrentScreenBuffer],a
 
     ; clear screen buffer
@@ -376,7 +376,7 @@ title_draw_room:
 
 
 title_draw_logo_sprite:
-    ld      a,0
+    xor     a
     ld      [titleSpriteOffsetIndex],a
 
     ld      de,spriteData + $48
@@ -428,7 +428,7 @@ title_animate_logo:
     inc     a
     cp      32
     jr      nz,.no_reset
-    ld      a,0
+    xor     a
 
 .no_reset:
     ld      [titleSpriteOffsetIndex],a
@@ -436,7 +436,7 @@ title_animate_logo:
 
 
 title_hide_logo:
-    ld      a,0
+    xor     a
     ld      hl,spriteData + $48
     ld      bc,DATA_TITLE_SPRITE_COUNT * 4
     call    core_mem_set
@@ -465,7 +465,7 @@ title_select_option:
     cp      0
     ret     z
 
-    ld      a,0
+    xor     a
     ld      [titleCursorPos],a
     call    title_draw_cursor
 
