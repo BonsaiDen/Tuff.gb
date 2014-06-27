@@ -50,6 +50,10 @@ player_animation_update: ; executed during vblank
     ; we need a separate function here though
     ld      a,[playerDirection]
     ld      [playerDirectionLast],a
+    ld      a,0
+    ld      [playerIsRunning],a
+    ld      a,0
+    ld      [playerRunningTick],a
 
 .no_direction_change:
 

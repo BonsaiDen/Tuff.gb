@@ -19,10 +19,22 @@ player_move:
     cp      1
     jr      nz,.not_on_ground
 
+    ; check if we're running at full speed
+    ld      a,[playerIsRunning]
+    cp      2
+    jr      z,.running
+
+.not_running:
     ld      a,PLAYER_ANIMATION_WALKING
     ld      [playerAnimation],a
+    jr      .not_on_ground
     
+.running:
+    ld      a,PLAYER_ANIMATION_RUNNING
+    ld      [playerAnimation],a
+
 .not_on_ground:
+    ld      [playerAnimation],a
 
     ld      a,[playerInWater]
     cp      0
@@ -215,13 +227,96 @@ player_accelerate:
     cp      0
     ret     nz
 
+    ; skip while pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    ret     nz
+
     ; if both directions are pressed at the same time ignore input
     ld      a,[coreInput]
     and     BUTTON_LEFT | BUTTON_RIGHT
     cp      BUTTON_LEFT | BUTTON_RIGHT
     ret     z
 
+    ; check for B button and running
+    ld      a,[playerCanRun]
+    cp      1
+    jr      nz,.is_not_running
+
+    ld      a,[playerOnGround]; needs to be on ground
+    cp      1
+    jr      nz,.is_not_running
+
+    ld      a,[playerInWater]; not in water
+    cp      1
+    jr      z,.is_not_running
+
+    ld      a,[coreInput]; and hold the B button
+    and     BUTTON_B
+    cp      BUTTON_B
+    jr      nz,.is_not_running
+
+    ld      a,[coreInput]; and either direction is still pressed
+    and     BUTTON_RIGHT | BUTTON_LEFT
+    cp      0
+    jr      z,.is_not_running
+
+    ; increase running tick unless limit is reached
+    ld      a,[playerRunningTick]
+    cp      PLAYER_RUNNING_DELAY
+    jr      z,.is_running_half
+
+    cp      PLAYER_RUNNING_DELAY_FULL
+    jr      z,.is_running_full
+
+    inc     a
+    ld      [playerRunningTick],a
+    jr      .check_running_end
+
+    ; set running mode when tick limits get reached
+.is_running_half:
+    inc     a
+    ld      [playerRunningTick],a
+    ld      a,1
+    ld      [playerIsRunning],a
+    jr      .check_running_end
+
+.is_running_full:
+    ld      a,2
+    ld      [playerIsRunning],a
+    jr      .check_running_end
+
+    ; reset the running ticks if the conditions are not met
+.is_not_running:
+    ld      a,0
+    ld      [playerRunningTick],a
+
+.check_running_end:
+    
+    ; check if we should disabled the running flag
+    ; this happens once we loose the running conditions
+    ; and touch ground or enter water
+    ld      a,[playerRunningTick]
+    cp      PLAYER_RUNNING_DELAY; >= 
+    jr      nc,.check_direction
+
+    ; if not running check for ground or water or wall slide
+    ld      a,[playerWallSlideDir]
+    ld      c,a
+    ld      a,[playerOnGround]
+    ld      b,a
+    ld      a,[playerInWater]
+    or      b; 
+    or      c; 
+    cp      0
+    jr      z,.check_direction; if both are false keep running
+    
+    ; if either is true reset running mode
+    ld      a,0
+    ld      [playerIsRunning],a
+
     ; check which direction is pressed
+.check_direction:
     ld      a,[coreInput]
     and     BUTTON_LEFT
     cp      BUTTON_LEFT
@@ -252,23 +347,27 @@ player_accelerate:
 .accelerate:
     ld      a,[playerIsRunning]
     cp      1
-    jr      z,.running
+    jr      z,.running_half
+    cp      2
+    jr      z,.running_full
 
-    ; load speed from corresponding direction variable 
-    ld      a,[hl]
-    cp      PLAYER_SPEED_MAX ; check if at max speed
-    ret     z
+    ld      b,PLAYER_SPEED_NORMAL
     jr      .increase
 
-.running:
+.running_half:
+    ld      b,PLAYER_SPEED_FAST
+    jr      .increase
+
+.running_full:
+    ld      b,PLAYER_SPEED_FULL
+    jr      .increase
 
     ; load speed from corresponding direction variable 
-    ld      a,[hl]
-    cp      PLAYER_SPEED_MAX_RUNNING ; check if at max running speed
-    ret     z
-
-    ; if not increase
 .increase:
+    ld      a,[hl]
+    cp      b; >= max speed
+    ret     z
+    ret     nc
     inc     a
     ld      [hl],a
     ret
@@ -289,12 +388,20 @@ player_decelerate:
 
 .decrease_right:
 
+    ; check if running
+    ld      a,[playerSpeedRight]
+    cp      PLAYER_SPEED_FAST
+    jr      z,.decrease_right_forced
+    cp      PLAYER_SPEED_FULL
+    jr      z,.decrease_right_forced
+
     ; check if right direction is still pressed
     ld      a,[coreInput]
     and     BUTTON_RIGHT
     jr      nz,.decrease_left
 
     ; right
+.decrease_right_forced:
     ld      a,[playerSpeedRight]
     cp      0
     jr      z,.decrease_left
@@ -303,12 +410,20 @@ player_decelerate:
 
 .decrease_left:
 
+    ; check if running
+    ld      a,[playerSpeedLeft]
+    cp      PLAYER_SPEED_FAST
+    jr      z,.decrease_left_forced
+    cp      PLAYER_SPEED_FULL
+    jr      z,.decrease_left_forced
+
     ; check if left direction is still pressed
     ld      a,[coreInput]
     and     BUTTON_LEFT
     jr      nz,.no_decrease
 
     ; left
+.decrease_left_forced:
     ld      a,[playerSpeedLeft]
     cp      0
     jr      z,.no_decrease ; if it reached zero we're done

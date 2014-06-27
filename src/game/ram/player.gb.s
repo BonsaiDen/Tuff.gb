@@ -8,12 +8,15 @@ PLAYER_JUMP_FORCE            EQU 2
 PLAYER_JUMP_WALL             EQU 2
 PLAYER_JUMP_SCREEN_BOOST     EQU 2
 PLAYER_FALL_MAX              EQU 3
-PLAYER_SPEED_MAX             EQU 1
-PLAYER_SPEED_MAX_RUNNING     EQU 2
+PLAYER_SPEED_NORMAL          EQU 1
+PLAYER_SPEED_FAST            EQU 2
+PLAYER_SPEED_FULL            EQU 3
 PLAYER_GRAVITY_MAX           EQU 2
 PLAYER_GRAVITY_MAX_POUND     EQU 3
 PLAYER_JUMP_SWIM             EQU 1
 PLAYER_DOUBLE_JUMP_THRESHOLD EQU $13; max jump frames are $1C
+PLAYER_RUNNING_DELAY         EQU 30; frames to be on ground and hold B before running mode sets in
+PLAYER_RUNNING_DELAY_FULL    EQU 120; frames before full running speed
 
 PLAYER_GRAVITY_INTERVAL      EQU 10
 
@@ -56,6 +59,7 @@ playerY:                   DB
 playerYOffset:             DB ; y offset the player is rendered at, only visual
 playerSpeedRight:          DB 
 playerSpeedLeft:           DB 
+playerRunningTick:         DB
 playerMoveTick:            DB
 
 playerSleepTick:           DB
