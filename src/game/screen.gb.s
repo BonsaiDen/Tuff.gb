@@ -315,14 +315,14 @@ screenFadePaletteBGLight:
 
 screenFadePaletteSprite0Light:
     DB      %11010000
-    DB      %10010000
+    DB      %11010000
     DB      %10000000
     DB      %01000000
     DB      %00000000
 
 screenFadePaletteSprite1Light:
     DB      %10010000 
-    DB      %01010000 
+    DB      %10010000 
     DB      %01010000 
     DB      %01000000 
     DB      %00000000
