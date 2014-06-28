@@ -41,8 +41,6 @@ player_move:
     ld      [playerAnimation],a
 
 .not_on_ground:
-    ld      [playerAnimation],a
-
     ld      a,[playerInWater]
     cp      0
     jr      z,.not_in_water
