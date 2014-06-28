@@ -165,7 +165,7 @@ map_draw_room:
 
 .copy:
     ld      hl,mapRoomTileBuffer
-    ld      bc,256
+    ld      bc,512
     call    core_vram_cpy
 
     ; flip buffer
@@ -725,15 +725,6 @@ map_check_fallable_blocks:
     cp      0
     ret     z
 
-    ; check if player is at running speed
-    ld      a,[playerSpeedRight]
-    cp      2
-    ret     nc
-
-    ld      a,[playerSpeedLeft]
-    cp      2
-    ret     nc
-
     ; setup loop counter
     xor     a
     ld      b,a
@@ -789,7 +780,6 @@ map_check_fallable_blocks:
     srl     a; divide by 16
     cp      c
     jr      z,.found_x
-
     jr      .active
 
     ; load block y coordinate
@@ -814,21 +804,36 @@ map_check_fallable_blocks:
 
     ; if near set active
     ld      a,[hl]
+    and     %00000010; reset everything but type
     or      %00000001; type / active flag
-    ld      [hli],a
+    ld      [hl],a
 
-    call    map_update_falling_block
+    ; check player movement speed
+    ld      a,[playerSpeedRight]
+    ld      b,a
+    ld      a,[playerSpeedLeft]
+    or      b
+    and     %00000010
+    jr      nz,.delayed
 
-    ; play sound
+    ; setup instant fall and play sound
+    call    _map_update_falling_block
     ld      a,SOUND_MAP_FALLING_BLOCK
     call    sound_play
+    jr      .active
+
+.delayed:
+    ; setup drop delay
+    ld      a,[hl]
+    or      MAP_FALLABLE_BLOCK_DELAY << 4
+    ld      [hl],a
 
     ; loop
 .active:
     inc     b
     ld      a,[mapFallableBlockCount]
     cp      b
-    jr      nz,.loop
+    jp      nz,.loop
     ret
 
 
@@ -852,12 +857,34 @@ map_update_falling_blocks:
     add     hl,de; get offset address
 
     ; check if active
-    ld      a,[hli]
+    ld      a,[hl]
     and     %00000001
     cp      1
     jr      nz,.inactive
 
-    call    map_update_falling_block
+    ; check for delay
+    ld      a,[hl]
+    swap    a
+    and     %00001111
+    cp      0
+    jr      nz,.delayed
+
+    call    _map_update_falling_block
+    jr      .inactive
+
+.delayed:
+    ; decrease delay
+    ld      a,[hl]
+    swap    a
+    dec     a
+    swap    a
+    ld      [hl],a
+    and     %11110000
+    jr      nz,.inactive
+
+    ; play sound if the delay reached 0
+    ld      a,SOUND_MAP_FALLING_BLOCK
+    call    sound_play
 
     ; loop
 .inactive:
@@ -868,7 +895,9 @@ map_update_falling_blocks:
     ret
 
 
-map_update_falling_block: ; b = index
+_map_update_falling_block: ; b = index
+
+    inc     hl; skip flags
 
     ; check frame count
     ld      a,[hl]
@@ -1324,6 +1353,7 @@ _map_load_room_data:
     add     hl,de; get offset address
     
     ; store tile type (dark / light) and reset active
+    ; TODO store correct value based on tile value
     ld      a,%00000010; 7 bytes type, 1 bytes active
     ld      [hli],a
 

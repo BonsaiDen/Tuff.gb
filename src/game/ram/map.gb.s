@@ -33,6 +33,7 @@ MAP_BREAKABLE_BLOCK_DARK    EQU     $3a
 MAP_MAX_FALLABLE_BLOCKS     EQU     16
 MAP_FALLABLE_BLOCK_LIGHT    EQU     $2a
 MAP_FALLING_TILE_LIGHT      EQU     $30
+MAP_FALLABLE_BLOCK_DELAY    EQU     1
 
 
 
@@ -55,7 +56,7 @@ mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
 
 ; Fallable Blocks -------------------------------------------------------------
-mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Type7Active1][frame][x][y]
+mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Delay4Non2Type1Active1][frame][x][y]
 mapFallableBlockCount:      DB
 
 
