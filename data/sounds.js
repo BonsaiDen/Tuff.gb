@@ -282,13 +282,13 @@ module.exports = [{
     "priority": 1,
     "sweepShifts": 5,
     "sweepDir": 0,
-    "sweepTime": 3,
-    "soundLength": 0,
+    "sweepTime": 2,
+    "soundLength": 0x0010,
     "dutyCycle": 2,
-    "envStepTime": 2,
+    "envStepTime": 1,
     "envStepDir": 0,
     "envInitVol": 0x0F,
-    "frequency": 0x0380
+    "frequency": 0x03A0
 
 }, {
     "id": "GAME_MENU",
