@@ -144,9 +144,6 @@ map_draw_room:
 
     ; mark as updated (disable interrupts so we don't call this during vblank)
     di
-    xor     a
-    ld      [mapRoomUpdateRequired],a
-    ei
 
     ; load new entities
     call    entity_load
@@ -185,6 +182,10 @@ map_draw_room:
     and     LCDCF_BG_MASK
     or      b
     ld      [rLCDC],a
+
+    xor     a
+    ld      [mapRoomUpdateRequired],a
+    ei
 
     ret
 
@@ -885,6 +886,7 @@ map_update_falling_blocks:
     ; play sound if the delay reached 0
     ld      a,SOUND_MAP_FALLING_BLOCK
     call    sound_play
+    call    sound_stop
 
     ; loop
 .inactive:
