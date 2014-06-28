@@ -142,6 +142,12 @@ map_draw_room:
     cp      1
     ret     nz
 
+    ; mark as updated (disable interrupts so we don't call this during vblank)
+    di
+    xor     a
+    ld      [mapRoomUpdateRequired],a
+    ei
+
     ; load new entities
     call    entity_load
 
@@ -180,9 +186,6 @@ map_draw_room:
     or      b
     ld      [rLCDC],a
 
-    ; mark as updated
-    xor     a
-    ld      [mapRoomUpdateRequired],a
     ret
 
 
