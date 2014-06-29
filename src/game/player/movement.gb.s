@@ -78,6 +78,7 @@ player_move:
     ; set wall flag
     ld      a,PLAYER_DIRECTION_RIGHT
     ld      [playerDirectionWall],a
+    call    player_wall_hit
 
     ; set pushing animation when not in water
     ld      a,[playerInWater]
@@ -136,6 +137,7 @@ player_move:
     ; set wall flag
     ld      a,PLAYER_DIRECTION_LEFT
     ld      [playerDirectionWall],a
+    call    player_wall_hit
 
     ; set pushing animation when not in water
     ld      a,[playerInWater]
@@ -456,5 +458,11 @@ player_decelerate:
 .no_decrease:
     xor     a
     ld      [playerDecTick],a
+    ret
+
+
+player_wall_hit:
+    ; TODO check for breaking blocks during running
+    ; TODO check for bouncing of walls during running
     ret
 
