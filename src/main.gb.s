@@ -24,6 +24,7 @@ INCLUDE     "game/ram/screen.gb.s"
 INCLUDE     "game/ram/player.gb.s"
 INCLUDE     "game/ram/entity.gb.s"
 INCLUDE     "game/ram/sound.gb.s"
+INCLUDE     "game/ram/data.gb.s"
 
 
 ; Modules ---------------------------------------------------------------------

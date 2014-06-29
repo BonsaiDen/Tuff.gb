@@ -85,6 +85,33 @@ player_animation_update: ; executed during vblank
 .done:
     ret
 
+
+player_animation_init:
+
+    ; unload compressed tile rows into RAM 
+    ld     b,0
+.loop:
+
+    ; load row index in sprite map into c
+    ld     hl,playerAnimationRowMap
+    ld     d,0
+    ld     e,b
+    add    hl,de
+    ld     a,[hl]
+    ld     c,a
+
+    ld     hl,DataPlayerImg
+    ld     de,dataPlayerSpriteMap
+    call   tileset_load_sprite_row
+
+    ; next
+    inc    b
+    ld     a,b
+    cp     PLAYER_ANIMATION_COUNT
+    jr     nz,.loop
+    ret
+
+
 player_animation_update_tile:
 
     ; check if we need to update the tile data for the player
@@ -92,24 +119,17 @@ player_animation_update_tile:
     cp      0
     ret     z
     
-    ; figure out which row in the sprite sheet maps
-    ; to the current animation
+    ; calculate offset into sprite RAM 
     ld      a,[playerAnimation]
-    ld      hl,playerAnimationRowMap
-    ld      d,0
-    ld      e,a
-    add     hl,de
-    ld      a,[hl]
+    add     dataPlayerSpriteMap >> 8
+    ld      h,a; x256
+    ld      l,0
 
-    ; load the corresponding row into vram
-    ld      hl,DataPlayerImg
-    ld      b,0
-    ld      c,a
     ld      de,$8000
-    call    tileset_load_sprite_row
+    ld      bc,128; 256 bytes
+    call    core_vram_cpy
 
     xor     a
     ld      [playerAnimationUpdate],a
-
     ret
 

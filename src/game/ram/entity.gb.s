@@ -5,7 +5,7 @@ ENTITY_PER_ROOM           EQU 4
 ENTITY_BG_SPRITE_INDEX    EQU 5; start indexes to use for entity sprites that are in the background
 ENTITY_FG_SPRITE_INDEX    EQU 0; start indexes to use for entity sprites that are in the foreground
 
-ENTITY_ANIMATION_OFFSET   EQU 16
+ENTITY_ANIMATION_OFFSET   EQU PLAYER_ANIMATION_COUNT
 ENTITY_ANIMATION_SAVE     EQU 0
 ENTITY_ANIMATION_GLOW     EQU 1
 ENTITY_ANIMATION_POWERUP  EQU 2

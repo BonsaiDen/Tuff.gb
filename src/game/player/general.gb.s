@@ -29,6 +29,7 @@ player_init:
     call    sprite_set_tile_offset
 
     ; Load initial sprite data
+    call    player_animation_init
     call    player_animation_update
 
     ret
