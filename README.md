@@ -1,8 +1,10 @@
 # Tuff
 
-Tuff is an original game for the good ol' black and white GameBoy from Nintendo.
+Tuff is an original game for Nintendo's black and white GameBoy.
 
-It will be simple, friendly mix of Elements from Jump'n'Run Games and *Metroidvania* style Action Adventures. It will also contain elements from *Knytt* as you cannot attack and the main focus lies in exploration of the world. It will be, because right now it's still somwhere in mid of development, since I'm by no means a designer and are mostly on to the technogical "challenge", expect game mechanics and optimization to come first, everything else (including the actual game world) will be lagging behind.
+It's a mix of Jump'n'Run and *Metroidvania* elements and will also contain elements from *Knytt* as you do not have any attacks but will focus on exploring the world.
+
+Thing is, it *will* be, because as of right now it's still somwhere in mids of development. And since I'm by no means a designer and are mostly on to the technogical "challenge", expect game mechanics and optimization to come first, everything else (including the actual game world) will be lagging behind for quite some time.
 
 Below are some older screens of the game to give you an impression of what it looks like, there's also a more recent [Video](http://www.youtube.com/watch?v=Xdtt6Rsvwag).
 
@@ -16,33 +18,31 @@ Below are some older screens of the game to give you an impression of what it lo
 
 # Development
 
-The Game is being developed mostly on Emulators, although I actually build a number of custom Game Paks by replacing the original masked ROM with a reprogrammable flash chip, so it does actually [run on the hardware](http://www.youtube.com/watch?v=yXNEeld8Lq8) !
+The Game is mostly being developed on Emulators, although I actually build a number of custom GamePaks by replacing the original masked ROM with a reprogrammable Flash Chip, so it does actually run on the [real hardware](http://www.youtube.com/watch?v=yXNEeld8Lq8).
 
-In case you're trying to get started with your own DMG game, you might find a lot of helpful code under `src/core`. The core runtime is mostly separated from the game code (except where stated in the source) and there are many useful routines and a whole lot of comments for you to check out :)
+In case you're trying to get started with your own GameBoy title, you might find the stuff under `src/core` the most helpful. The core runtime is mostly separated from the game code (except where stated in the source) and there are many useful routines and a whole lot of documentation for you to check out.
 
-As for IDEs, there are none. Coding is done in VIM, graphics and sprites are converted from PNG graphics with tiles and mappings via some custom Node.js conversion tools. Although the game world is actually built with Tiled and then converted into a custom game specific format.
+As for IDEs, there are none. Coding is all done in VIM, graphics and sprites are converted from PNG graphics via some custom Node.js conversion tools. The game world is built with [Tiled](http://www.mapeditor.org/) and then converted into a custom game specific format.
 
-Most of the game assets also get RLE compressed before they're put into the game and the map data is put through an `lz4` compressor and is decompressed with custom, hand written z80 assembly.
+Most of the game assets also get compressed with a custom LZ-Type compression routine.
 
 
 ## How to compile
 
-1. Install [rgbgs](https://github.com/bentley/rgbds), it is the assembler that is being used
-2. Get [Node.js](https://nodejs.org), it is used for graphics conversion and other tooling
-3. Make sure you got `make` installed (If you're on Ubuntu, just run `sudo apt-get install build-essential`)
+1. Make sure you got `make` installed (If you're on Ubuntu, just run `sudo apt-get install build-essential`)
+2. Install [rgbgs](https://github.com/bentley/rgbds), it is the assembler that is being used for the project
+3. Get [Node.js](https://nodejs.org), it is used for graphics conversion and other tooling
 4. Run `make`
 
-You'll find the assembled ROM under `build/main.gb`, it should play in a GameBoy Emulator of your choice!
+You'll find the assembled ROM under `build/game.gb`, it should play in a GameBoy Emulator of your choice.
 
 
 ## Emulator Tips for Development
 
 I found that [Gambatte](https://github.com/sinamas/gambatte) and [bgb](http://bgb.bircd.org/) are by far the best emulators for developing 
-as they have a big focus on accuracy. Especially *bgb*, as it comes with a great, 
-built-in debugger, vram viewer and other goodies. 
+since they focus on accuracy. Especially *bgb*, which also comes with a ton of built-in debugging tools.
 
-For the web, [GameBoy Online](https://github.com/grantgalitz/GameBoy-Online) is by far the best of the available JavaScript based 
-emulators out there.
+For the web [GameBoy Online](https://github.com/grantgalitz/GameBoy-Online) is by far the best of the available JavaScript based emulators out there.
 
 ## Recording Gameplay Videos
 
