@@ -9,41 +9,41 @@
 
 ; Memory Set ------------------------------------------------------------------
 core_mem_set: ; a = value, hl = address, bc = bytecount
-	inc	    b
-	inc	    c
-	jr	    .skip
+    inc     b
+    inc     c
+    jr      .skip
 .loop:
-    ld	    [hli],a
+    ld      [hli],a
 .skip:
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
-	ret
+    dec     c
+    jr      nz,.loop
+    dec     b
+    jr      nz,.loop
+    ret
 
 
 ; Memory Copy -----------------------------------------------------------------
 core_mem_cpy: ; hl = source, de = dest, bc = bytecount
-	inc	    b
-	inc	    c
-	jr	    .skip
+    inc     b
+    inc     c
+    jr      .skip
 .loop:
-    ld	    a,[hli]
-	ld	    [de],a
-	inc	    de
+    ld      a,[hli]
+    ld      [de],a
+    inc     de
 .skip:
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
-	ret
+    dec     c
+    jr      nz,.loop
+    dec     b
+    jr      nz,.loop
+    ret
 
 
 ; VRAM Set --------------------------------------------------------------------
 core_vram_set: ; a = value, hl = address, bc = bytecount
-	inc	    b
-	inc	    c
-	jr	    .skip
+    inc     b
+    inc     c
+    jr      .skip
 
 .loop:
     push    af
@@ -54,40 +54,40 @@ core_vram_set: ; a = value, hl = address, bc = bytecount
     ld      [hli],a
 
 .skip:
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
-	ret
+    dec     c
+    jr      nz,.loop
+    dec     b
+    jr      nz,.loop
+    ret
 
 
 ; VRAM Copy -------------------------------------------------------------------
 core_vram_cpy: ; hl = source, de = dest, bc = bytecount / 2
-	inc	    b
-	inc	    c
-	jr	    .skip
+    inc     b
+    inc     c
+    jr      .skip
 
 .loop:
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     ld      a,[hli]
-	ld	    [de],a
-	inc	    de
+    ld      [de],a
+    inc     de
 
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     ld      a,[hli]
-	ld	    [de],a
-	inc	    de
+    ld      [de],a
+    inc     de
 
 .skip:
-    dec	    c
-	jr	    nz,.loop
-	dec	    b
-	jr	    nz,.loop
-	ret
+    dec     c
+    jr      nz,.loop
+    dec     b
+    jr      nz,.loop
+    ret
 
 
 core_vram_cpy_low: ; hl = source, de = dest, b = bytecount
@@ -96,9 +96,9 @@ core_vram_cpy_low: ; hl = source, de = dest, b = bytecount
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
     ld      a,[hli]
-	ld	    [de],a
-	inc	    de
-	dec	    b
-	jr	    nz,.loop
-	ret
+    ld      [de],a
+    inc     de
+    dec     b
+    jr      nz,.loop
+    ret
 
