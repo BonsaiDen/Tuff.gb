@@ -5,13 +5,9 @@
 
 - Run ability (twice the running speed) (hold b for some time during running)
 
-    - hold b to charge up and start running after some time
-        - only works on ground, jumps cancels
-
-    - stops after landing from a jump
     - Breaks blocks horizontally
     - bounces off when hitting a non-breakable wall
-    - when active, won't trigger dissappearing blocks
+    - when active, trigger dissappearing blocks delayed
 
 ## World
 
@@ -52,6 +48,9 @@
 - Background sounds (Waterfall, lava) (using sound channel 3 samples?)
 - Different sounds for each hazard type (lava, spikes, electricity, water)
 - Improve block breaking sound
+- Running sound
+- Bounce Sound
+- Speed up falling block sound for better effect when running over the blocks
 
 ## Effects / Animation
 
@@ -75,10 +74,6 @@
 
 - Mark Dark / Light Background tiles with different collision values (Might be useful for something?)
 
-# Other
-
-- Split animations from tile data
-- Configure target animation tile
 
 ## Fixes
 
@@ -92,6 +87,7 @@
 - Double jump animation at top of jump
 - disable double jump after wall jump, need to hit the ground before we can double jump again
 - double jump out of water does not work (issue with jump threshold not being reached)
+- Falling platforms should still trigger during running, but delayed so they disappear behind the player
 
 
 # Route
