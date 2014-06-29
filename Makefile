@@ -2,7 +2,7 @@
 rom: convert
 	@mkdir -p build
 	@cd src && rgbasm -o ../build/main.o main.gb.s
-	@rgblink -o build/game.gb build/main.o -m build/game.map
+	@rgblink -o build/game.gb build/main.o -m build/game.map -n build/game.sym
 	@rgbfix -v -p 0 build/game.gb
 	@node stat build/game.map
 	@cp  build/game.gb tools/emu/roms/tuff.gb
