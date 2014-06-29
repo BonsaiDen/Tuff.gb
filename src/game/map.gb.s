@@ -162,7 +162,7 @@ map_draw_room:
 
 .copy:
     ld      hl,mapRoomTileBuffer
-    ld      bc,512
+    ld      bc,256
     call    core_vram_cpy
 
     ; flip buffer
