@@ -75,10 +75,14 @@ player_move:
     cp      0
     jr      z,.not_blocked_right
 
+    ; check for wall hit
+    call    player_wall_hit
+    cp      1
+    jr      z,.not_blocked_right; we broke a block continue moving
+
     ; set wall flag
     ld      a,PLAYER_DIRECTION_RIGHT
     ld      [playerDirectionWall],a
-    call    player_wall_hit
 
     ; set pushing animation when not in water
     ld      a,[playerInWater]
@@ -134,10 +138,14 @@ player_move:
     cp      0
     jr      z,.not_blocked_left
 
+    ; check for wall hit
+    call    player_wall_hit
+    cp      1
+    jr      z,.not_blocked_left; we broke a block continue moving
+
     ; set wall flag
     ld      a,PLAYER_DIRECTION_LEFT
     ld      [playerDirectionWall],a
-    call    player_wall_hit
 
     ; set pushing animation when not in water
     ld      a,[playerInWater]
@@ -461,8 +469,26 @@ player_decelerate:
     ret
 
 
-player_wall_hit:
-    ; TODO check for breaking blocks during running
-    ; TODO check for bouncing of walls during running
+player_wall_hit:; -> a = block destroy = 1, bounce = 0
+
+    ; check player movement speed
+    ld      a,[playerSpeedRight]
+    ld      b,a
+    ld      a,[playerSpeedLeft]
+    or      b
+    and     %00000010; check if speed is >= 2
+    ret     z; do nothing in case it isnt
+
+    ; check wall collision type normal / breaking
+    ; TODO check all 3 collision points to be either none or breaking
+
+    ; check for bouncing of walls during running
+.bounce:
+    ; TODO setup bounce
+    xor      a
+    ret
+
+.break:
+    ld       a,1; indicate that we do not want to be stopped by the wall
     ret
 
