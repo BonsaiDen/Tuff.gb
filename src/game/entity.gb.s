@@ -332,10 +332,7 @@ _entity_load:
     ; x position
     ld      a,[hl]
     and     %00001111 ; need to multiply by 16 here
-    sla     a
-    sla     a
-    sla     a
-    sla     a
+    swap    a
     add     8
     ld      [de],a
 
@@ -378,10 +375,7 @@ entity_store:
     ; FFFFDDII
     ld      a,[de]; load flags
     inc     de 
-    sla     a
-    sla     a
-    sla     a
-    sla     a
+    swap    a
     and     %11110000
     or      b; merge with id
     ld      b,a; store into b
