@@ -1393,6 +1393,7 @@ _map_load_room_data:
 
     ; y loop end (skip one 16x16 screen data row)
     ld      a,44 ; 12 8x8 tiles left on this row + one full row of 32
+    and     a; clear carry
     add     a,l
     ld      l,a
     adc     a,h
