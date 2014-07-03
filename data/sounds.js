@@ -277,6 +277,20 @@ module.exports = [{
     "frequency": 0x0600
 
 }, {
+    "id": "PLAYER_BOUNCE_WALL",
+    "channel": 1,
+    "priority": 2,
+    "sweepShifts": 2,
+    "sweepDir": 0,
+    "sweepTime": 7,
+    "soundLength": 0,
+    "dutyCycle": 2,
+    "envStepTime": 0,
+    "envStepDir": 0,
+    "envInitVol": 0x0F,
+    "frequency": 0x0250
+
+}, {
     "id": "MAP_FALLING_BLOCK",
     "channel": 1,
     "priority": 1,

@@ -18,6 +18,9 @@ PLAYER_DOUBLE_JUMP_THRESHOLD  EQU $13; max jump frames are $1C
 PLAYER_RUNNING_DELAY          EQU 50; frames to be on ground and hold B before running mode sets in
 PLAYER_RUNNING_DELAY_FULL     EQU 120; frames before full running speed
 
+PLAYER_BOUNCE_FRAMES          EQU 50; number of frames without control after bouncing into a wall during running 
+PLAYER_DECELERATE_FRAMES      EQU 10
+
 PLAYER_GRAVITY_INTERVAL       EQU 10
 
 PLAYER_SLEEP_WAIT             EQU 255 ; ticks of 60ms timer = ~15.81 seconds
@@ -75,6 +78,7 @@ playerAnimationUpdate:     DB
 playerDirection:           DB
 playerDirectionLast:       DB
 playerDirectionWall:       DB
+playerBounceFrames:        DB
 
 
 ; Pounding

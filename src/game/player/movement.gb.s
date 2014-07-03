@@ -234,6 +234,7 @@ player_move:
     ret
 
 
+
 ; Horizontal Acceleration -----------------------------------------------------
 player_accelerate:
 
@@ -246,6 +247,11 @@ player_accelerate:
     ld      a,[playerIsPounding]
     cp      0
     ret     nz
+
+    ; don't accelerate during bouncing
+    ld      a,[playerBounceFrames]
+    cp      0
+    jp      nz,.bounce
 
     ; if both directions are pressed at the same time ignore input
     ld      a,[coreInput]
@@ -404,22 +410,31 @@ player_accelerate:
     ld      [hl],a
     ret
 
+.bounce:
+    dec     a
+    ld      [playerBounceFrames],a
+    ret     nz
+
 
 player_decelerate:
+
+    ; check for bounce frames and skip decrease
+    ld      a,[playerBounceFrames]
+    cp      PLAYER_BOUNCE_FRAMES - PLAYER_DECELERATE_FRAMES
+    ret     nc
 
     ; only decelerate on every 10th frame
     ; this introduces "lag" or a sliding when turning rapidly
     ld      a,[playerDecTick]
     inc     a
     cp      10
-    jr      z,.decrease_right
+    jr      z,.decrease
 
     ; if not on 10th frame store frame count and return
     ld      [playerDecTick],a
     ret
 
-.decrease_right:
-
+.decrease:
     ; check if running
     ld      a,[playerSpeedRight]
     cp      PLAYER_SPEED_FAST
@@ -469,13 +484,26 @@ player_decelerate:
     ret
 
 
+
 player_wall_hit:; -> a = block destroy = 1, bounce = 0
+
+    ; TODO prevent player from gaining running speed
+
+    ; reset running tick
+    xor     a
+    ld      [playerRunningTick],a
+
+    ; exit if we are already bouncing and exit
+    ld      a,[playerBounceFrames]
+    cp      0
+    ret     nz
 
     ; check player movement speed
     ld      a,[playerSpeedRight]
     ld      b,a
     ld      a,[playerSpeedLeft]
     or      b
+    ld      c,a; store into c
     and     %00000010; check if speed is >= 2
     ret     z; do nothing in case it isnt
 
@@ -484,11 +512,62 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
     ; check for bouncing of walls during running
 .bounce:
-    ; TODO setup bounce
-    xor      a
+    ld      a,[playerSpeedRight]
+    cp      PLAYER_SPEED_FULL
+    jr      z,.bounce_big
+
+    ld      a,[playerSpeedLeft]
+    cp      PLAYER_SPEED_FULL
+    jr      z,.bounce_big
+
+.bounce_small:
+    ld      a,PLAYER_BOUNCE_FRAMES - 10
+    ld      [playerBounceFrames],a
+    ld      a,PLAYER_JUMP_FORCE * 1
+    ld      [playerJumpForce],a
+    ld      a,SOUND_PLAYER_BOUNCE_WALL
+    call    sound_play
+    ld      a,$06
+    jr      .bounce_setup
+
+.bounce_big:
+    ld      a,PLAYER_BOUNCE_FRAMES
+    ld      [playerBounceFrames],a
+    ld      a,PLAYER_JUMP_FORCE * 2
+    ld      [playerJumpForce],a
+    ld      a,SOUND_PLAYER_BOUNCE_WALL
+    call    sound_play
+    ld      a,$09
+
+.bounce_setup:
+    call    screen_shake
+    ld      a,$01
+    ld      [playerJumpPressed],a
+    ld      a,$01
+    ld      [playerGravityTick],a
+    xor     a
+    ld      [playerJumpFrames],a
+
+    ; check direction
+    ld      a,[playerDirection]
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.bounce_right
+
+.bounce_left:
+    ld      a,[playerSpeedLeft]
+    ld      [playerSpeedRight],a
+    xor     a
+    ld      [playerSpeedLeft],a
+    ret
+
+.bounce_right:
+    ld      a,[playerSpeedRight]
+    ld      [playerSpeedLeft],a
+    xor     a
+    ld      [playerSpeedRight],a
     ret
 
 .break:
-    ld       a,1; indicate that we do not want to be stopped by the wall
+    ld      a,1; indicate that we do not want to be stopped by the wall
     ret
 

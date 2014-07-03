@@ -110,6 +110,11 @@ player_jump:
     cp      0
     ret     nz
 
+    ; Check for wall bounce
+    ld      a,[playerBounceFrames]
+    cp      0
+    jp      nz,.jump
+
     ; see if the jump button has been pressed
     ld      a,[coreInput]
     and     BUTTON_A
@@ -181,7 +186,7 @@ player_jump:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,PLAYER_GRAVITY_INTERVAL
-    jp      .jump
+    jp      .init_jump
 
     ; water jump force
 .jump_water:
@@ -190,7 +195,7 @@ player_jump:
     xor     a; unset under water flag when jumping out of water
     ld      [playerWasUnderWater],a
     ld      a,6 ; setup gravity tick delay so we do not jump as high as normally
-    jr      .jump
+    jr      .init_jump
 
 .jump_swim:
     ld      a,PLAYER_JUMP_SWIM
@@ -198,11 +203,11 @@ player_jump:
     ld      a,2 ; setup gravity tick delay
 
     ; if we are, set the initial jump force and reset the gravity ticker
-.jump:
+.init_jump:
     ld      [playerGravityTick],a
     xor     a
     ld      [playerJumpFrames],a
-    jp      .no_ground
+    jp      .jump
 
     ; reset the jump state
 .not_pressed:
@@ -210,33 +215,33 @@ player_jump:
     ld      [playerJumpPressed],a
     ld      [playerJumpHold],a
     ld      [playerWallJumpPressed],a
-    jp      .no_ground
+    jp      .jump
 
 .check_double:
     
     ; don't allow any sort of double jump during wall sliding / jumping
     ld      a,[playerDirectionWall]
     cp      0
-    jp      nz,.no_ground
+    jp      nz,.jump
 
     ld      a,[playerWallSlideDir]
     cp      0
-    jp      nz,.no_ground
+    jp      nz,.jump
 
     ld      a,[playerWallJumpTick]
     cp      0
-    jp      nz,.no_ground
+    jp      nz,.jump
 
     ; check if we really hit the button on this frame
     ld      a,[coreInputOn]
     and     BUTTON_A
     cp      BUTTON_A
-    jp      nz,.no_ground
+    jp      nz,.jump
 
     ; check if we already double jumped
     ld      a,[playerDoubleJumped]
     cp      1
-    jp      z,.no_ground
+    jp      z,.jump
 
     ld      a,1
     ld      [playerDoubleJumped],a
@@ -246,7 +251,7 @@ player_jump:
     ; since the jump height is smaller
     ld      a,[playerJumpFrames]
     cp      PLAYER_DOUBLE_JUMP_THRESHOLD
-    jp      c,.no_ground; if playerJumpFrames - threshold < 0 don't jump
+    jp      c,.jump; if playerJumpFrames - threshold < 0 don't jump
 
     ; set up double jump
     ld      a,SOUND_PLAYER_JUMP_DOUBLE
@@ -259,17 +264,17 @@ player_jump:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,PLAYER_GRAVITY_INTERVAL
-    jp      .jump
+    jp      .init_jump
 
     ; if we're still pressing the button or are in the air update the jump value
 .still_pressed:
     ld      a,[playerJumpHold]
     inc     a
     cp      $ff; limit to 255
-    jp      z,.no_ground
+    jp      z,.jump
     ld      [playerJumpHold],a
 
-.no_ground:
+.jump:
 
     ; check if we need to move upwards
     ld      a,[playerJumpForce]
