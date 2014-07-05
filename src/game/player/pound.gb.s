@@ -465,19 +465,19 @@ player_pounding_collision:
     ld      a,[playerBreakBlockR]
     cp      255
     push    bc
-    call    nz,_destroy_breakable_block_down
+    call    nz,break_vertical_blocks
     pop     bc
 
     ld      a,[playerBreakBlockM]
     cp      255
     push    bc
-    call    nz,_destroy_breakable_block_down
+    call    nz,break_vertical_blocks
     pop     bc
 
     ld      a,[playerBreakBlockL]
     cp      255
     push    bc
-    call    nz,_destroy_breakable_block_down
+    call    nz,break_vertical_blocks
     pop     bc
 
     xor     a; fall through breakable blocks
@@ -485,116 +485,5 @@ player_pounding_collision:
 
 .collision:
     ld      a,1; stop if we touch a normal collision block
-    ret
-
-
-_destroy_breakable_block_down:; a = block x, c = block y
-
-    ld      b,a; move x tile into b
-
-    ; divide by 8 and modulo 2 to figure out the top / bottom block
-    ld      a,[playerY]
-    srl     a
-    srl     a
-    srl     a
-    and     %00000001
-
-    cp      0
-    jr      z,.top
-
-    cp      1
-    jr      z,.bottom
-    ret
-
-.top:
-
-    ; check if block can be broken
-    call    map_check_breakable_block_top
-    cp      0
-    ret     z
-
-    ; check if we need to set up the initial delay
-    ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,.delay
-
-    ; wait for delay to be over
-    ld      a,[playerGravityDelay]
-    cp      0
-    ret     nz
-
-    ; reset delay
-    xor     a
-    ld      [playerBreakDelayed],a
-
-    ; break block
-    call    map_destroy_breakable_block_top
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
-
-    ret
-    
-.bottom:
-    ; check if block can be broken
-    call    map_check_breakable_block_bottom
-    cp      0
-    ret     z
-
-    ; check if we need to set up the initial delay
-    ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,.delay
-
-    ; wait for delay to be over
-    ld      a,[playerGravityDelay]
-    cp      0
-    ret     nz
-
-    ; reset delay
-    xor     a
-    ld      [playerBreakDelayed],a
-
-    ; break block
-    call    map_destroy_breakable_block_bottom
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
-
-    ret
-
-.delay:
-
-    ld      a,3
-    call    screen_shake
-
-    ; sound
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
-
-    ; align player y to 
-    ld      a,[playerY]
-    and     %11111000
-    ld      [playerY],a
-
-    ld      a,1
-    ld      [playerBreakDelayed],a
-
-    ; check if we already added delay for this block row
-    ; this is done so that when breaking two blocks at the time we only get
-    ; 1 delay
-    ld      a,[playerY];
-    ld      c,a
-    ld      a,[playerBreakBlockOffset]
-    cp      c
-    ret     z; if so exit
-
-    ; otherwise set the block row to the current one
-    ld      a,c
-    ld      [playerBreakBlockOffset],a
-
-    ld      a,4
-    ld      [playerGravityDelay],a
-
     ret
 

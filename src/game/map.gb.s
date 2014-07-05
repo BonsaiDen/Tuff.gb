@@ -14,7 +14,6 @@ map_init: ; a = base value for background tiles
     ld      bc,1024
     call    core_mem_set
 
-    ; clear both screen buffers
     ld      hl,$9c00
     ld      bc,1024
     call    core_mem_set
@@ -282,6 +281,93 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     ret
 
 
+; Block / Tile ----------------------------------------------------------------
+map_get_block_value: ; b = x, c = y -> a block value
+
+    push    hl
+    push    de
+
+    ; y * 10
+    ld      h,10
+    ld      e,c
+    call    math_mul8b
+
+    ; add x
+    ld      e,b
+    ld      d,0
+    add     hl,de
+
+    ; add base offset
+    ld      de,mapRoomBlockBuffer
+    add     hl,de
+    ld      a,[hl]
+
+    pop     de
+    pop     hl
+
+    ret
+
+
+map_set_tile_value: ; b = tile x, c = tile y, a = value
+    ; sets the tile value in the both the room data buffer and the screen buffer
+
+    push    de
+    push    hl
+
+    ; convert tile into -127-128 range and store into d
+    add     128
+    ld      d,a ; store tile value
+    ld      e,b ; store xpos
+
+    ; calculate base offset for the tile into either buffer
+    ld      h,0 
+    ld      l,c
+    add     hl,hl ; x2
+    add     hl,hl ; x4
+    add     hl,hl ; x8
+    add     hl,hl ; x16
+    add     hl,hl ; x32
+
+    ; set tile value in map buffer
+    push    hl
+    ld      a,d; temp store tile value
+    ld      d,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
+    add     hl,de
+    ld      [hl],a; set tile in map buffer
+    pop     hl
+
+    ; set tile value in screen buffer
+    ld      d,a
+    ld      a,[mapCurrentScreenBuffer]
+    cp      0
+    jp      z,.screen_9c
+    ld      a,d; restore
+    ld      d,$98
+    jp      .set
+
+.screen_9c:
+    ld      a,d; restore
+    ld      d,$9c
+
+.set:
+    add     hl,de
+    ld      d,a; restore tile value
+
+    ; wait for vram to be safe
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+
+    ; set tile value
+    ld      a,d
+    ld      [hl],a
+
+    pop     hl
+    pop     de
+
+    ret
+
+
 ; Animation -------------------------------------------------------------------
 map_animate_tiles:
 
@@ -429,315 +515,6 @@ map_animate_tiles:
     pop     de
     pop     hl
 
-    ret
-
-
-; Breakable Blocks ------------------------------------------------------------
-map_check_breakable_block_left:
-map_check_breakable_block_top:
-
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
-
-    ld      a,1
-    pop     bc
-    ret
-
-.no:
-    xor     a
-    pop     bc
-    ret
-
-
-map_check_breakable_block_bottom:
-
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     c
-
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
-
-    ld      a,1
-    pop     bc
-    ret
-
-.no:
-    xor     a
-    pop     bc
-    ret
-
-map_check_breakable_block_right:
-
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     b
-
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
-
-    ld      a,1
-    pop     bc
-    ret
-
-.no:
-    xor     a
-    pop     bc
-    ret
-
-
-map_get_block_value: ; b = x, c = y -> a block value
-
-    push    hl
-    push    de
-
-    ; y * 10
-    ld      h,10
-    ld      e,c
-    call    math_mul8b
-
-    ; add x
-    ld      e,b
-    ld      d,0
-    add     hl,de
-
-    ; add base offset
-    ld      de,mapRoomBlockBuffer
-    add     hl,de
-    ld      a,[hl]
-
-    pop     de
-    pop     hl
-
-    ret
-
-
-map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$70
-    call    map_check_breakable_surrounding
-    inc     b
-
-    ld      a,$71
-    call    map_check_breakable_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; top left
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; top right
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     c; lower row
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$72
-    call    map_check_breakable_surrounding
-    inc     b
-
-    ld      a,$73
-    call    map_check_breakable_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; bottom left
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; bottom right
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_left: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$70
-    call    map_check_breakable_surrounding
-    inc     c
-
-    ld      a,$72
-    call    map_check_breakable_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; top left
-    inc     c
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; bottom left
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_right: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    inc     b
-    ld      a,$71
-    call    map_check_breakable_surrounding
-    inc     c
-
-    ld      a,$73
-    call    map_check_breakable_surrounding
-    pop     bc
-    ret
-
-.light:
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; top left
-    inc     c
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    _map_set_tile_value; bottom left
-    pop     bc
-    ret
-
-
-map_check_breakable_surrounding: ; b = tx, c = ty
-    push    hl
-    push    af
-
-.left:
-    ld      a,b; ignore blocks < 0
-    cp      0
-    jr      z,.top
-    push    bc
-    dec     b
-    call    _map_get_tile_value
-    pop     bc
-    
-    cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_left
-
-.top:
-    ld      a,c; ignore blocks < 0
-    cp      0
-    jr      z,.right
-    push    bc
-    dec     c
-    call    _map_get_tile_value
-    pop     bc
-
-    cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_top
-
-.right:
-
-    ld      a,b; ignore blocks > 20
-    cp      20
-    jr      z,.bottom
-    push    bc
-    inc     b
-    call    _map_get_tile_value
-    pop     bc
-
-    cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_right
-
-.bottom:
-
-    ld      a,b; ignore blocks > 8
-    cp      8
-    jr      z,.found_none
-    push    bc
-    inc     c
-    call    _map_get_tile_value
-    pop     bc
-
-    cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_bottom
-
-.found_none:
-    pop     af
-    jr      .done
-
-.found_left:
-    pop     af
-    ld      a,MAP_BACKGROUND_FADE_LEFT
-    jr      .done
-
-.found_top:
-    pop     af
-    ld      a,MAP_BACKGROUND_FADE_TOP
-    jr      .done
-
-.found_right:
-    pop     af
-    ld      a,MAP_BACKGROUND_FADE_RIGHT
-    jr      .done
-
-.found_bottom:
-    pop     af
-    ld      a,MAP_BACKGROUND_FADE_BOTTOM
-
-.done:
-    pop     hl
-    call    _map_set_tile_value; top left
     ret
 
 
@@ -959,10 +736,10 @@ _map_update_falling_block: ; b = index
     ld      e,a
 
 .set:
-    call    _map_set_tile_value
+    call    map_set_tile_value
     inc     b
     ld      a,e
-    call    _map_set_tile_value
+    call    map_set_tile_value
 
     ; restore frame pointer
     pop     hl
@@ -1010,66 +787,6 @@ _map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; load tile value from background buffer
     ld      a,[hl]
     sub     128 ; convert into 0-255 range
-
-    ret
-
-
-_map_set_tile_value: ; b = tile x, c = tile y, a = value
-    ; sets the tile value in the both the room data buffer and the screen buffer
-
-    push    de
-    push    hl
-
-    ; convert tile into -127-128 range and store into d
-    add     128
-    ld      d,a ; store tile value
-    ld      e,b ; store xpos
-
-    ; calculate base offset for the tile into either buffer
-    ld      h,0 
-    ld      l,c
-    add     hl,hl ; x2
-    add     hl,hl ; x4
-    add     hl,hl ; x8
-    add     hl,hl ; x16
-    add     hl,hl ; x32
-
-    ; set tile value in map buffer
-    push    hl
-    ld      a,d; temp store tile value
-    ld      d,mapRoomTileBuffer >> 8; high byte, needs to be aligned at 256 bytes
-    add     hl,de
-    ld      [hl],a; set tile in map buffer
-    pop     hl
-
-    ; set tile value in screen buffer
-    ld      d,a
-    ld      a,[mapCurrentScreenBuffer]
-    cp      0
-    jp      z,.screen_9c
-    ld      a,d; restore
-    ld      d,$98
-    jp      .set
-
-.screen_9c:
-    ld      a,d; restore
-    ld      d,$9c
-
-.set:
-    add     hl,de
-    ld      d,a; restore tile value
-
-    ; wait for vram to be safe
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-
-    ; set tile value
-    ld      a,d
-    ld      [hl],a
-
-    pop     hl
-    pop     de
 
     ret
 
@@ -1416,7 +1133,6 @@ _map_load_room_data:
     ld      h,a
 
     jr      .loop_y
-
 
 .done:
     ld      a,1
