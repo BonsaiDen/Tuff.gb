@@ -487,30 +487,35 @@ player_decelerate:
 
 player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
-    ; TODO prevent player from gaining running speed
-
     ; reset running tick
     xor     a
     ld      [playerRunningTick],a
 
+    ; Do not bounce from forced wall jump movement
+    ld      a,[playerWallJumpTick]
+    cp      0
+    jr      nz,.done; normal collision
+
     ; exit if we are already bouncing and exit
     ld      a,[playerBounceFrames]
     cp      0
-    ret     nz
+    jr      nz,.done; normal collision
 
     ; check player movement speed
     ld      a,[playerSpeedRight]
     ld      b,a
     ld      a,[playerSpeedLeft]
     or      b
-    ld      c,a; store into c
     and     %00000010; check if speed is >= 2
-    ret     z; do nothing in case it isnt
+    cp      %00000010
+    jr      nz,.done; normal collision
 
-    ; check wall collision type normal / breaking
-    ; TODO check all 3 collision points to be either none or breaking
+    ; check for collision or break blocks, returns 1 in a if colliding
+    call    _player_check_wall_break
+    cp      1
+    jr      z,.break; ignore collision, we broke a wall
 
-    ; check for bouncing of walls during running
+    ; bounce off of walls
 .bounce:
     ld      a,[playerSpeedRight]
     cp      PLAYER_SPEED_FULL
@@ -567,7 +572,141 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ld      [playerSpeedRight],a
     ret
 
+.done:
+    xor     a
+    ret
+
 .break:
     ld      a,1; indicate that we do not want to be stopped by the wall
+    ret
+
+
+_player_check_wall_break:
+
+    ; setup X offset value
+    ld      a,[playerDirection]
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.right
+
+.left:
+    ld      h,-PLAYER_HALF_WIDTH
+    jr      .detect
+
+.right:
+    ld      h,PLAYER_HALF_WIDTH
+
+.detect:
+
+    ; check which 16x16 blocks we're hitting
+    ld      a,255; reset
+    ld      [playerBreakBlockM],a; middle
+    ld      [playerBreakBlockR],a; bottom
+    ld      [playerBreakBlockL],a; top
+    
+    ; middle of player
+    ld      a,[playerY]
+    sub     7
+    ld      c,a
+
+    ld      a,[playerX]
+    add     h
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      MAP_COLLISION_BLOCK
+    jp      z,.collision
+
+    cp      MAP_COLLISION_BREAKABLE
+    jr      nz,.check_bottom
+
+    ; store MIddle block y coordinate
+    ld      a,[playerY]; divide y by 16
+    sub     7
+    swap    a
+    and     $f
+    ld      [playerBreakBlockM],a; store block a x
+
+    ; bottom edge of player
+.check_bottom:
+    ld      a,[playerY]
+    sub     1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     h
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+    cp      MAP_COLLISION_BLOCK
+    jr      z,.collision
+
+    cp      MAP_COLLISION_BREAKABLE
+    jr      nz,.check_top
+
+    ; store Bottom block y coordinate
+    ld      a,[playerY]; divide y by 16
+    sub     1
+    swap    a
+    and     $f
+    ld      [playerBreakBlockR],a
+
+    ; top edge of player
+.check_top:
+    ld      a,[playerY]
+    sub     PLAYER_HEIGHT - 1
+    ld      c,a
+
+    ld      a,[playerX]
+    add     h
+    ld      b,a
+    call    map_get_collision
+    ld      a,[mapCollisionFlag]
+
+    cp      1
+    jr      z,.collision
+
+    cp      5
+    jr      nz,.check_blocks
+
+    ; store Top block y coordinate
+    ld      a,[playerY]; divide y by 16
+    sub     PLAYER_HEIGHT - 1
+    swap    a
+    and     $f
+    ld      [playerBreakBlockL],a
+
+.check_blocks:
+    
+    ; setup x block based on current player direction
+    ld      a,[playerX]; divide by 16
+    add     h
+    swap    a
+    and     $f
+    ld      b,a
+
+    ; check which 16x16 blocks need to be destroyed
+    ld      a,[playerBreakBlockR]
+    cp      255
+    push    bc
+    call    nz,break_horizontal_blocks
+    pop     bc
+
+    ld      a,[playerBreakBlockM]
+    cp      255
+    push    bc
+    call    nz,break_horizontal_blocks
+    pop     bc
+
+    ld      a,[playerBreakBlockL]
+    cp      255
+    push    bc
+    call    nz,break_horizontal_blocks
+    pop     bc
+
+    ld      a,1; break wall
+    ret
+
+.collision:
+    xor     a; bounce of
     ret
 

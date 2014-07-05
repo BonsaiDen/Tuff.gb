@@ -105,7 +105,6 @@ playerWallJumpWindow:      DB ; number of ticks left in which a wall jump can be
 playerWallJumpDir:         DB ; direction of the wall from which the player jumped of
 playerWallJumpTick:        DB ; ticks left during which the player movement will be forced into the direction of the wall jump
 playerWallJumpPressed:     DB
-playerWallJumpRest:        DB ; frames left until movement input is recognized again after a wall jump
 
 ; Gravity and Jumping      
 playerFallSpeed:           DB ; current fall speed per frame
