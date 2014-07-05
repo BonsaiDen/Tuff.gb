@@ -487,10 +487,6 @@ player_decelerate:
 
 player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
-    ; reset running tick
-    xor     a
-    ld      [playerRunningTick],a
-
     ; Do not bounce from forced wall jump movement
     ld      a,[playerWallJumpTick]
     cp      0
@@ -506,17 +502,36 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ld      b,a
     ld      a,[playerSpeedLeft]
     or      b
+    ld      c,a
     and     %00000010; check if speed is >= 2
     cp      %00000010
     jr      nz,.done; normal collision
 
-    ; check for collision or break blocks, returns 1 in a if colliding
+    ; check break blocks
+    ld      a,c
+    and     %00000011
+    cp      %00000011
+    jr      nz,.bounce
+
+    ; only if at full speed
     call    _player_check_wall_break
     cp      1
-    jr      z,.break; ignore collision, we broke a wall
+    jr      nz,.bounce; no breakable wall in our way
 
-    ; bounce off of walls
+    ld      a,1; indicate that we do not want to be stopped by the wall
+    ret
+
+.done:
+    xor     a
+    ld      [playerRunningTick],a
+    ret
+
 .bounce:
+
+    ; reset running tick
+    xor     a
+    ld      [playerRunningTick],a
+
     ld      a,[playerSpeedRight]
     cp      PLAYER_SPEED_FULL
     jr      z,.bounce_big
@@ -572,13 +587,6 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ld      [playerSpeedRight],a
     ret
 
-.done:
-    xor     a
-    ret
-
-.break:
-    ld      a,1; indicate that we do not want to be stopped by the wall
-    ret
 
 
 _player_check_wall_break:
