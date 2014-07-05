@@ -433,6 +433,7 @@ map_animate_tiles:
 
 
 ; Breakable Blocks ------------------------------------------------------------
+map_check_breakable_block_left:
 map_check_breakable_block_top:
 
     ; break the four 8x8 blocks
@@ -462,6 +463,28 @@ map_check_breakable_block_bottom:
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
     inc     c
+
+    ; check if we actually need to break them
+    call    _map_get_tile_collision
+    cp      5
+    jr      nz,.no
+
+    ld      a,1
+    pop     bc
+    ret
+
+.no:
+    xor     a
+    pop     bc
+    ret
+
+map_check_breakable_block_right:
+
+    ; break the four 8x8 blocks
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    inc     b
 
     ; check if we actually need to break them
     call    _map_get_tile_collision
@@ -757,28 +780,22 @@ map_check_fallable_blocks:
 
     ; load player coordinates and convert into blocks
     ld      a,[playerX]
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
+    swap    a
+    and     $0f; divide by 16
     cp      c
     jr      z,.found_x
 
     ld      a,[playerX]
     add     PLAYER_HALF_WIDTH - 3
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
+    swap    a
+    and     $0f; divide by 16
     cp      c
     jr      z,.found_x
 
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 2
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
+    swap    a
+    and     $0f; divide by 16
     cp      c
     jr      z,.found_x
     jr      .active
@@ -792,10 +809,8 @@ map_check_fallable_blocks:
     ; TODO check if in upper half of block only ?
     ld      a,[playerY]
     add     1
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
-    srl     a; divide by 16
+    swap    a
+    and     $0f; divide by 16
     cp      c
     jr      nz,.active
 
