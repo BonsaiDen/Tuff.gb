@@ -560,9 +560,9 @@ sprite_unset_mirror: ; a = sprite index
 _sprite_get_left: ; e = raw index, d = value byte offset
     ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
     ld      a,e
-    sla     a
-    sla     a
-    sla     a
+    add     a
+    add     a
+    add     a
     add     a,d
     ld      l,a
     ret
@@ -571,9 +571,9 @@ _sprite_get_left: ; e = raw index, d = value byte offset
 _sprite_get_right: ; e = raw index, d = value byte offset
     ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
     ld      a,e
-    sla     a
-    sla     a
-    sla     a
+    add     a
+    add     a
+    add     a
     add     a,d
     add     a,4; skip one hardware sprite
     ld      l,a

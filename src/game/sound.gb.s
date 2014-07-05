@@ -604,8 +604,8 @@ _sound_get_effect_data: ; b = sound id to get -> de = data pointer
 
 _sound_get_channel; a = sound channel id, de -> address of soundChannelState
     dec     a; switch to 0 based indexing and multiply by 4 to get the offset
-    sla     a; x2
-    sla     a; x4
+    add     a; x2
+    add     a; x4
     ld      d,soundChannelState >> 8
     ld      e,a
     ret

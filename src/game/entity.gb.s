@@ -376,8 +376,8 @@ entity_store:
 
     ld      a,[de] ; load direction
     inc     de
-    sla     a
-    sla     a
+    add     a
+    add     a
     and     %00001100
     or      b; merge with id and flags
     ld      [hli],a 
@@ -645,8 +645,8 @@ _entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entit
 
 .done:
     ld      a,b ; load the row into which the sprite data got loaded
-    add     a,a ; x4
-    add     a,a
+    add     a ; x4
+    add     a
     add     a,16 ; skip the first 4 rows in vram
 
     pop     bc

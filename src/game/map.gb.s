@@ -151,9 +151,9 @@ map_draw_room:
 
     ; adjust for or mask
     xor     1
-    sla     a
-    sla     a
-    sla     a
+    add     a
+    add     a
+    add     a
     ld      b,a
 
     ; flip bg data used for screen
@@ -393,9 +393,9 @@ map_animate_tiles:
 
     ; offset into tile animation data
     ld      a,d; base + d * 8 + 1
-    sla     a
-    sla     a
-    sla     a
+    add     a; x8
+    add     a
+    add     a
     inc     a
 
     ; add to bc
