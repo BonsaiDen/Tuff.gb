@@ -67,6 +67,7 @@ playerSpeedRight:          DB
 playerSpeedLeft:           DB 
 playerRunningTick:         DB
 playerMoveTick:            DB
+playerMovementDelay:       DB
 
 playerSleepTick:           DB
 playerDecTick:             DB
@@ -84,15 +85,17 @@ playerBounceFrames:        DB
 ; Pounding
 playerIsPounding:          DB
 playerPoundTick:           DB
-playerPoundBlockM:         DB
-playerPoundBlockR:         DB
-playerPoundBlockL:         DB
-playerBreakDelayed:        DB
-playerPoundYBlock:         DB
 playerPoundCenterX:        DB
 
 ; Running
 playerIsRunning:           DB
+
+; Breaking
+playerBreakDelayed:        DB
+playerBreakBlockM:         DB
+playerBreakBlockR:         DB
+playerBreakBlockL:         DB
+playerBreakBlockOffset:    DB
 
 
 ; Wall Sliding

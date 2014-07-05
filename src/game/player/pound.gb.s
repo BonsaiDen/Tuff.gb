@@ -369,7 +369,7 @@ player_pound:
     ; unset pound
     xor     a
     ld      [playerIsPounding],a
-    ld      [playerPoundYBlock],a
+    ld      [playerBreakBlockOffset],a
 
     ; reset gravity max
     ld      a,PLAYER_GRAVITY_MAX
@@ -383,9 +383,9 @@ player_pounding_collision:
 
     ; check which 16x16 blocks we're hitting
     ld      a,255; reset
-    ld      [playerPoundBlockM],a
-    ld      [playerPoundBlockR],a
-    ld      [playerPoundBlockL],a
+    ld      [playerBreakBlockM],a
+    ld      [playerBreakBlockR],a
+    ld      [playerBreakBlockL],a
     
     ; middle of player
     ld      a,[playerY]
@@ -403,11 +403,9 @@ player_pounding_collision:
 
     ; store M block x coordinate
     ld      a,[playerX]; divide x by 16
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    ld      [playerPoundBlockM],a; store block a x
+    swap    a
+    and     $f
+    ld      [playerBreakBlockM],a; store block a x
 
     ; right edge of player
 .check_right:
@@ -428,11 +426,9 @@ player_pounding_collision:
     ; store R block x coordinate
     ld      a,[playerX]; divide x by 16
     add     7
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    ld      [playerPoundBlockR],a
+    swap    a
+    and     $f
+    ld      [playerBreakBlockR],a
 
     ; left edge of player
 .check_left:
@@ -454,38 +450,34 @@ player_pounding_collision:
     ; store L block x coordinate
     ld      a,[playerX]; divide x by 16
     sub     8
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    ld      [playerPoundBlockL],a
+    swap    a
+    and     $f
+    ld      [playerBreakBlockL],a
 
 .check_blocks:
 
     ld      a,[playerY]; divide by 16
+    swap    a
+    and     $f
     ld      c,a
-    srl     c
-    srl     c
-    srl     c
-    srl     c
 
     ; check which 16x16 blocks need to be destroyed
-    ld      a,[playerPoundBlockR]
+    ld      a,[playerBreakBlockR]
     cp      255
     push    bc
-    call    nz,player_destroy_breakable_block
+    call    nz,_destroy_breakable_block_down
     pop     bc
 
-    ld      a,[playerPoundBlockM]
+    ld      a,[playerBreakBlockM]
     cp      255
     push    bc
-    call    nz,player_destroy_breakable_block
+    call    nz,_destroy_breakable_block_down
     pop     bc
 
-    ld      a,[playerPoundBlockL]
+    ld      a,[playerBreakBlockL]
     cp      255
     push    bc
-    call    nz,player_destroy_breakable_block
+    call    nz,_destroy_breakable_block_down
     pop     bc
 
     xor     a; fall through breakable blocks
@@ -496,7 +488,7 @@ player_pounding_collision:
     ret
 
 
-player_destroy_breakable_block:; a = block x, c = block y
+_destroy_breakable_block_down:; a = block x, c = block y
 
     ld      b,a; move x tile into b
 
@@ -593,13 +585,13 @@ player_destroy_breakable_block:; a = block x, c = block y
     ; 1 delay
     ld      a,[playerY];
     ld      c,a
-    ld      a,[playerPoundYBlock]
+    ld      a,[playerBreakBlockOffset]
     cp      c
     ret     z; if so exit
 
     ; otherwise set the block row to the current one
     ld      a,c
-    ld      [playerPoundYBlock],a
+    ld      [playerBreakBlockOffset],a
 
     ld      a,4
     ld      [playerGravityDelay],a
