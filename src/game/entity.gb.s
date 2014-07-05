@@ -739,7 +739,7 @@ _entity_get_last_room_id: ; c -> room id
 
 
 
-_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3)
+_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> hl = bucker pointer
     push    bc
     call    _entity_find_bucket; first check for a existing bucket that contains the entity
     cp      1

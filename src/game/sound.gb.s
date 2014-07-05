@@ -587,6 +587,7 @@ _sound_get_effect_data: ; b = sound id to get -> de = data pointer
     ld      h,0
     dec     l; switch to 0 based indexing and multiply by 8 to get the offset 
 
+    ; multiply by 8
     add     hl,hl
     add     hl,hl
     add     hl,hl
