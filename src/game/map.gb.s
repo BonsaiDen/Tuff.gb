@@ -23,48 +23,28 @@ map_init: ; a = base value for background tiles
 
 ; Scrolling -------------------------------------------------------------------
 map_scroll_left:
-    ld      a,[mapRoomX]
-    ld      [mapRoomLastX],a
-    dec     a
-    ld      b,a
-    ld      a,[mapRoomY]
-    ld      [mapRoomLastY],a
-    ld      c,a
-    call    map_load_room
-    ret
-
+    ld      bc,$FF00
+    jr      _map_scroll
 
 map_scroll_right:
-    ld      a,[mapRoomX]
-    ld      [mapRoomLastX],a
-    inc     a
-    ld      b,a
-    ld      a,[mapRoomY]
-    ld      [mapRoomLastY],a
-    ld      c,a
-    call    map_load_room
-    ret
-
+    ld      bc,$0100
+    jr      _map_scroll
 
 map_scroll_down:
-    ld      a,[mapRoomX]
-    ld      [mapRoomLastX],a
-    ld      b,a
-    ld      a,[mapRoomY]
-    ld      [mapRoomLastY],a
-    inc     a
-    ld      c,a
-    call    map_load_room
-    ret
-
+    ld      bc,$0001
+    jr      _map_scroll
 
 map_scroll_up:
+    ld      bc,$00FF
+
+_map_scroll:
     ld      a,[mapRoomX]
     ld      [mapRoomLastX],a
+    add     b
     ld      b,a
     ld      a,[mapRoomY]
     ld      [mapRoomLastY],a
-    dec     a
+    add     c
     ld      c,a
     call    map_load_room
     ret
