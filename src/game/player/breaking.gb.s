@@ -21,9 +21,13 @@ break_horizontal_blocks:; a = block y, b = block x
 .left:
 
     ; check if block can be broken
-    call    map_check_breakable_block_left
-    cp      0
-    ret     z
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    call    _map_get_tile_collision
+    pop     bc
+    cp      MAP_COLLISION_BREAKABLE
+    ret     nz
 
     ; check if we need to set up the initial delay
     ;ld      a,[playerBreakDelayed]
@@ -40,18 +44,21 @@ break_horizontal_blocks:; a = block y, b = block x
     ;ld      [playerBreakDelayed],a
 
     ; break block
-    call    map_destroy_breakable_block_left
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
+    ld      a,MAP_BLOCK_TILES_LEFT
+    call    _destroy_breakable_block
 
     ret
     
 .right:
     ; check if block can be broken
-    call    map_check_breakable_block_right
-    cp      0
-    ret     z
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    inc     b
+    call    _map_get_tile_collision
+    pop     bc
+    cp      MAP_COLLISION_BREAKABLE
+    ret     nz
 
     ; check if we need to set up the initial delay
     ;ld      a,[playerBreakDelayed]
@@ -68,10 +75,8 @@ break_horizontal_blocks:; a = block y, b = block x
     ;ld      [playerBreakDelayed],a
 
     ; break block
-    call    map_destroy_breakable_block_right
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
+    ld      a,MAP_BLOCK_TILES_RIGHT
+    call    _destroy_breakable_block
 
     ret
 
@@ -132,9 +137,13 @@ break_vertical_blocks:; a = block x, c = block y
 .top:
 
     ; check if block can be broken
-    call    map_check_breakable_block_top
-    cp      0
-    ret     z
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    call    _map_get_tile_collision
+    pop     bc
+    cp      MAP_COLLISION_BREAKABLE
+    ret     nz
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
@@ -151,18 +160,21 @@ break_vertical_blocks:; a = block x, c = block y
     ld      [playerBreakDelayed],a
 
     ; break block
-    call    map_destroy_breakable_block_top
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
+    ld      a,MAP_BLOCK_TILES_TOP
+    call    _destroy_breakable_block
 
     ret
     
 .bottom:
     ; check if block can be broken
-    call    map_check_breakable_block_bottom
-    cp      0
-    ret     z
+    push    bc
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+    inc     c
+    call    _map_get_tile_collision
+    pop     bc
+    cp      MAP_COLLISION_BREAKABLE
+    ret     nz
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
@@ -179,10 +191,8 @@ break_vertical_blocks:; a = block x, c = block y
     ld      [playerBreakDelayed],a
 
     ; break block
-    call    map_destroy_breakable_block_bottom
-
-    ld      a,SOUND_PLAYER_POUND_BREAK
-    call    sound_play
+    ld      a,MAP_BLOCK_TILES_BOTTOM
+    call    _destroy_breakable_block
 
     ret
 
@@ -222,209 +232,92 @@ break_vertical_blocks:; a = block x, c = block y
     ret
 
 
-; Block Breaking Helper s------------------------------------------------------
-map_check_breakable_block_left:
-map_check_breakable_block_top:
+; Block Breaking Helpers-------------------------------------------------------
+MapBreakableBlockGroupOffsets:
+    ; top
+    DB      0, 0, $70, 0; +x, +y, tile
+    DB      1, 0, $71, 0
 
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
+    ; left
+    DB      0, 0, $70, 0
+    DB      0, 1, $72, 0
 
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
+    ; bottom
+    DB      0, 1, $72, 0
+    DB      1, 0, $73, 0
 
-    ld      a,1
-    pop     bc
-    ret
+    ; right
+    DB      1, 0, $71, 0
+    DB      0, 1, $73, 0
 
-.no:
-    xor     a
-    pop     bc
-    ret
-
-
-map_check_breakable_block_bottom:
-
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     c
-
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
-
-    ld      a,1
-    pop     bc
-    ret
-
-.no:
-    xor     a
-    pop     bc
-    ret
-
-map_check_breakable_block_right:
-
-    ; break the four 8x8 blocks
-    push    bc
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     b
-
-    ; check if we actually need to break them
-    call    _map_get_tile_collision
-    cp      5
-    jr      nz,.no
-
-    ld      a,1
-    pop     bc
-    ret
-
-.no:
-    xor     a
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_top: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$70
-    call    _break_check_surrounding
-    inc     b
-
-    ld      a,$71
-    call    _break_check_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; top left
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; top right
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_bottom: ; a = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    inc     c; lower row
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$72
-    call    _break_check_surrounding
-    inc     b
-
-    ld      a,$73
-    call    _break_check_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; bottom left
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; bottom right
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_left: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    ld      a,$70
-    call    _break_check_surrounding
-    inc     c
-
-    ld      a,$72
-    call    _break_check_surrounding
-    pop     bc
-    ret
-
-.light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; top left
-    inc     c
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; bottom left
-    pop     bc
-    ret
-
-
-map_destroy_breakable_block_right: ; b = block x, c = block y -> a = broken or not
-
-    ; break the four 8x8 blocks
-    push    bc
-    
-    ; get the 16x16 block tile
-    call    map_get_block_value
-    sla     b; convert into 8x8 index
-    sla     c; convert into 8x8 index
-    cp      MAP_BREAKABLE_BLOCK_LIGHT
-    jr      z,.light
-
-.dark:
-    inc     b
-    ld      a,$71
-    call    _break_check_surrounding
-    inc     c
-
-    ld      a,$73
-    call    _break_check_surrounding
-    pop     bc
-    ret
-
-.light:
-    inc     b
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; top left
-    inc     c
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    call    map_set_tile_value; bottom left
-    pop     bc
-    ret
-
-
-_break_check_surrounding: ; b = tx, c = ty
+_destroy_breakable_block:; a = block group to break
     push    hl
-    push    af
+    push    de
+    push    bc
+
+    ; offset into data table
+    ld      h,0
+    ld      l,a
+    sla     l
+    sla     l
+    sla     l
+    ld      de,MapBreakableBlockGroupOffsets
+    add     hl,de
+    
+    ; get the 16x16 block tile for checking the new background of the tile
+    call    map_get_block_value
+    ld      e,a; store block id
+    sla     b; convert into 8x8 index
+    sla     c; convert into 8x8 index
+
+    ; update both blocks
+    ld      d,2
+.loop:
+    ; add offsets
+    ld      a,[hli]
+    add     b
+    ld      b,a
+
+    ld      a,[hli]
+    add     c
+    ld      c,a
+
+    ; check the desired background color of the breakable block
+    ; if the background is dark we need to load the base dark tile value
+    ld      a,e
+    cp      MAP_BREAKABLE_BLOCK_LIGHT
+    jr      z,.light
+
+.dark:
+    ld      a,[hli]; load the base background value
+    push    hl
+    call    _break_check_surrounding; check for transitions and modify accordingly
+    pop     hl
+    jr      .next
+
+.light:
+    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    inc     hl; skip the tile value
+
+.next:
+    inc     hl; skip the padding
+    call    map_set_tile_value; set background tile
+    dec     d
+    jr      nz,.loop
+
+    ; play sound
+    ld      a,SOUND_PLAYER_POUND_BREAK
+    call    sound_play
+
+    pop     bc
+    pop     de
+    pop     hl
+
+    ret
+
+
+_break_check_surrounding: ; b = tx, c = ty, a = base tile value
+    ld      e,a
 
 .left:
     ld      a,b; ignore blocks < 0
@@ -451,7 +344,6 @@ _break_check_surrounding: ; b = tx, c = ty
     jr      z,.found_top
 
 .right:
-
     ld      a,b; ignore blocks > 20
     cp      20
     jr      z,.bottom
@@ -464,7 +356,6 @@ _break_check_surrounding: ; b = tx, c = ty
     jr      z,.found_right
 
 .bottom:
-
     ld      a,b; ignore blocks > 8
     cp      8
     jr      z,.found_none
@@ -477,30 +368,22 @@ _break_check_surrounding: ; b = tx, c = ty
     jr      z,.found_bottom
 
 .found_none:
-    pop     af
-    jr      .done
+    ld      a,e; restore base tile
+    ret
 
 .found_left:
-    pop     af
     ld      a,MAP_BACKGROUND_FADE_LEFT
-    jr      .done
+    ret
 
 .found_top:
-    pop     af
     ld      a,MAP_BACKGROUND_FADE_TOP
-    jr      .done
+    ret
 
 .found_right:
-    pop     af
     ld      a,MAP_BACKGROUND_FADE_RIGHT
-    jr      .done
+    ret
 
 .found_bottom:
-    pop     af
     ld      a,MAP_BACKGROUND_FADE_BOTTOM
-
-.done:
-    pop     hl
-    call    map_set_tile_value; top left
     ret
 
