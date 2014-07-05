@@ -51,7 +51,7 @@ PLAYER_WATER_OFFSET_MAX       EQU 35
 
 PLAYER_SLIDE_DURATION         EQU 40 ; in frames
 PLAYER_SLIDE_SLOWDOWN         EQU 3 ; only apply fall speed every X other ticks while sliding
-PLAYER_WALL_JUMP_WINDOW       EQU 4
+PLAYER_WALL_JUMP_WINDOW       EQU 5
 PLAYER_WALL_JUMP_DURATION     EQU 12
 
 PLAYER_POUND_DELAY_START      EQU 45; delay in frames for pound start
@@ -81,7 +81,6 @@ playerDirectionLast:       DB
 playerDirectionWall:       DB
 playerBounceFrames:        DB
 
-
 ; Pounding
 playerIsPounding:          DB
 playerPoundTick:           DB
@@ -97,8 +96,7 @@ playerBreakBlockR:         DB
 playerBreakBlockL:         DB
 playerBreakBlockOffset:    DB
 
-
-; Wall Sliding
+; Wall Jump
 playerWallSlideDir:        DB ; direction of the wall which the player is/was sliding on
 playerWallSlideTick:       DB ; number of ticks the player is sliding down the wall
 playerWallJumpWindow:      DB ; number of ticks left in which a wall jump can be started
