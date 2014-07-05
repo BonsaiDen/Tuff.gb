@@ -134,10 +134,7 @@ entity_load:
     ; set default direction 
     ld      a,c
     and     %11000000 ; mask type bits
-    srl     a
-    srl     a
-    srl     a
-    srl     a
+    swap    a
     srl     a
     srl     a
     ld      [hl],a
@@ -268,10 +265,7 @@ _entity_load:
     ld      b,a; store copy of original value into b
 
     ; get flags
-    srl     a
-    srl     a
-    srl     a
-    srl     a
+    swap    a
     and     %00001111
     ld      [de],a; set flags
     inc     de
