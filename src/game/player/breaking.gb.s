@@ -356,8 +356,8 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     jr      z,.found_right
 
 .bottom:
-    ld      a,b; ignore blocks > 8
-    cp      8
+    ld      a,c; ignore blocks > 8
+    cp      16
     jr      z,.found_none
     push    bc
     inc     c
