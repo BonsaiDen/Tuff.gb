@@ -423,6 +423,13 @@ player_decelerate:
     cp      PLAYER_BOUNCE_FRAMES - PLAYER_DECELERATE_FRAMES
     ret     nc
 
+    ; Never decrease speed while running, otherwise there will be one frame 
+    ; every 10 frames where we'll bounce of during wall hits even though we 
+    ; should break them
+    ld      a,[playerIsRunning]
+    cp      0
+    ret     nz
+
     ; only decelerate on every 10th frame
     ; this introduces "lag" or a sliding when turning rapidly
     ld      a,[playerDecTick]
