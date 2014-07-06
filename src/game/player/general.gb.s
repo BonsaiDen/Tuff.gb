@@ -90,17 +90,6 @@ player_reset:
     ret
 
 
-player_set_position:
-    ; update player sprite position
-    ld      a,[playerX]
-    ld      b,a
-    ld      a,[playerY]
-    ld      c,a
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_set_position
-    ret
-
-
 PlayerDissolveSounds:
     DB      $00; none
     DB      $00; block
