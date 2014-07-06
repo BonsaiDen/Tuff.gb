@@ -3,13 +3,17 @@ core_init:
 
     di                      ; Disable interrupts
 
+    ; Clear core variables
     xor     a
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
+    ld      [coreTimerCounter],a
     ld      [coreTimer],a
     ld      [coreInput],a
     ld      [coreInputOn],a
     ld      [coreInputOff],a
+    ld      [coreRandomHigh],a
+    ld      [coreRandomLow],a
 
     ld      sp,$FFFF        ; init stack pointer
     call    core_screen_off ; Disable Screen
@@ -78,6 +82,7 @@ core_init:
     ld      [$ff23],a
 
     ; Run init code and the loop once so we don't have a blank frame on powerup
+    call    math_update_random
     call    core_input
     call    game_init
     call    game_loop
