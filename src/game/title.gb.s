@@ -84,6 +84,14 @@ title_update:
     cp      0
     ret     nz
 
+    ; delay
+    ld      a,[titleWaitCounter]
+    dec     a
+    ld      [titleWaitCounter],a
+    cp      0
+    ret     nz
+
+    ; draw title background
     call    title_draw_room
     call    title_draw_cursor
 
@@ -92,13 +100,6 @@ title_update:
     ld      [playerX],a
     ld      a,96
     ld      [playerY],a
-
-    ; delay
-    ld      a,[titleWaitCounter]
-    dec     a
-    ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
 
     ; fade over
     call    screen_fade_in_light
@@ -235,7 +236,7 @@ title_screen_movement:
 
     ; don't leave the screen
     ld      a,[playerX]
-    cp      152
+    cp      144
     jp      nc, .switch_to_left; x > 152
 
     ld      a,c
@@ -260,7 +261,6 @@ title_draw_logo:
     ; load title screen graphics into vram
     ld      hl,DataLogoImg
     ld      de,$8800; start target for decode write
-    ;ld      bc,$8800 + 768; end target for decode write
     call    core_decode_eom
 
     ; clear screen buffer
@@ -318,6 +318,9 @@ title_draw_logo:
 
 title_draw_room:
 
+    ; turn screen off for all the vram accessing
+    call    core_screen_off
+
     ; force background buffer at $9800
     xor     a
     ld      [mapCurrentScreenBuffer],a
@@ -371,6 +374,9 @@ title_draw_room:
     ld      de,$9800 + 519; "Continue"
     ld      b,$06
     call    core_vram_cpy_low
+
+    ; turn screen back on
+    call    core_screen_on
 
     ret
 
