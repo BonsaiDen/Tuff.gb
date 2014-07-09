@@ -368,7 +368,7 @@ title_draw_room:
     ld      [titleCanContinue],a
     ld      [titleCursorPos],a
     cp      1
-    ret     nz
+    jr      nz,.done
 
     ld      hl,DataTitleLayout + 4
     ld      de,$9800 + 519; "Continue"
@@ -376,6 +376,7 @@ title_draw_room:
     call    core_vram_cpy_low
 
     ; turn screen back on
+.done:
     call    core_screen_on
 
     ret
