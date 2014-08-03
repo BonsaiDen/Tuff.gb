@@ -1,7 +1,7 @@
 tools
 help
 node_modules
-data/bin
+src/data/bin
 build
 vis
 *.avi

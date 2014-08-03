@@ -2,7 +2,7 @@ SECTION "SoundRam",WRAM0[$CB00]; must be aligned at 256 bytes for soundChannelSt
 
 
 ; Constants -------------------------------------------------------------------
-INCLUDE     "../data/bin/sounds.def.gb.s"
+INCLUDE     "/data/bin/sounds.def.gb.s"
 
 ; Sound State Buffer ----------------------------------------------------------
 soundChannelState:      DS 16; 4 byte per channel

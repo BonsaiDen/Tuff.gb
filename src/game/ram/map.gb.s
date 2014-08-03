@@ -66,14 +66,14 @@ mapFallableBlockCount:      DB
 
 
 ; Tile Animations -------------------------------------------------------------
-mapAnimationIndexes         DS TILE_ANIMATION_COUNT
-mapAnimationDelay           DS TILE_ANIMATION_COUNT
-mapAnimationUseMap          DS TILE_ANIMATION_COUNT
+mapAnimationIndexes:        DS TILE_ANIMATION_COUNT
+mapAnimationDelay:          DS TILE_ANIMATION_COUNT
+mapAnimationUseMap:         DS TILE_ANIMATION_COUNT
 
 
 ; RAM Buffers -----------------------------------------------------------------
 SECTION "MapBufferRam",WRAM0[$C100]; must be aligned at 256 bytes for tile buffer
 mapRoomTileBuffer:          DS 512; tile buffer for the current room (8x8 tiles)
-mapBlockDefinitionBuffer    DS 1024; buffer for tile definitions of the current room
-mapTileAnimationBuffer      DS 1024; buffer for tile animation graphics
+mapBlockDefinitionBuffer:   DS 1024; buffer for tile definitions of the current room
+mapTileAnimationBuffer:     DS 1024; buffer for tile animation graphics
 

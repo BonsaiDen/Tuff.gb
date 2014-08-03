@@ -1,16 +1,13 @@
 # Build
 rom: convert
 	@mkdir -p build
-	@cd src && rgbasm -o ../build/main.o main.gb.s
-	@rgblink -o build/game.gb build/main.o -m build/game.map -n build/game.sym
-	@rgbfix -v -p 0 build/game.gb
-	@node stat build/game.map
+	@gbasm -o build/game.gb -m stdout -s build/game.sym src/main.gb.s
 	@cp  build/game.gb tools/emu/roms/tuff.gb
 	@cp  build/game.gb tools/emu/web/roms/tuff.gb
 
 convert:
-	@mkdir -p data/bin
-	node convert data data/bin
+	@mkdir -p src/data/bin
+	node convert src/data src/data/bin
 
 # Emulation
 run: rom
@@ -29,7 +26,7 @@ clean:
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 	
 tiled:
-	~/Sources/tiled-qt-0.9.1/build/bin/tiled &
+	~/Sources/tiled-qt-0.9.1/build/bin/tiled src/data/main.map.json &
 
 
 # Video

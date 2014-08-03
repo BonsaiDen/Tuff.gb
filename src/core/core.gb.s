@@ -40,13 +40,13 @@ DB $BB,$BB,$67,$63,$6E,$0E,$EC,$CC,$DD,$DC,$99,$9F,$BB,$B9,$33,$3E
 
 
 ; Catridge Name ---------------------------------------------------------------
-DB STRUPR("{CART_NAME}")
+DS 16 STRUPR(CART_NAME)
 
 
 ; Cartridge Options -----------------------------------------------------------
 SECTION "Core Rom Header",ROM0[$143]
 DB 0                         ; $143
-DB STRUPR("{CART_LICENSEE}") ; $144 - Licensee code (not important)
+DS 2 STRUPR(CART_LICENSEE)     ; $144 - Licensee code (not important)
 DB 0                         ; $146 - SGB Support indicator
 DB CART_TYPE                 ; $147 - Cart type
 DB CART_ROM_SIZE             ; $148 - ROM Size
@@ -60,15 +60,15 @@ DW 0                         ; $14e - Global checksum (not important)
 
 ; Core Program ----------------------------------------------------------------
 SECTION "CoreCode",ROM0[$0150]
-    INCLUDE "core/include/gbhw.inc"
-    INCLUDE "core/decode.gb.s"
-    INCLUDE "core/dma.gb.s"
-    INCLUDE "core/init.gb.s"
-    INCLUDE "core/input.gb.s"
-    INCLUDE "core/loop.gb.s"
-    INCLUDE "core/math.gb.s"
-    INCLUDE "core/memory.gb.s"
-    INCLUDE "core/screen.gb.s"
-    INCLUDE "core/timer.gb.s"
-    INCLUDE "core/vblank.gb.s"
+    INCLUDE "include/gbhw.inc"
+    INCLUDE "decode.gb.s"
+    INCLUDE "dma.gb.s"
+    INCLUDE "init.gb.s"
+    INCLUDE "input.gb.s"
+    INCLUDE "loop.gb.s"
+    INCLUDE "math.gb.s"
+    INCLUDE "memory.gb.s"
+    INCLUDE "screen.gb.s"
+    INCLUDE "timer.gb.s"
+    INCLUDE "vblank.gb.s"
 

@@ -10,7 +10,7 @@ GAME_MODE_CONTINUE  EQU 4
 GAME_MODE_START     EQU 5
 GAME_MODE_PLAYING   EQU 6
 
-GAME_DEBUG_MODE     EQU 1
+GAME_DEBUG_MODE     EQU 0
 
 ; Game State ------------------------------------------------------------------
 gameMode:           DB

@@ -24,7 +24,7 @@ break_horizontal_blocks:; a = block y, b = block x
     push    bc
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     pop     bc
     cp      MAP_COLLISION_BREAKABLE
     ret     nz
@@ -55,7 +55,7 @@ break_horizontal_blocks:; a = block y, b = block x
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
     inc     b
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     pop     bc
     cp      MAP_COLLISION_BREAKABLE
     ret     nz
@@ -140,7 +140,7 @@ break_vertical_blocks:; a = block x, c = block y
     push    bc
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     pop     bc
     cp      MAP_COLLISION_BREAKABLE
     ret     nz
@@ -171,7 +171,7 @@ break_vertical_blocks:; a = block x, c = block y
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
     inc     c
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     pop     bc
     cp      MAP_COLLISION_BREAKABLE
     ret     nz
@@ -325,7 +325,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     jr      z,.top
     push    bc
     dec     b
-    call    _map_get_tile_value
+    call    map_get_tile_value
     pop     bc
     
     cp      MAP_BACKGROUND_TILE_LIGHT
@@ -337,7 +337,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     jr      z,.right
     push    bc
     dec     c
-    call    _map_get_tile_value
+    call    map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
@@ -349,7 +349,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     jr      z,.bottom
     push    bc
     inc     b
-    call    _map_get_tile_value
+    call    map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
@@ -361,7 +361,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     jr      z,.found_none
     push    bc
     inc     c
-    call    _map_get_tile_value
+    call    map_get_tile_value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT

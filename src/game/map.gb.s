@@ -190,7 +190,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     srl     c
 
     ; check type of collision
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     cp      MAP_COLLISION_BLOCK; normal blocks
     jr      z,.collision
     cp      MAP_COLLISION_BREAKABLE; breakable
@@ -249,7 +249,7 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     srl     c
 
     ; check type of collision
-    call    _map_get_tile_collision
+    call    map_get_tile_collision
     cp      0
     jr      nz,.collision
     pop     bc
@@ -730,11 +730,11 @@ _map_update_falling_block: ; b = index
 
 
 ; Helpers ---------------------------------------------------------------------
-_map_get_tile_collision:
+map_get_tile_collision:
     push    hl
 
     ; get offset into collision table
-    call    _map_get_tile_value
+    call    map_get_tile_value
     ld      hl,DataTileCol ; needs to be aligned at 256 bytes
     ld      l,a
     ld      a,[hl]
@@ -743,7 +743,7 @@ _map_get_tile_collision:
     ret
 
 
-_map_get_tile_value: ; b = tile x, c = tile y -> a = value
+map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; gets the tile value from the room data buffer (not VRAM!)
     ; trashes hl and bc
 
@@ -1027,7 +1027,7 @@ _map_load_room_data:
     ld      [hli],a ;  draw + 0
 
     ; upper right
-    ld      b,mapBlockDefinitionBuffer >> 8 + 1 ; block def row 1 offset
+    ld      b,(mapBlockDefinitionBuffer >> 8) + 1 ; block def row 1 offset
     ld      a,[bc] ; tile value
     ld      [hl],a ; draw +1
 
@@ -1038,12 +1038,12 @@ _map_load_room_data:
     ld      c,d
 
     ; lower left
-    ld      b,mapBlockDefinitionBuffer >> 8 + 2 ; block def row 2 offset
+    ld      b,(mapBlockDefinitionBuffer >> 8) + 2 ; block def row 2 offset
     ld      a,[bc] ; tile value
     ld      [hli],a ; draw + 32
 
     ; lower right
-    ld      b,mapBlockDefinitionBuffer >> 8 + 3 ; block def row 2 offset
+    ld      b,(mapBlockDefinitionBuffer >> 8) + 3 ; block def row 2 offset
     ld      a,[bc] ; tile value
     ld      [hl],a ; draw + 33
 

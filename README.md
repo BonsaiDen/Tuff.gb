@@ -30,8 +30,8 @@ Most of the game assets also get compressed with a custom LZ-Type compression ro
 ## How to compile
 
 1. Make sure you got `make` installed (If you're on Ubuntu, just run `sudo apt-get install build-essential`)
-2. Install [rgbgs](https://github.com/bentley/rgbds), it is the assembler that is being used for the project
-3. Get [Node.js](https://nodejs.org), it is used for graphics conversion and other tooling
+2. Get [Node.js](https://nodejs.org), it is used for graphics / data conversion scripts
+3. Install [gbasm](https://github.com/BonsaiDen/gbasm) via `npm install -g gbasm`, it is the assembler used for this project
 4. Run `make`
 
 You'll find the assembled ROM under `build/game.gb`, it should play in a GameBoy Emulator of your choice.

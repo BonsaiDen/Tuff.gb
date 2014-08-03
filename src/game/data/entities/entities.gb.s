@@ -35,7 +35,7 @@ DataEntityUpdateHandlerTable:
 
 
 ; Entity Logic Code Includes --------------------------------------------------
-    INCLUDE "game/data/entities/handler/save.gb.s"
-    INCLUDE "game/data/entities/handler/glow.gb.s"
-    INCLUDE "game/data/entities/handler/powerup.gb.s"
+    INCLUDE "handler/save.gb.s"
+    INCLUDE "handler/glow.gb.s"
+    INCLUDE "handler/powerup.gb.s"
 

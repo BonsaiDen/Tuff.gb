@@ -2,23 +2,23 @@ SECTION "Bank1 Data",ROMX,BANK[1]
 
 ; Shared Game Data ------------------------------------------------------------
 DataBlockDef: 
-    INCBIN  "../data/bin/blocks.def.bin" ; 4 rows of 256 bytes each
+    INCBIN  "/data/bin/blocks.def.bin" ; 4 rows of 256 bytes each
                                          ; 0 1 which contain the sub tiles for
                                          ; 2 3 each 16x16 block
 
 DataTileCol: ; placed specifically @ 0x4400 for collision checks
-    INCBIN  "../data/bin/tiles.col.bin"; 256 byte
+    INCBIN  "/data/bin/tiles.col.bin"; 256 byte
 
 DataTileImg:
-    INCBIN  "../data/bin/tiles.bg.bin" 
+    INCBIN  "/data/bin/tiles.bg.bin" 
 
 DataTileAnimationImg:
-    INCBIN  "../data/bin/animation.bg.bin" 
+    INCBIN  "/data/bin/animation.bg.bin" 
 
 
 ; Logo ------------------------------------------------------------------------
 DataLogoImg:
-    INCBIN  "../data/bin/logo.bg.bin" 
+    INCBIN  "/data/bin/logo.bg.bin" 
 
 DataLogoLayout:
     DB      $00,$01,$02,$03, $04,$05,$06,$07
@@ -33,14 +33,14 @@ DataLogoLayout:
 
 ; Title Screen ----------------------------------------------------------------
 DataTitleImg:
-    INCBIN  "../data/bin/title.bg.bin" 
+    INCBIN  "/data/bin/title.bg.bin" 
 
 DataTitleLayout:
     DB      $10,$11,$12,$13
     DB      $14,$15,$16,$17,$18,$19
 
 DataTitleSprite:
-    INCBIN  "../data/bin/title.ch.bin" 
+    INCBIN  "/data/bin/title.ch.bin" 
 
 DataTitleSpriteLayout:
 
@@ -89,21 +89,21 @@ DataTitleSpriteLayoutYOffsets:
 
 ; Everything else -------------------------------------------------------------
 DataPlayerImg:
-    INCBIN  "../data/bin/player.ch.bin" 
+    INCBIN  "/data/bin/player.ch.bin" 
 
 DataEntityRows:
-    INCBIN  "../data/bin/entities.ch.bin" 
+    INCBIN  "/data/bin/entities.ch.bin" 
 
 DataSpriteAnimation:
-    INCLUDE "game/data/animation/player.gb.s"
-    INCLUDE "game/data/animation/entity.gb.s"
+    INCLUDE "animation/player.gb.s"
+    INCLUDE "animation/entity.gb.s"
 
 DataTileAnimation:
-    INCLUDE "game/data/animation/tile.gb.s"
+    INCLUDE "animation/tile.gb.s"
 
 DataEntityDefinitions:
-    INCLUDE "game/data/entities/entities.gb.s"
+    INCLUDE "entities/entities.gb.s"
 
 DataSoundDefinitions:
-    INCLUDE "../data/bin/sounds.data.gb.s"
+    INCLUDE "/data/bin/sounds.data.gb.s"
 
