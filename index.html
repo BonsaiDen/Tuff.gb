@@ -1,51 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Tuff.gb by BonsaiDen</title>
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Tuff.gb</h1>
+        <p class="header">Tuff - An original game for the Nintendo GameBoy</p>
 
-        <style>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/BonsaiDen/Tuff.gb/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/BonsaiDen/Tuff.gb/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/BonsaiDen/Tuff.gb">View On GitHub</a></li>
+        </ul>
 
-            body {
-                font-family: Arial;
-                background-color: #999999;
-            }
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/BonsaiDen">BonsaiDen</a></p>
 
-            #wrapper {
-                width: 320px;
-                height: 288px;
-                margin: 40px auto;
-                border: 4px solid #000
-            }
 
-            canvas {
-                display: block;
-            }
+      </header>
+      <section>
+        <h1>
+<a name="tuff" class="anchor" href="#tuff"><span class="octicon octicon-link"></span></a>Tuff</h1>
 
-        </style>
+<p>Tuff is an original game for Nintendo's black and white GameBoy, based on a mix of Jump'n'Run and <em>Metroidvania</em> style game elements.</p>
 
-    </head>
+<p>Below are some older screenshots of the game to give you an impression of what it looks like, there's also a more recent <a href="http://www.youtube.com/watch?v=Xdtt6Rsvwag">Video</a>.</p>
 
-    <body>
-        <div id="wrapper">
-            <canvas id="screen" width="320" height="288"></canvas>
-            <p>
-                Tuff (c) 2009-2014 Ivo Wetzel</br>
-                Emulation powered by <a href="https://github.com/grantgalitz/GameBoy-Online">GameBoy-Online</a>.
-            </p>
-        </div>
-    </body>
+<h3>
+<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
 
-    <script src="js/other/base64.js"></script>
-    <script src="js/other/json2.js"></script>
-    <script src="js/other/swfobject.js"></script>
-    <script src="js/other/resampler.js"></script>
-    <script src="js/other/XAudioServer.js"></script>
-    <script src="js/other/resize.js"></script>
-    <script src="js/GameBoyCore.js"></script>
-    <script src="js/GameBoyIO.js"></script>
-    <script src="js/tuff.js"></script>
+<p><img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen1.png" alt=""> . <img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen2.png" alt=""></p>
 
+<p><img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen3.png" alt=""> . <img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen4.png" alt=""></p>
+
+<h2>
+<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
+
+<p>The game, while mostly being developed on Emulators, also works on custom build flash ROM Game Paks.</p>
+
+<p>There are many interesting bits and pieces under <code>src/core</code>, especially if you're interested in starting your own GameBoy development.</p>
+
+<p>Coding is all done in VIM while graphics, sprites and sounds are converted via custom Node.js based conversion tools. The game's world is edited via <a href="http://www.mapeditor.org/">Tiled</a> and also converted into a custom binary format.</p>
+
+<p>Most of the game assets also get compressed with a custom LZ-Type compression routine.</p>
+
+<h3>
+<a name="how-to-compile" class="anchor" href="#how-to-compile"><span class="octicon octicon-link"></span></a>How to compile</h3>
+
+<ol>
+<li>You'll need <code>make</code>, <a href="https://nodejs.org">Node.js</a> and <a href="https://github.com/BonsaiDen/gbasm">gbasm</a>
+</li>
+<li>Clone the repository and <code>cd</code> into its directory</li>
+<li>Run <code>npm install .</code> to setup the dependencies</li>
+<li>Run <code>make</code> to assemble the ROM under <code>build/game.gb</code>
+</li>
+</ol><h3>
+<a name="emulator-tips-for-development" class="anchor" href="#emulator-tips-for-development"><span class="octicon octicon-link"></span></a>Emulator Tips for Development</h3>
+
+<p><a href="https://github.com/sinamas/gambatte">Gambatte</a> and <a href="http://bgb.bircd.org/">bgb</a> are by far the best emulators for developing.
+They both have a big focus on accuracy and <em>bgb</em> also comes with a huge number of built-in debugging tools.</p>
+
+<p>On the web <a href="https://github.com/grantgalitz/GameBoy-Online">GameBoy Online</a> is probably the best of the available JavaScript based emulators out there.</p>
+
+<h3>
+<a name="recording-gameplay-videos" class="anchor" href="#recording-gameplay-videos"><span class="octicon octicon-link"></span></a>Recording Gameplay Videos</h3>
+
+<p>For video recording <a href="http://mednafen.sourceforge.net/">mednafen</a> turns out to be the simpelst solution:</p>
+
+<pre><code>mednafen -qtrecord "game_raw.mov" -qtrecord.vcodec png -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 game.gb
+</code></pre>
+
+<p>This will record a uncompressed 160x144 video of the game.</p>
+
+<p>Getting the video YouTube ready can quickly be done with <code>ffmpeg</code>:</p>
+
+<pre><code>ffmpeg -i game_raw.mov -vf scale=480:432 -sws_flags neighbor -acodec libmp3lame -ac 1 -ab 64000 -ar 22050 -vcodec mpeg4 -flags +mv4+gmc -mbd bits -trellis 2 -b 8000k game.avi
+</code></pre>
+
+<blockquote>
+<p>This will scale it up, convert the audio to mp3 and the video to mpeg4, you can tweak the bitrate, but it will normally average out at around 3000kb/s for Tuff.</p>
+</blockquote>
+
+<h2>
+<a name="copyright-and-license" class="anchor" href="#copyright-and-license"><span class="octicon octicon-link"></span></a>Copyright and License</h2>
+
+<p><em>Tuff</em> including all graphics, characters, ideas, sounds and maps are Copyright (c) 2014 Ivo Wetzel. All rights reserved.</p>
+
+<p>The assembly code along with all conversion tools is licensed under MIT.</p>
+
+<p>Copyright (C) 2014 Ivo Wetzel</p>
+
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
 </html>
-
