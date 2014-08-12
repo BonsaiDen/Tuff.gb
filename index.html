@@ -3,21 +3,44 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Tuff.gb by BonsaiDen</title>
+    <title>Tuff by BonsaiDen</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <link rel="shortcut icon" href="images/favicon.png">
     <script src="javascripts/scale.fix.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <style type="text/css" media="screen">
+        #wrapper {
+        }
+        
+        #wrapper canvas {
+            width: 320px;
+            height: 288px;
+            margin: 20px auto 0px auto;
+            border: 4px solid #ccc
+        }
+
+        #wrapper p {
+            margin: 0px;
+            font-size: 90%;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+        }
+        
+    </style>
   </head>
   <body>
     <div class="wrapper">
       <header>
-        <h1 class="header">Tuff.gb</h1>
-        <p class="header">Tuff - An original game for the Nintendo GameBoy</p>
+        <h1 class="header">Tuff</h1>
+        <p class="header">An original game for the Nintendo GameBoy</p>
 
         <ul>
           <li class="download"><a class="buttons" href="https://github.com/BonsaiDen/Tuff.gb/zipball/master">Download ZIP</a></li>
@@ -31,18 +54,25 @@
       </header>
       <section>
         <h1>
-<a name="tuff" class="anchor" href="#tuff"><span class="octicon octicon-link"></span></a>Tuff</h1>
+<a name="tuff" class="anchor" href="#tuff"><span class="octicon octicon-link"></span></a>Tuff for Gameboy</h1>
 
 <p>Tuff is an original game for Nintendo's black and white GameBoy, based on a mix of Jump'n'Run and <em>Metroidvania</em> style game elements.</p>
 
-<p>Below are some older screenshots of the game to give you an impression of what it looks like, there's also a more recent <a href="http://www.youtube.com/watch?v=Xdtt6Rsvwag">Video</a>.</p>
-
-<h3>
-<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
-
-<p><img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen1.png" alt=""> . <img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen2.png" alt=""></p>
-
-<p><img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen3.png" alt=""> . <img src="http://dl.dropboxusercontent.com/u/2332843/tuff/screen4.png" alt=""></p>
+    <div id="wrapper">
+        <canvas id="screen" width="320" height="288"></canvas>
+        <p>
+            <strong>PAD</strong> = WASD / Arrows &nbsp;&nbsp;
+            <strong>A</strong> = X / M &nbsp;&nbsp;
+            <strong>B</strong> = Y / Z / N &nbsp;&nbsp;
+        </p>
+        <p>
+            <strong>START</strong> = Enter &nbsp;&nbsp;
+            <strong>SELECT</strong> = Backspace &nbsp;&nbsp;
+        </p>
+        <p>
+            Emulation powered by <a href="https://github.com/grantgalitz/GameBoy-Online">GameBoy-Online</a>.
+        </p>
+    </div>
 
 <h2>
 <a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
@@ -120,5 +150,15 @@ along with this program.  If not, see <a href="http://www.gnu.org/licenses/">htt
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
 		
+    <script src="javascripts/other/base64.js"></script>
+    <script src="javascripts/other/json2.js"></script>
+    <script src="javascripts/other/swfobject.js"></script>
+    <script src="javascripts/other/resampler.js"></script>
+    <script src="javascripts/other/XAudioServer.js"></script>
+    <script src="javascripts/other/resize.js"></script>
+    <script src="javascripts/GameBoyCore.js"></script>
+    <script src="javascripts/GameBoyIO.js"></script>
+    <script src="javascripts/tuff.js"></script>
+
   </body>
 </html>

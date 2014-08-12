@@ -4,7 +4,7 @@ var cout = console.log.bind(console);
 function loadViaXHR () {
 
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", "roms/tuff.gb");
+    xhr.open("GET", "roms/game.gb");
     xhr.responseType = "blob";
     xhr.onload = function () {
         startGame(new Blob([this.response], {
