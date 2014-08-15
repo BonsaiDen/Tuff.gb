@@ -54,7 +54,7 @@ Getting the video YouTube ready can quickly be done with `ffmpeg`:
 
 ## Copyright and License
 
-*Tuff* including all graphics, characters, ideas, sounds and maps are Copyright (c) 2014 Ivo Wetzel. All rights reserved.
+*Tuff* including all graphics, characters, sounds and maps are Copyright (c) 2014 Ivo Wetzel. All rights reserved.
 
 
 The assembly code along with all conversion tools is licensed under MIT.
