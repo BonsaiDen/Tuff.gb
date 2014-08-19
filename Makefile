@@ -2,8 +2,6 @@
 rom: convert
 	@mkdir -p build
 	@gbasm -o build/game.gb -m stdout -s build/game.sym src/main.gb.s
-	@cp  build/game.gb tools/emu/roms/tuff.gb
-	@cp  build/game.gb tools/emu/web/roms/tuff.gb
 
 convert:
 	@mkdir -p src/data/bin
