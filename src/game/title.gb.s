@@ -501,11 +501,11 @@ title_select_option:
 
 title_handle_button:
 
-    ; Wait for start button press
+    ; Wait for START or A to be pressed
     ld      a,[coreInputOn]
-    and     BUTTON_START
-    cp      BUTTON_START
-    ret     nz
+    and     BUTTON_START | BUTTON_A
+    cp      0
+    ret     z
 
     ld      a,SOUND_GAME_SAVE_FLASH
     call    sound_play
