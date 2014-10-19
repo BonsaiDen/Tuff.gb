@@ -1,8 +1,9 @@
-; [BG/FG] [PALETTE] [TILEROW] 
-DB      %00000000,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Light
-DB      %01000001,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Dark
-DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
-DB      %00000011,$00,$00,$00, $00,$00,$00,$00 ; Power up
+_DataEntityDefinitions:
+    ;       0[BG/FG] 1[PALETTE] 2-7[TILEROW] 
+    DB      %00000000,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Light
+    DB      %01000001,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Dark
+    DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
+    DB      %00000011,$00,$00,$00, $00,$00,$00,$00 ; Power up
 
 
 ; Entity Handler Table --------------------------------------------------------

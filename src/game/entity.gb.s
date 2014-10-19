@@ -3,6 +3,13 @@ SECTION "EntityLogic",ROM0
 
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
+
+    ; freeze entity updates during cutscenes
+    ld      a,[cutsceneNumber]
+    cp      0
+    ret     nz
+
+    ; entity screen state pointer
     ld      de,entityScreenState
     ld      b,0
 

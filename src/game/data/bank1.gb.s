@@ -104,6 +104,9 @@ DataTileAnimation:
 DataEntityDefinitions:
     INCLUDE "entities/entities.gb.s"
 
+DataCutsceneDefinitions:
+    INCLUDE "cutscenes/cutscenes.gb.s"
+
 DataSoundDefinitions:
     INCLUDE "/data/bin/sounds.data.gb.s"
 

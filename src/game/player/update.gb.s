@@ -35,6 +35,11 @@ player_update:
 
     ; control / animation
 .control:
+    
+    ; ignore when controls are disabled
+    ld      a,[playerHasControl]
+    cp      0
+    jp      z,.update
 
     ; ignore when pounding
     ld      a,[playerIsPounding]

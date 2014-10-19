@@ -6,6 +6,7 @@ player_init:
     ld      [playerX],a
     ld      a,62
     ld      [playerY],a
+    ld      [playerYOffset],a
 
     ; Direction
     ld      a,PLAYER_DIRECTION_RIGHT
@@ -37,11 +38,12 @@ player_init:
 
 player_reset:
 
-    ; Gravity
+    ; Gravity / Control
     ld      a,1
     ld      [playerGravityTick],a
     ld      a,PLAYER_GRAVITY_MAX
     ld      [playerGravityMax],a
+    ld      [playerHasControl],a
 
     xor     a
     ld      [playerJumpForce],a

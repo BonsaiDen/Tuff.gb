@@ -1,4 +1,4 @@
-SECTION "MapRam",WRAM0[$CF24]; must be aligned at 256 bytes for tile buffer
+SECTION "MapRam",WRAM0[$CF25]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE              EQU     512

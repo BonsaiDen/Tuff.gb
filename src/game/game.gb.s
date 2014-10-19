@@ -71,6 +71,11 @@ game_setup:
     ld      hl,DataTileAnimationImg
     call    tileset_load_animations
 
+    ; Reset cutscene logic (set cutscene number to 0)
+    xor     a
+    ld      a,1
+    call    cutscene_init
+
     ; Reset player
     call    player_init
 
@@ -99,15 +104,14 @@ game_loop:
     cp      GAME_MODE_PLAYING
 
     ; game logic
-    jr      z,.game
+    jr      z,.logic
 
     ; title screen
     call    title_update
 
     ret
 
-; Gameplay
-.game:
+.logic:
     call    player_update
     call    entity_update
     call    sprite_animate_all
@@ -118,16 +122,19 @@ game_loop:
 
 ; Timer -----------------------------------------------------------------------
 game_timer:
+
+    ; skip the timers below every other tick
     ld      a,[coreTimerCounter]
     and     %00000001
-    jr      z,.tick; skip the timers below every other tick
+    jr      z,.every_tick
     call    player_water_timer
     call    player_sleep_timer
 
-.tick:
+.every_tick:
     call    map_update_falling_blocks
     call    map_animate_tiles
     call    screen_timer
+    call    cutscene_timer
 
     ret
 

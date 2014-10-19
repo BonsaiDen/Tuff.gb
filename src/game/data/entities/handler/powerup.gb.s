@@ -3,7 +3,10 @@ entity_handler_load_powerup:
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_POWERUP
     call    sprite_animation_set
     call    sprite_animation_start
+
+    ; TODO check the actual powerup
     ld      a,[playerCanJump]; check if powerup is already collected
+    ld      a,0
     ret
     
 
@@ -19,6 +22,7 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
     cp      1
     ret     z
 
+    ; TODO share this logic across the powerups
     inc     de; skip type
     inc     de; skip flags
     inc     de; skip direction
@@ -68,6 +72,12 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
     xor     a
     ld      [de],a
 
+    ; TODO trigger cutscene
+    ; TODO we need a cutscene manager
+    ; one active cutscene 
+    ; - id
+    ; - stage
+    ; - tick
     call    screen_flash_light
 
     ; enable ability 

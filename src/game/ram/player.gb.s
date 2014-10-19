@@ -60,6 +60,7 @@ PLAYER_POUND_ALIGN_BORDER     EQU 4 ; number of x pixels in which players gets a
 
 
 ; Variables -------------------------------------------------------------------
+playerHasControl:          DB
 playerX:                   DB 
 playerY:                   DB 
 playerYOffset:             DB ; y offset the player is rendered at, only visual
