@@ -4,10 +4,10 @@ SECTION "EntityLogic",ROM0
 ; Update the on screen entites based on the type handler ----------------------
 entity_update:
 
-    ; freeze entity updates during cutscenes
-    ld      a,[cutsceneNumber]
+    ; check if entity updates are active
+    ld      a,[entityUpdateActive]
     cp      0
-    ret     nz
+    ret     z
 
     ; entity screen state pointer
     ld      de,entityScreenState
@@ -104,6 +104,10 @@ entity_update:
 ; Load the entity state from RAM or the map default and  ----------------------
 ; Set up sprite and initial data based on type handler ------------------------
 entity_load:
+
+    ; set entity updates active
+    ld      a,1
+    ld      [entityUpdateActive],a
 
     ; clear tile row mapping
     call    _entity_reset_tile_row_mapping

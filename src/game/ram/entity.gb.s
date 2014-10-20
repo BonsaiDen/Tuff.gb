@@ -31,3 +31,6 @@ entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into
 entityStoredState:      DS ENTITY_STORED_STATE_SIZE 
                               ; 4 bytes per bucket entry
 
+entityUpdateActive:     DS  1  ; whether entity logic updates are performed
+
+

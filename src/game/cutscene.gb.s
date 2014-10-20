@@ -12,12 +12,12 @@ cutscene_init:; a = cutsceneNumber
     ld      a,[hli]; load and skip the cutscene number
     cp      b
     jr      nz,.skip
-    cp      $ff
+    cp      $ff; check for table end marker
     jr      z,.missing
     jr      .found
 
 .skip:
-    ; skip DW holding the handler adress
+    ; skip DW holding the handler address
     inc     hl
     inc     hl
     jr      .next

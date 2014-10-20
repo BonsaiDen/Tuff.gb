@@ -72,9 +72,9 @@ game_setup:
     call    tileset_load_animations
 
     ; Reset cutscene logic (set cutscene number to 0)
-    xor     a
-    ld      a,1
-    call    cutscene_init
+    ;xor     a
+    ;ld      a,1
+    ;call    cutscene_init
 
     ; Reset player
     call    player_init
