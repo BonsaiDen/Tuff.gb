@@ -4,5 +4,3 @@ SECTION "Bank2 Data",ROMX,BANK[2]
 DataMapMain:
     INCBIN  "/data/bin/main.map.bin"
 
-
-DB SIN(2) ** PI

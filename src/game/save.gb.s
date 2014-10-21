@@ -15,6 +15,7 @@ SAVE_DEFAULT_PLAYER_X      EQU 12
 SAVE_DEFAULT_PLAYER_Y      EQU 48
 SAVE_DEFAULT_ROOM_X        EQU 2
 SAVE_DEFAULT_ROOM_Y        EQU 0
+SAVE_RAM_BANK              EQU 0
 
 
 ; SRAM Handling Routines ------------------------------------------------------
@@ -25,6 +26,10 @@ save_load_from_sram:; a = 1 triggers defaults
     ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
     ld      hl,$0000 
     ld      [hl],$0A 
+
+    ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
+    ld      hl,$4000
+    ld      [hl],SAVE_RAM_BANK
 
     ; calculate checksum
     ld      bc,SAVE_COMPLETE_SIZE
@@ -194,6 +199,9 @@ save_store_to_sram:
     ld      hl,$0000 
     ld      [hl],$0A 
 
+    ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
+    ld      hl,$4000
+    ld      [hl],SAVE_RAM_BANK
     
     ; crc16 checksum of the save data bytes starting from $A002
     ld      hl,$A000 
