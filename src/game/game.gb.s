@@ -108,6 +108,7 @@ game_loop:
 
     ; title screen
     call    title_update
+    call    sound_update
 
     ret
 

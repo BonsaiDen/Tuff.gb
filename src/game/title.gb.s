@@ -1,3 +1,5 @@
+SECTION "TitleLogic",ROM0
+
 ; Title Screen and Developer Logo Functions -----------------------------------
 title_init:
     ld      a,30
@@ -49,8 +51,8 @@ title_update:
     ld      a,80
     ld      [titleWaitCounter],a
 
-    ld      a,SOUND_GAME_LOGO
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_LOGO
+    call    sound_play_effect_one
 
     ret
 
@@ -106,11 +108,8 @@ title_update:
     ld      a,GAME_MODE_TITLE
     ld      [gameMode],a
 
-    ld      a,SOUND_GAME_LOGO
-    call    sound_stop
-
-    ld      a,SOUND_GAME_MENU
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_MENU
+    call    sound_play_effect_one
 
     ret
 
@@ -476,8 +475,8 @@ title_select_option:
     ld      [titleCursorPos],a
     call    title_draw_cursor
 
-    ld      a,SOUND_GAME_MENU_SELECT
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_MENU_SELECT
+    call    sound_play_effect_one
 
     ret
 
@@ -490,11 +489,8 @@ title_select_option:
     ld      [titleCursorPos],a
     call    title_draw_cursor
 
-    ld      a,SOUND_GAME_MENU_SELECT
-    call    sound_stop
-
-    ld      a,SOUND_GAME_MENU_SELECT
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_MENU_SELECT
+    call    sound_play_effect_one
 
     ret
 
@@ -507,8 +503,8 @@ title_handle_button:
     cp      0
     ret     z
 
-    ld      a,SOUND_GAME_SAVE_FLASH
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_SAVE_FLASH
+    call    sound_play_effect_one
 
     ld      a,10
     ld      [titleWaitCounter],a

@@ -150,19 +150,18 @@ player_pound:
     jp      .skip_sound
 
 .sound_high:
-    ld      a,SOUND_PLAYER_POUND_UP_HIGH
+    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_HIGH
     jp      .sound_play
 
 .sound_med:
-    ld      a,SOUND_PLAYER_POUND_UP_MED
+    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_MED
     jp      .sound_play
 
 .sound_low:
-    ld      a,SOUND_PLAYER_POUND_UP_LOW
+    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_LOW
 
 .sound_play:
-    call    sound_stop
-    call    sound_play
+    call    sound_play_effect_one
 
 .skip_sound:
     ld      a,[playerPoundTick]
@@ -283,8 +282,8 @@ player_pound:
     call    screen_shake
 
     ; play sound
-    ld      a,SOUND_PLAYER_LAND_POUND
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_LAND_POUND
+    call    sound_play_effect_one
 
     ; play animation
     ld      a,PLAYER_POUND_DELAY_END
@@ -359,8 +358,8 @@ player_pound:
     ld      [playerAnimation],a
 
     ; play sound
-    ld      a,SOUND_PLAYER_POUND_CANCEL
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_POUND_CANCEL
+    call    sound_play_effect_one
 
     ret
 

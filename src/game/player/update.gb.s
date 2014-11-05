@@ -28,8 +28,8 @@ player_update:
     call    screen_flash_fast_dark
     call    save_load_from_sram
     
-    ld      a,SOUND_GAME_SAVE_RESTORE_FLASH
-    call    sound_play
+    ld      de,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
+    call    sound_play_effect_one
     ret
 
 

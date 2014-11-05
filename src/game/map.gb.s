@@ -591,8 +591,8 @@ map_check_fallable_blocks:
 
     ; setup instant fall and play sound
     call    _map_update_falling_block
-    ld      a,SOUND_MAP_FALLING_BLOCK
-    call    sound_play
+    ld      de,SOUND_EFFECT_MAP_FALLING_BLOCK
+    call    sound_play_effect_two
     jr      .active
 
 .delayed:
@@ -656,9 +656,8 @@ map_update_falling_blocks:
     jr      nz,.inactive
 
     ; play sound if the delay reached 0
-    ld      a,SOUND_MAP_FALLING_BLOCK
-    call    sound_play
-    call    sound_stop
+    ld      de,SOUND_EFFECT_MAP_FALLING_BLOCK
+    call    sound_play_effect_one
 
     ; loop
 .inactive:

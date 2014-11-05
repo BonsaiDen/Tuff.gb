@@ -79,6 +79,7 @@ core_decode_eom:
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
+    ; TODO handle invalid vram access
 
     ld      a,[hli]
     ld      [de],a
@@ -102,6 +103,7 @@ core_decode_eom:
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
+    ; TODO handle invalid vram access
 
     ld      a,[hli]; goto next literal byte and eventually the next instruction byte
     ld      [de],a
@@ -129,6 +131,7 @@ core_decode_eom:
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
+    ; TODO handle invalid vram access
 
     ld      a,c; restore repeat byte
     ld      [de],a

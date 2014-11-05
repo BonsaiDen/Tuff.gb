@@ -141,8 +141,8 @@ player_jump:
     jp      z,.no_sound
 
     ; when on ground play normal jump
-    ld      a,SOUND_PLAYER_JUMP
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_JUMP
+    call    sound_play_effect_one
 
 .check_swimming:
 
@@ -160,11 +160,11 @@ player_jump:
     jp      z,.no_sound
 
     ; player normal jump sound plus water leave sound
-    ld      a,SOUND_PLAYER_JUMP
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_JUMP
+    call    sound_play_effect_one
 
-    ld      a,SOUND_PLAYER_WATER_ENTER
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_WATER_ENTER
+    call    sound_play_effect_two
 
     ; under water movement
 .no_sound:
@@ -254,8 +254,8 @@ player_jump:
     jp      c,.jump; if playerJumpFrames - threshold < 0 don't jump
 
     ; set up double jump
-    ld      a,SOUND_PLAYER_JUMP_DOUBLE
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_JUMP_DOUBLE
+    call    sound_play_effect_one
 
     xor     a
     ld      [playerFallSpeed],a
@@ -438,19 +438,19 @@ player_fall:
     ld      a,PLAYER_ANIMATION_LANDING
     ld      [playerAnimation],a
 
-    ld      a,SOUND_PLAYER_LAND_HARD
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_LAND_HARD
+    call    sound_play_effect_two
 
     jp      .done
 
 .normal:
-    ld      a,SOUND_PLAYER_LAND
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_LAND
+    call    sound_play_effect_two
     jp      .done
 
 .soft:
-    ld      a,SOUND_PLAYER_LAND_SOFT
-    call    sound_play
+    ld      de,SOUND_EFFECT_PLAYER_LAND_SOFT
+    call    sound_play_effect_two
     jp      .done
 
 .done:

@@ -29,14 +29,14 @@ player_water_update:
     cp      1
     jr      z,.sound_surface
 
-    ld      a,SOUND_PLAYER_WATER_ENTER
+    ld      de,SOUND_EFFECT_PLAYER_WATER_ENTER
     jr      .sound
 
 .sound_surface:
-    ld      a,SOUND_PLAYER_WATER_LEAVE
+    ld      de,SOUND_EFFECT_PLAYER_WATER_LEAVE
 
 .sound:
-    call    sound_play
+    call    sound_play_effect_two
 
     ; check if we were previously under water, if so skip water offset
     ld      a,[playerWasUnderWater]

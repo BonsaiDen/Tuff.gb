@@ -108,5 +108,5 @@ DataCutsceneDefinitions:
     INCLUDE "cutscenes/cutscenes.gb.s"
 
 DataSoundDefinitions:
-    INCLUDE "/data/bin/sounds.data.gb.s"
+    INCLUDE "sound/data.gb.s"
 
