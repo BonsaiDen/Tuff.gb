@@ -1349,7 +1349,7 @@ if (process.argv[4] === '-reverse') {
         Convert.TileRowMap('entities.ch.png'),
         Convert.Tileset('title.ch.png', true),
         Convert.Collision('tiles.col.png'),
-        Convert.Sounds('sounds.js'),
+        //Convert.Sounds('sounds.js'),
         Convert.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {
             return Convert.Map('main.map.json', defs, 0xf0);
         })
