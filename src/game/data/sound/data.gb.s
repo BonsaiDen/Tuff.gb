@@ -171,7 +171,7 @@ sound_instrument_player_wall_jump_12:
   DB 64,54,128,179
 
 sound_instrument_player_land_pound_13:
-  DB 67,0,151,114
+  DB 3,0,151,114
 
 sound_instrument_player_pound_up_high_14:
   DB 64,52,135,244

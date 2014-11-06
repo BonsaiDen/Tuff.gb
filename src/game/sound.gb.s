@@ -45,36 +45,26 @@ sound_disable:
 
 
 sound_play_effect_one:; de = track data pointer
-
-    push    hl
     push    bc
-
     ld      b,4
     xor     a
     call    _sound_load_track
-
     pop     bc
-    pop     hl
-
     ret
 
 
 sound_play_effect_two:; de = track data pointer
-
-    push    hl
     push    bc
-
     ld      b,5
     xor     a
     call    _sound_load_track
-
     pop     bc
-    pop     hl
-
     ret
 
 
 _sound_load_track:; de = track data, a = track id
+
+    push    hl
 
     ; get pointer to track data
     call    _track_get_pointer_hl
@@ -127,6 +117,8 @@ _sound_load_track:; de = track data, a = track id
     ld      a,e
     ld      [hli],a; low index
     ld      [hl],a; low data
+
+    pop     hl
 
     ret
 
