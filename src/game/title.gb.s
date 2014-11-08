@@ -51,7 +51,7 @@ title_update:
     ld      a,80
     ld      [titleWaitCounter],a
 
-    ld      de,SOUND_EFFECT_GAME_LOGO
+    ld      a,SOUND_EFFECT_GAME_LOGO
     call    sound_play_effect_one
 
     ret
@@ -108,7 +108,7 @@ title_update:
     ld      a,GAME_MODE_TITLE
     ld      [gameMode],a
 
-    ld      de,SOUND_EFFECT_GAME_MENU
+    ld      a,SOUND_EFFECT_GAME_MENU
     call    sound_play_effect_one
 
     ret
@@ -475,7 +475,7 @@ title_select_option:
     ld      [titleCursorPos],a
     call    title_draw_cursor
 
-    ld      de,SOUND_EFFECT_GAME_MENU_SELECT
+    ld      a,SOUND_EFFECT_GAME_MENU_SELECT
     call    sound_play_effect_one
 
     ret
@@ -489,7 +489,7 @@ title_select_option:
     ld      [titleCursorPos],a
     call    title_draw_cursor
 
-    ld      de,SOUND_EFFECT_GAME_MENU_SELECT
+    ld      a,SOUND_EFFECT_GAME_MENU_SELECT
     call    sound_play_effect_one
 
     ret
@@ -503,7 +503,7 @@ title_handle_button:
     cp      0
     ret     z
 
-    ld      de,SOUND_EFFECT_GAME_SAVE_FLASH
+    ld      a,SOUND_EFFECT_GAME_SAVE_FLASH
     call    sound_play_effect_one
 
     ld      a,10

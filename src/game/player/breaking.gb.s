@@ -86,7 +86,7 @@ break_horizontal_blocks:; a = block y, b = block x
     call    screen_shake
 
     ; sound
-    ld      de,SOUND_EFFECT_PLAYER_POUND_BREAK
+    ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
     call    sound_play_effect_two
 
     ; align player y to 
@@ -202,7 +202,7 @@ break_vertical_blocks:; a = block x, c = block y
     call    screen_shake
 
     ; sound
-    ld      de,SOUND_EFFECT_PLAYER_POUND_BREAK
+    ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
     call    sound_play_effect_two
 
     ; align player y to 
@@ -306,7 +306,7 @@ _destroy_breakable_block:; a = block group to break
     jr      nz,.loop
 
     ; play sound
-    ld      de,SOUND_EFFECT_PLAYER_POUND_BREAK
+    ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
     call    sound_play_effect_two
 
     pop     bc

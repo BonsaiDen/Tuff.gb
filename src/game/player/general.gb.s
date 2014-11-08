@@ -93,14 +93,14 @@ player_reset:
 
 
 PlayerDissolveSounds:
-    DW      $00; none
-    DW      $00; block
-    ;DW      SOUND_PLAYER_DEATH_LAVA; water
-    DW      $00; water deep
-    ;DW      SOUND_PLAYER_DEATH_LAVA; lava
-    DW      $00; breakable
-    ;DW      SOUND_PLAYER_DEATH_LAVA; spikes
-    ;DW      SOUND_PLAYER_DEATH_ELECTRIC
+    DB      $00; none
+    DB      $00; block
+    DB      SOUND_EFFECT_PLAYER_DEATH_LAVA; water, TODO new effect
+    DB      $00; water deep
+    DB      SOUND_EFFECT_PLAYER_DEATH_LAVA; lava
+    DB      $00; breakable
+    DB      SOUND_EFFECT_PLAYER_DEATH_LAVA; spikes, TODO new effect
+    DB      SOUND_EFFECT_PLAYER_DEATH_ELECTRIC
 
 
 player_dissolve:
@@ -111,14 +111,13 @@ player_dissolve:
     jr      nz,.done
 
     ; get sound to play
-    ; TODO replace with compare logic
     ld      a,[mapCollisionFlag]
     ld      hl,PlayerDissolveSounds
     ld      b,0
     ld      c,a
     add     hl,bc
     ld      a,[hl]
-    ;call    sound_play TODO fix
+    call    sound_play_effect_one
 
     ; dissolve player when hitting a hazard
     ld      a,PLAYER_ANIMATION_DISSOLVE

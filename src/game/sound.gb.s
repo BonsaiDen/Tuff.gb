@@ -10,20 +10,17 @@ sound_enable:
     ld      [$ff24],a 
 
     ; output all channels to both speakers
-    ld      a,%11111111
     ld      [$ff25],a 
+
+    ; reset wave pattern index
+    ld      [Channel3LastSampleIndex],a
+
+    ; enable sound engine
+    ld      [soundEnabled],a
 
     ; enable sound circuits
     ld      a,%10000000
     ld      [$ff26],a 
-
-    ; reset wave pattern index
-    ld      a,$ff
-    ld      [soundWavePatternIndex],a
-
-    ; enable sound engine
-    ld      a,$01
-    ld      [soundEnabled],a
 
     ret
 
@@ -38,7 +35,6 @@ sound_disable:
     ld      [$ff26],a 
 
     ; disable sound engine
-    xor     a
     ld      [soundEnabled],a
 
     ret
@@ -47,22 +43,24 @@ sound_disable:
 sound_play_effect_one:; de = track data pointer
     push    bc
     ld      b,4
-    xor     a
-    call    _sound_load_track
-    pop     bc
-    ret
-
+    jr      _sound_play_effect
 
 sound_play_effect_two:; de = track data pointer
     push    bc
     ld      b,5
-    xor     a
-    call    _sound_load_track
-    pop     bc
-    ret
 
+_sound_play_effect:
+    push    de
+    ld      de,SoundEffectTable
+    add     a; x 2
+    add     a,e
+    ld      e,a
+    adc     a,d
+    sub     e
+    ld      d,a
+    ld      c,%00100000
 
-_sound_load_track:; de = track data, a = track id
+_sound_load_track:; de = track data, a = track id, c = effect
 
     push    hl
 
@@ -73,6 +71,9 @@ _sound_load_track:; de = track data, a = track id
     ld      a,[de]; 0 - 31
     ld      b,a; copy into b
     inc     de
+
+    ; set effect flag
+    or      c
 
     ; set active flag
     or      %10000000   
@@ -120,6 +121,9 @@ _sound_load_track:; de = track data, a = track id
 
     pop     hl
 
+    pop     de
+    pop     bc
+
     ret
 
 
@@ -137,33 +141,17 @@ sound_update:
 .next_track:
     
     ; get pointer to track data
-    xor     a
     call    _track_get_pointer_hl
 
     ; check if track is active
     ld      a,[hli]
+    ld      e,a ; store flags
     bit     7,a
     jr      z,.skip
 
     ; mask of flags to get tempo
-    and     %00111111
+    and     %00011111
     ld      c,a; store tempo
-
-    ; load active channel offset for this track into D
-    ld      a,[hl]
-    and     %11100000; mask of tick count
-    cp      %11100000; if all bits are set, then track is not active on any channel
-    jr      z,.tick; if a == 255 skip
-    ld      d,a
-
-    ; check if this track is track 5 or 6 and has a active channel that it 
-    ; plays on
-    ld      a,b
-    cp      4
-    jr      c,.tick ; if c < 4 skip
-    
-    ; TODO now unset the playing flag for the channel specified by D to make
-    ;      this track take priority over everything else playing on that channel
 
     ; load tick count
 .tick:
@@ -171,6 +159,9 @@ sound_update:
     and     %00011111; mask of channel active flag
     cp      c; check if tickcount === tempo
     jr      nz,.wait
+    
+    ; reload saved flags 
+    ld      c,e
 
     ; reset tick count to 0
     xor     a
@@ -198,12 +189,10 @@ sound_update:
     ; check if channel 1 is active
 .sound_update_channel_1:
     ld      a,[Channel1FlagsFreqHi]
-    and     %10000000
+    bit     7,a
     jr      z,.sound_update_channel_2
 
-    ; play channel by setting bit 7 of FF14 and reset active flag
-    ld      a,[Channel1FlagsFreqHi]
-    ld      [$FF14],a
+    ; reset active flag
     and     %01111111
     ld      [Channel1FlagsFreqHi],a
 
@@ -233,12 +222,10 @@ sound_update:
     
     ; check if channel 2 is active
     ld      a,[Channel2FlagsFreqHi]
-    and     %10000000
+    bit     7,a
     jr      z,.sound_update_channel_3
 
     ; reset active flag
-    ld      a,[Channel2FlagsFreqHi]
-    ;ld      [$FF19],a
     and     %01111111
     ld      [Channel2FlagsFreqHi],a
 
@@ -268,14 +255,14 @@ sound_update:
     jr      z,.sound_update_channel_4
 
     ; check if wave pattern changed
-    ld      a,[soundWavePatternIndex]
+    ld      a,[Channel3LastSampleIndex]
     ld      b,a
     ld      a,[Channel3SampleIndex]
     cp      b
     jr      z,.play_channel_3
 
     ; update pattern index and data
-    ld     [soundWavePatternIndex],a
+    ld      [Channel3LastSampleIndex],a
     
     ; setup pcm sample
     swap    a; x 16
@@ -332,11 +319,10 @@ sound_update:
 
     ; check if channel 4 is active
     ld      a,[Channel4Flags]
-    and     %10000000
-    ret     z;
+    bit     7,a
+    ret     z
 
     ; reset active flag
-    ld      a,[Channel4Flags]
     and     %01111111
     ld      [Channel4Flags],a
 
@@ -363,7 +349,7 @@ sound_update:
 
 ; Internal Track Update Logic -------------------------------------------------
 ; -----------------------------------------------------------------------------
-_update_track:
+_update_track:; c = flags
 
     ; load PatternPointer into DE
     ld      a,[hli]
@@ -400,11 +386,17 @@ _update_track:
     ; load value from IndexPointer (next pattern value)
     ld      a,[de]
 
+    ; check if effect flag is set (which means the track has only one pattern)
+    ld      a,c
+    and     %00100000
+    jr      nz,.reset_track
+
     ; check if end of track
     cp      $FF
     jr      nz,.load_pattern
 
     ; reset IndexPointer to DataPointer
+.reset_track:
     inc     hl
     inc     hl
     ld      a,[hld]; load data low
@@ -412,11 +404,12 @@ _update_track:
     ld      a,[hld]; load data high
     ld      [hl],a; write index high
 
+    ; reload flags
+    ld      a,c
+
     ; substract 4 (this takes only 24 cycles)
-    ld      b,$ff
-    ld      c,$fc
+    ld      bc,$fffc
     add     hl,bc
-    ld      a,[hl]; load flags
 
     ; check if looping
     bit     6,a
@@ -478,15 +471,6 @@ _update_track:
     ld      [hl],a;
     ; = 48 cycles
 
-    ; TODO optimize?
-    ;ld      a,e; 4
-    ;add     2 ; 8
-    ;ld      [hl],a; ; 8
-    ;ld      a,d; 4
-    ;adc     0; 8
-    ;ld      [hl],a;; 8
-    ; = 40 cycles
-
     ; B = note value, C = instrument table index
     ld      hl,SoundNoteFrequencies
     ld      a,b
@@ -511,13 +495,13 @@ _update_track:
     add     hl,bc
     add     hl,bc
 
-    ; load channel offset from instrument
+    ; load channel id from instrument and multiply by 5
     ld      a,[hl]
-    and     %00000011; 
+    and     %00000011
+    ld      b,a; 
     add     a; x 2
     add     a; x 4
-    add     a; x 8
-    ; TODO store channel offset for this track 
+    add     b; x 5
 
     ; load channel data pointer
     ld      bc,soundChannelsData
@@ -561,12 +545,10 @@ _update_track:
     ld      a,[hli]
     ld      [bc],a
 
-    ; TODO set active channel of this track to the instruments channel
-    ; if `EffectTrack`
-        ; set `ActiveChannel` to `ChannelId`
     ret
 
-_track_get_pointer_hl:; b = stream index, a = offset
+
+_track_get_pointer_hl:; b = stream index
     ld      h,soundTracksData >> 8; load high byte from aligned track data ram
     ld      a,b
     add     a; x 2 
@@ -595,4 +577,5 @@ SoundNoteFrequencies:
 
     ; C8
     DW  $07c1, $07c4, $07c8, $07cb, $07ce, $07d1, $07d4, $07d6, $07d9, $07db, $07dd, $07df
+
 

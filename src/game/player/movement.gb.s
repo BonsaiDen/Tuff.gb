@@ -556,16 +556,16 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     jr      .bounce_setup
 
 .bounce_big:
-    ld      a,PLAYER_BOUNCE_FRAMES
+    ld      a,PLAYER_BOUNCE_FRAMES - 10
     ld      [playerBounceFrames],a
-    ld      a,PLAYER_JUMP_FORCE * 2
+    ld      a,PLAYER_JUMP_FORCE * 3 / 2
     ld      [playerJumpForce],a
     ld      a,$09
 
 .bounce_setup:
-    ld      de,SOUND_EFFECT_PLAYER_BOUNCE_WALL
-    call    sound_play_effect_one
     call    screen_shake
+    ld      a,SOUND_EFFECT_PLAYER_BOUNCE_WALL
+    call    sound_play_effect_one
     ld      a,$01
     ld      [playerJumpPressed],a
     ld      a,$01

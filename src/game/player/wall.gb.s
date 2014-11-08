@@ -213,7 +213,7 @@ player_slide_wall:
     ld      [playerDoubleJumped],a
 
     ; play sound
-    ld      de,SOUND_EFFECT_PLAYER_WALL_JUMP
+    ld      a,SOUND_EFFECT_PLAYER_WALL_JUMP
     call    sound_play_effect_one
 
     ret

@@ -150,15 +150,15 @@ player_pound:
     jp      .skip_sound
 
 .sound_high:
-    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_HIGH
+    ld      a,SOUND_EFFECT_PLAYER_POUND_UP_HIGH
     jp      .sound_play
 
 .sound_med:
-    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_MED
+    ld      a,SOUND_EFFECT_PLAYER_POUND_UP_MED
     jp      .sound_play
 
 .sound_low:
-    ld      de,SOUND_EFFECT_PLAYER_POUND_UP_LOW
+    ld      a,SOUND_EFFECT_PLAYER_POUND_UP_LOW
 
 .sound_play:
     call    sound_play_effect_one
@@ -282,7 +282,7 @@ player_pound:
     call    screen_shake
 
     ; play sound
-    ld      de,SOUND_EFFECT_PLAYER_LAND_POUND
+    ld      a,SOUND_EFFECT_PLAYER_LAND_POUND
     call    sound_play_effect_one
 
     ; play animation
@@ -358,7 +358,7 @@ player_pound:
     ld      [playerAnimation],a
 
     ; play sound
-    ld      de,SOUND_EFFECT_PLAYER_POUND_CANCEL
+    ld      a,SOUND_EFFECT_PLAYER_POUND_CANCEL
     call    sound_play_effect_one
 
     ret
