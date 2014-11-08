@@ -14,6 +14,10 @@ player_water_update:
     cp      0
     jr      nz,.not_initial
 
+    ; reset bounce frames
+    xor     a
+    ld      [playerBounceFrames],a
+
     ; save speed
     ld      a,[playerFallFrames]
     ld      [playerWaterHitDepth],a
@@ -29,11 +33,11 @@ player_water_update:
     cp      1
     jr      z,.sound_surface
 
-    ld      de,SOUND_EFFECT_PLAYER_WATER_ENTER
+    ld      a,SOUND_EFFECT_PLAYER_WATER_ENTER
     jr      .sound
 
 .sound_surface:
-    ld      de,SOUND_EFFECT_PLAYER_WATER_LEAVE
+    ld      a,SOUND_EFFECT_PLAYER_WATER_LEAVE
 
 .sound:
     call    sound_play_effect_two
