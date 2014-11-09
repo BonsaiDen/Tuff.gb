@@ -31,13 +31,14 @@ core_init:
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
     ld      [coreTimerCounter],a
-    ld      [coreTimer],a
     ld      [coreInput],a
     ld      [coreInputOn],a
     ld      [coreInputOff],a
     ld      [coreRandomHigh],a
     ld      [coreRandomLow],a
     ld      [corePaletteChanged],a
+    ld      [coreScrollX],a
+    ld      [coreScrollY],a
 
     ld      sp,$FFFF        ; init stack pointer
     call    core_screen_off ; Disable Screen
@@ -76,15 +77,6 @@ core_init:
     xor     a
     ld      [rSCX],a
     ld      [rSCY],a
-    ld      [coreScrollX],a
-    ld      [coreScrollY],a
-
-    ; Reset vblank flag
-    ld      [coreVBlankDone],a
-
-    ; Reset timers
-    ld      [coreTimer],a
-    ld      [coreLoopCounter],a
 
     ; clear sound registers
     xor     a

@@ -9,7 +9,6 @@ coreRandomLow:      DB
 coreVBlankDone:     DB
 coreLoopCounter:    DB
 coreTimerCounter:   DB
-coreTimer:          DB; ~60ms timer interrupt
 coreInput:          DB; [Down][Up][Left][Right][Start][Select][B][A]
 coreInputOn:        DB
 coreInputOff:       DB
@@ -17,10 +16,10 @@ corePaletteChanged: DB
 corePaletteBG:      DB
 corePaletteSprite0: DB
 corePaletteSprite1: DB
+coreColorEnabled:   DB
 coreScrollX:        DB
 coreScrollY:        DB
 coreDecodeLabel:    DS 3
-coreColorEnabled:   DB
 
 
 ; Code ------------------------------------------------------------------------
