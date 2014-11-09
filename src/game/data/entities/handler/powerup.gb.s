@@ -78,7 +78,8 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
     ; - id
     ; - stage
     ; - tick
-    call    screen_flash_light
+    ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_LIGHT
+    call    screen_animate
 
     ; enable ability 
     ld      a,1

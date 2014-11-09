@@ -49,7 +49,8 @@ entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = 
 
 .save:
     call    save_store_to_sram
-    call    screen_flash_light
+    ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_LIGHT
+    call    screen_animate
     ld      a,SOUND_EFFECT_GAME_SAVE_FLASH
     call    sound_play_effect_one
 

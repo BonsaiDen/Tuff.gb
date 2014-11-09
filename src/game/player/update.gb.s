@@ -19,13 +19,25 @@ player_update:
     ld      a,[playerDissolveTick]
     inc     a
     ld      [playerDissolveTick],a
+
+    ; initialize flash before we actually reset
+    cp      20
+    jr      z,.flash_reset
+    jr      .check_reset
+
+.flash_reset:
+    ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_DARK
+    call    screen_animate
+    ret
+
+.check_reset:
     cp      30
     jp      nz,.update
 
+    ; reset player
     ld      a,255
     ld      [playerDissolveTick],a
 
-    call    screen_flash_fast_dark
     call    save_load_from_sram
     
     ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH

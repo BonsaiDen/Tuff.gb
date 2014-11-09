@@ -45,7 +45,8 @@ game_init:
     ret
 
 .debug:
-    call    screen_fade_in_light
+    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
+    call    screen_animate
     call    game_continue
     ret
 
@@ -66,7 +67,7 @@ game_continue:
 
 game_setup:
 
-    ; Disable screen for massive vram updates
+    ; Disable screen for vram updates
     call    core_screen_off
 
     ; load tile data and animations

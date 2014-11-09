@@ -78,8 +78,12 @@ core_init:
     ld      [rSCX],a
     ld      [rSCY],a
 
+    ; Reset palette registers
+    ld      [rBGP],a
+    ld      [rOBP0],a
+    ld      [rOBP1],a
+
     ; clear sound registers
-    xor     a
     ld      [$ff10],a
     ld      [$ff11],a
     ld      [$ff12],a

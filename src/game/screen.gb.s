@@ -3,11 +3,9 @@ SECTION "ScreenLogic",ROM0
 
 ; Screen ----------------------------------------------------------------------
 screen_timer:
-    call    _screen_flash_timer
-    call    _screen_fade_timer
+    call    _screen_animate_palette
     call    _screen_shake_timer
     ret
-
 
 
 ; Screen Shaking --------------------------------------------------------------
@@ -76,356 +74,239 @@ _screen_shake_timer:
 
 
 ; Screen Fading ---------------------------------------------------------------
-screen_fade_out_light:
-    ld      a,1
-    ld      [screenFadeMode],a
-    xor     a
-    ld      [screenFadeIndex],a
+screen_animate:; a = animation type
+    ld      [screenAnimation],a
+    call    _screen_animate_palette
     ret
+            
 
+; Color Mixing ----------------------------------------------------------------
+_screen_animate_palette:
 
-screen_fade_in_light:
-    ld      a,2
-    ld      [screenFadeMode],a
-    ld      a,4
-    ld      [screenFadeIndex],a
-    ret
-
-
-_screen_fade_timer:
-
-    ; check if fading
-    ld      a,[screenFadeMode]
-    cp      0
+    ; check if active
+    ld      a,[screenAnimation]
+    bit     0,a
     ret     z
 
-    ; mark palettes as changed
-    ld      [corePaletteChanged],a
+    ; check whether fade or flash
+    bit     1,a
+    jr      z,.fade
+.flash:
+    ld      hl,_screen_flash_map
+    jr      .color
 
-    ; fade index
-    ld      a,[screenFadeIndex]
-    ld      b,0
-    ld      c,a
-    
-    ; bg mask
-    ld      hl,screenFadePaletteBGLight
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteBG],a
+.fade:
+    ; check whether fade out or in
+    bit     2,a
+    jr      nz,.fade_in
+.fade_out:
+    ld      hl,_screen_fade_out_map
+    jr      .color
 
-    ; sprite mask
-    ld      hl,screenFadePaletteSprite0Light
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite0],a
-    ld      [corePaletteSprite1],a
-
-    ld      hl,screenFadePaletteSprite1Light
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite1],a
-
-    ; fade mode
-    ld      a,[screenFadeMode]
-    cp      2
-    jr      z,.fade_in
-        
-    ; fade out
-    ld      a,[screenFadeIndex]
-    cp      4
-    jr      z,.complete
-    inc     a
-    ld      [screenFadeIndex],a
-    ret
-
-    ; fade in
 .fade_in:
-    ld      a,[screenFadeIndex]
-    cp      0
-    jr      z,.complete
-    dec     a
-    ld      [screenFadeIndex],a
-    ret
+    ld      hl,_screen_fade_in_map
 
-.complete:
-    xor     a
-    ld      [screenFadeMode],a
-    ret
+.color:
+    ; check whether dark or light mode
+    bit     3,a
+    jr      nz,.dark
 
-
-; Screen Flashing -------------------------------------------------------------
-screen_flash_light:
-    push    af
-    push    hl
-    push    bc
-    ld      a,1
-    ld      [screenFlashMode],a
-    xor     a
-    ld      [screenFlashColor],a
-    ld      [screenFlashIndex],a
-    call    _screen_flash_timer
-    pop     bc
-    pop     hl
-    pop     af
-    ret
-
-screen_flash_fast_light:
-    push    af
-    push    hl
-    push    bc
-    ld      a,1
-    ld      [screenFlashMode],a
-    xor     a
-    ld      [screenFlashColor],a
-    ld      a,2
-    ld      [screenFlashIndex],a
-    call    _screen_flash_timer
-    pop     bc
-    pop     hl
-    pop     af
-    ret
-
-screen_flash_dark:
-    push    af
-    push    hl
-    push    bc
-    ld      a,1
-    ld      [screenFlashMode],a
-    ld      [screenFlashColor],a
-    xor     a
-    ld      [screenFlashIndex],a
-    call    _screen_flash_timer
-    pop     bc
-    pop     hl
-    pop     af
-    ret
-
-screen_flash_fast_dark:
-    push    af
-    push    hl
-    push    bc
-    ld      a,1
-    ld      [screenFlashMode],a
-    ld      [screenFlashColor],a
-    ld      a,2
-    ld      [screenFlashIndex],a
-    call    _screen_flash_timer
-    pop     bc
-    pop     hl
-    pop     af
-    ret
-
-
-_screen_flash_timer:
-
-    ; check if fading
-    ld      a,[screenFlashMode]
-    cp      0
-    ret     z
-
-    ; flash index
-    ld      a,[screenFlashIndex]
-    ld      b,0
-    ld      c,a
-
-    ; color
-    ld      a,[screenFlashColor]
-    cp      1
-    jr      z,.dark
-    
-    ; bg mask
-    ld      hl,screenFlashLightPaletteBG
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteBG],a
-
-    ; sprite mask
-    ld      hl,screenFlashLightPaletteSprite0
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite0],a
-
-    ld      hl,screenFlashLightPaletteSprite1
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite1],a
+.light:
+    ld      b,5; offset into lighter color table
     jr      .update
 
 .dark:
-    ; bg mask
-    ld      hl,screenFlashDarkPaletteBG
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteBG],a
-
-    ; sprite mask
-    ld      hl,screenFlashDarkPaletteSprite0
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite0],a
-
-    ld      hl,screenFlashDarkPaletteSprite1
-    add     hl,bc
-    ld      a,[hl]
-    ld      [corePaletteSprite1],a
-    jr      .update
-
+    ld      b,0; offset into darker color table
+    
 .update:
 
-    ; update
-    ld      a,[screenFlashIndex]
-    cp      10
-    jr      z,.complete
+    ; load animation index
+    ld      a,[screenAnimationIndex]
+    
+    ; add to table
+    ld      d,0
+    ld      e,a
+    add     hl,de
+    
+    ; next index
     inc     a
-    ld      [screenFlashIndex],a
+    ld      [screenAnimationIndex],a
+
+    ; load offset value
+    ld      a,[hl]
+
+    ; check if end of table and disable animation
+    cp      $FF
+    jr      z,.done
+
+    ; otherwise combine with color offset
+    add     b
+
+    ; and update palette
+    ld      d,a
+    call    _screen_update_palette
+
+    ; flag palette as changed for update during next vblank
+    ld      a,$01
+    ld      [corePaletteChanged],a
+
     ret
 
-.complete:
+.done:
     xor     a
-    ld      [screenFlashMode],a
+    ld      [screenAnimation],a
+    ld      [screenAnimationIndex],a
     ret
 
 
-; Palette Data ----------------------------------------------------------------
-screenFadePaletteBGDark:
-    DB      %11100100
-    DB      %11100101
-    DB      %11101010
-    DB      %11101011
-    DB      %11111111
+_screen_update_palette:; d = fade value
 
-screenFadePaletteSprite0Dark:
-    DB      %11010000 
-    DB      %11100100 
-    DB      %11101000 
-    DB      %11101100 
-    DB      %11111100 
+    ld      hl,_screen_palette_bg
+    call    _color_from_palette
+    ld      [corePaletteBG],a
 
-screenFadePaletteSprite1Dark:
-    DB      %10010000 
-    DB      %11100100 
-    DB      %11101000 
-    DB      %11111000 
-    DB      %11111100 
+    ld      hl,_screen_palette_sprite0
+    call    _color_from_palette
+    ld      [corePaletteSprite0],a
+
+    ld      hl,_screen_palette_sprite1
+    call    _color_from_palette
+    ld      [corePaletteSprite1],a
+
+    ret
+
+_color_from_palette:; hl = palette pointer; d = offset
+    xor     a
+    ld      e,%11000000
+    call    _screen_mix_color_two
+    ld      e,%00110000
+    call    _screen_mix_color_two
+    ld      e,%00001100
+    call    _screen_mix_color_two
+    ld      e,%00000011
+    call    _screen_mix_color_two
+    ret
+
+_screen_mix_color_two:; hl = color pointer, d = offset, e = mask, a = color input -> color output
+
+    ; store current color into c
+    ld      c,a
+    push    bc
+
+    ; load color palette pointer
+    ld      a,[hli]
+    ld      c,a
+    ld      a,[hli]
+    ld      b,a
+
+    ; add offset value to bc
+    ld      a,d; offset value
+    add     a,c
+    ld      c,a
+    adc     a,b
+    sub     c
+    ld      b,a
+
+    ; load mix color value
+    ld      a,[bc]
+
+    ; restore current color
+    pop     bc
+
+    ; mix colors
+    and     e; apply mask
+    or      c; combine
+
+    ret
 
 
-screenFadePaletteBGLight:
-    DB      %11100100
-    DB      %11100100
-    DB      %10010000
-    DB      %01000000
-    DB      %00000000
+; Fading and Flashing Data ----------------------------------------------------
+_screen_flash_map:
+    DB      $02,$03,$04,$04,$04,$04,$04,$04,$04,$03,$02,$01,$00,$FF
 
-screenFadePaletteSprite0Light:
-    DB      %11010000
-    DB      %11010000
-    DB      %10000000
-    DB      %01000000
-    DB      %00000000
+_screen_fade_out_map:
+    DB      $00,$00,$00,$00,$01,$02,$03,$04,$FF
 
-screenFadePaletteSprite1Light:
-    DB      %10010000 
-    DB      %10010000 
-    DB      %01010000 
-    DB      %01000000 
-    DB      %00000000
+_screen_fade_in_map:
+    DB      $04,$04,$04,$04,$03,$02,$01,$00,$FF
 
 
-; Flash Light
-screenFlashLightPaletteBG:
+; Palette and Color Data ------------------------------------------------------
+_screen_palette_bg:
+    DW _screen_color_back
+    DW _screen_color_dark_gray
+    DW _screen_color_light_gray
+    DW _screen_color_white
 
-    DB      %10100100
-    DB      %01010100
-    DB      %01010000
+_screen_palette_sprite0:
+    DW _screen_color_back
+    DW _screen_color_light_gray
+    DW _screen_color_white
+    DW _screen_color_white; not used, always transparent
 
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
+_screen_palette_sprite1:
+    DW _screen_color_dark_gray
+    DW _screen_color_light_gray
+    DW _screen_color_white
+    DW _screen_color_white; not used, always transparent
 
-    DB      %01010000
-    DB      %01010100
-    DB      %10100100
-    DB      %11100100
+_screen_color_back:
+    ; darker
+    DB      %11_11_11_11
+    DB      %11_11_11_11
+    DB      %11_11_11_11
+    DB      %11_11_11_11
+    DB      %11_11_11_11
 
-screenFlashLightPaletteSprite0:
+    ; lighter
+    DB      %11_11_11_11
+    DB      %11_11_11_11
+    DB      %10_10_10_10
+    DB      %01_01_01_01
+    DB      %00_00_00_00
 
-    DB      %10010000 
-    DB      %01010000 
-    DB      %01010000 
+_screen_color_dark_gray:
+    ; darker
+    DB      %10_10_10_10
+    DB      %10_10_10_10
+    DB      %10_10_10_10
+    DB      %11_11_11_11
+    DB      %11_11_11_11
 
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
+    ; lighter
+    DB      %10_10_10_10
+    DB      %10_10_10_10
+    DB      %01_01_01_01
+    DB      %01_01_01_01
+    DB      %00_00_00_00
 
-    DB      %01010000 
-    DB      %01010000 
-    DB      %10010000 
-    DB      %11010000 
+_screen_color_light_gray:
+    ; darker
+    DB      %01_01_01_01
+    DB      %01_01_01_01
+    DB      %10_10_10_10
+    DB      %10_10_10_10
+    DB      %11_11_11_11
 
-screenFlashLightPaletteSprite1:
+    ; lighter
+    DB      %01_01_01_01
+    DB      %01_01_01_01
+    DB      %01_01_01_01
+    DB      %00_00_00_00
+    DB      %00_00_00_00
 
-    DB      %10010000 
-    DB      %01010000 
-    DB      %01010000 
+_screen_color_white:
+    ; darker
+    DB      %00_00_00_00
+    DB      %01_01_01_01
+    DB      %10_10_10_10
+    DB      %10_10_10_10
+    DB      %11_11_11_11
 
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-    DB      %00000000
-
-    DB      %01010000 
-    DB      %01010000 
-    DB      %10010000 
-    DB      %10010000 
-
-; Flash Dark
-screenFlashDarkPaletteBG:
-
-    DB      %11110101
-    DB      %11111010
-
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-
-    DB      %11111010
-    DB      %11110101
-    DB      %11100100
-
-screenFlashDarkPaletteSprite0:
-
-    DB      %11100100 
-    DB      %11101000 
-
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-
-    DB      %11101000 
-    DB      %11100100 
-    DB      %11010000 
-
-screenFlashDarkPaletteSprite1:
-
-    DB      %10100100 
-    DB      %11101000 
-
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-    DB      %11111111
-
-    DB      %11100100 
-    DB      %10100100 
-    DB      %10010000 
+    ; lighter
+    DB      %00_00_00_00
+    DB      %00_00_00_00
+    DB      %00_00_00_00
+    DB      %00_00_00_00
+    DB      %00_00_00_00
 

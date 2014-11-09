@@ -45,7 +45,8 @@ title_update:
     ; setup fade in
     ld      a,GAME_MODE_LOGO
     ld      [gameMode],a
-    call    screen_fade_in_light
+    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
+    call    screen_animate
 
     ; show the logo for 80 frames
     ld      a,80
@@ -59,7 +60,7 @@ title_update:
 ; Show logo and fade out
 .logo:
 
-    ld      a,[screenFadeMode]
+    ld      a,[screenAnimation]
     cp      0
     ret     nz
 
@@ -70,7 +71,9 @@ title_update:
     cp      0
     ret     nz
 
-    call    screen_fade_out_light
+    ld      a,SCREEN_PALETTE_FADE_OUT | SCREEN_PALETTE_LIGHT
+    call    screen_animate
+
     ld      a,GAME_MODE_FADE_IN
     ld      [gameMode],a
 
@@ -82,7 +85,7 @@ title_update:
 ; Setup title screen and fade in
 .fade_in:
 
-    ld      a,[screenFadeMode]
+    ld      a,[screenAnimation]
     cp      0
     ret     nz
 
@@ -104,7 +107,9 @@ title_update:
     ld      [playerY],a
 
     ; fade over
-    call    screen_fade_in_light
+    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
+    call    screen_animate
+
     ld      a,GAME_MODE_TITLE
     ld      [gameMode],a
 
@@ -139,7 +144,7 @@ title_update:
 
 ; Fade out and continue a existing game
 .continue:
-    ld      a,[screenFadeMode]
+    ld      a,[screenAnimation]
     cp      0
     ret     nz
 
@@ -152,13 +157,14 @@ title_update:
 
     call    title_hide_logo
     call    game_continue
-    call    screen_fade_in_light
+    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
+    call    screen_animate
 
     ret
 
 ; Fade out and start a new game
 .start:
-    ld      a,[screenFadeMode]
+    ld      a,[screenAnimation]
     cp      0
     ret     nz
 
@@ -171,7 +177,8 @@ title_update:
 
     call    title_hide_logo
     call    game_start
-    call    screen_fade_in_light
+    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
+    call    screen_animate
     ret
 
 
@@ -509,7 +516,8 @@ title_handle_button:
     ld      a,10
     ld      [titleWaitCounter],a
 
-    call    screen_fade_out_light
+    ld      a,SCREEN_PALETTE_FADE_OUT | SCREEN_PALETTE_LIGHT
+    call    screen_animate
 
     ; check selected option
     ld      a,[titleCursorPos]
