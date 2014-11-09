@@ -17,6 +17,10 @@ game_init:
     ld      a,%00000000  ; 3 = dark gray  2 = light gray  1 = white  0 = transparent
     ld      [corePaletteSprite1],a 
 
+    ; mark palettes as changed
+    ld      a,$01
+    ld      [corePaletteChanged],a
+
     ; Sound setup
     call    sound_enable
 

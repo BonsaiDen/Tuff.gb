@@ -3,7 +3,29 @@ core_init:
 
     di                      ; Disable interrupts
 
+    ; check for gameboy color hardware
+    cp      $11
+    jr      nz,.nocolor
+
+    ; switch to double speed mode
+    xor     a
+    ld      [$FFFF],a
+    ld      a,$30
+    ld      [$FF00],a
+    ld      a,$01
+    ld      [$FF4D],a
+    stop
+
+    ; flag color mode 
+    ld      [coreColorEnabled],a
+    jr      .vars
+
+.nocolor:
+    xor     a
+    ld      [coreColorEnabled],a
+
     ; Clear core variables
+.vars:
     xor     a
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
@@ -14,6 +36,7 @@ core_init:
     ld      [coreInputOff],a
     ld      [coreRandomHigh],a
     ld      [coreRandomLow],a
+    ld      [corePaletteChanged],a
 
     ld      sp,$FFFF        ; init stack pointer
     call    core_screen_off ; Disable Screen

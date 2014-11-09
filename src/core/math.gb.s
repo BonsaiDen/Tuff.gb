@@ -14,25 +14,6 @@ math_mul8b:                     ; this routine performs the operation HL=H*E
     jr      nz,.Mul8bLoop
     ret
 
-
-; 16 x 16 bit multiplication ---------------------------------------------------
-math_mul16b: ; BC * DE = HL
-; DE * BC = HL
-    ld      hl,0
-    ld      a,16
-            
-.Mul_Loop_1:
-    add     hl,hl
-    rl      e
-    rl      d
-    jr      nc,@+6
-    add     hl,bc
-    jr      nc,@+3
-    inc     de
-    dec     a
-    jr      nz,.Mul_Loop_1
-    ret
-
 ; Fast RND
 ;
 ; An 8-bit pseudo-random number generator,

@@ -13,12 +13,14 @@ coreTimer:          DB; ~60ms timer interrupt
 coreInput:          DB; [Down][Up][Left][Right][Start][Select][B][A]
 coreInputOn:        DB
 coreInputOff:       DB
+corePaletteChanged: DB
 corePaletteBG:      DB
 corePaletteSprite0: DB
 corePaletteSprite1: DB
 coreScrollX:        DB
 coreScrollY:        DB
 coreDecodeLabel:    DS 3
+coreColorEnabled:   DB
 
 
 ; Code ------------------------------------------------------------------------
@@ -45,8 +47,8 @@ DS 16 STRUPR(CART_NAME)
 
 ; Cartridge Options -----------------------------------------------------------
 SECTION "Core Rom Header",ROM0[$143]
-DB 0                         ; $143
-DS 2 STRUPR(CART_LICENSEE)     ; $144 - Licensee code (not important)
+DB CART_GBC_SUPPORT          ; $143
+DS 2 STRUPR(CART_LICENSEE)   ; $144 - Licensee code (not important)
 DB 0                         ; $146 - SGB Support indicator
 DB CART_TYPE                 ; $147 - Cart type
 DB CART_ROM_SIZE             ; $148 - ROM Size

@@ -116,11 +116,6 @@ map_load_room: ; b = x, c = y
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
 
-    ; check if we need to draw the room data to screen ram
-    ld      a,[mapRoomUpdateRequired]
-    cp      1
-    ret     nz
-
     ; mark as updated (disable interrupts so we don't call this during vblank)
     di
 

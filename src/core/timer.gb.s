@@ -17,7 +17,7 @@ core_timer_handler:
     ; Timer counter which goes from 0-7
     ld      a,[coreTimerCounter]
     inc     a
-    and     %00000111
+    and     %00000111; TODO in double speed mode will just adjust this?
     ld      [coreTimerCounter],a
 
     call    game_timer

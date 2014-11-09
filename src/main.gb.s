@@ -3,13 +3,14 @@ INCLUDE     "core/include/rom.inc"
 
 
 ; Catridge Information --------------------------------------------------------
-CART_NAME       EQUS       "Tuff"
-CART_LICENSEE   EQUS       "BD"
-CART_TYPE       EQU        ROM_MBC5_RAM_BAT
-CART_ROM_SIZE   EQU        ROM_SIZE_64KBYTE
-CART_RAM_SIZE   EQU        RAM_SIZE_64KBIT
-CART_DEST       EQU        ROM_DEST_OTHER
-
+CART_NAME           EQUS       "Tuff"
+CART_LICENSEE       EQUS       "BD"
+CART_TYPE           EQU        ROM_MBC5_RAM_BAT
+CART_ROM_SIZE       EQU        ROM_SIZE_64KBYTE
+CART_RAM_SIZE       EQU        RAM_SIZE_64KBIT
+CART_DEST           EQU        ROM_DEST_OTHER
+CART_GBC_SUPPORT    EQU        ROM_GBC_SUPPORT_DISABLED
+                    
 
 ; Include Core Library --------------------------------------------------------
 INCLUDE     "core/core.gb.s"

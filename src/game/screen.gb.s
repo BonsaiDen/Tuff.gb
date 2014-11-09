@@ -99,6 +99,9 @@ _screen_fade_timer:
     cp      0
     ret     z
 
+    ; mark palettes as changed
+    ld      [corePaletteChanged],a
+
     ; fade index
     ld      a,[screenFadeIndex]
     ld      b,0
