@@ -7,24 +7,14 @@ core_timer_handler:
     push    de
     push    hl
 
-    ; ~60ms timer (62.25585ms)
-    ld      a,[coreTimer]
-    inc     a
-    ld      [coreTimer],a
-    cp      4
-    jr      nz,.skip
-
-    ; Timer counter which goes from 0-7
+    ; Timer counter which goes from 0-7 (on a ~250ms basis)
     ld      a,[coreTimerCounter]
     inc     a
     and     %00000111; TODO in double speed mode will just adjust this?
     ld      [coreTimerCounter],a
 
     call    game_timer
-    xor     a
-    ld      [coreTimer],a
 
-.skip:
     pop     hl
     pop     de
     pop     bc

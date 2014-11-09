@@ -4,7 +4,7 @@ core_init:
     di                      ; Disable interrupts
 
     ; check for gameboy color hardware
-    cp      $11
+    cp      $11; GBC leaves 0x11 in the accumulator after startup
     jr      nz,.nocolor
 
     ; switch to double speed mode
@@ -24,8 +24,9 @@ core_init:
     xor     a
     ld      [coreColorEnabled],a
 
-    ; Clear core variables
 .vars:
+
+    ; Clear core variables
     xor     a
     ld      [coreVBlankDone],a
     ld      [coreLoopCounter],a
@@ -116,7 +117,7 @@ core_init:
     ; Setup interrupts
     ld      a,IEF_VBLANK | IEF_TIMER
     ld      [rIE],a
-    ld      a,TACF_START | TACF_16KHZ
+    ld      a,TACF_START | TACF_4KHZ
     ld      [rTAC],a
 
     call    core_screen_on  ; Turn on the screen
