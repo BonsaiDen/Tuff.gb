@@ -1147,11 +1147,26 @@ var Convert = {
 
     },
 
-    MapToNew: function() {
+    rgbToBGR: function(r, g, b) {
+
+        r = Math.floor(r / 8) & 31;
+        g = Math.floor(g / 8) & 31;
+        b = Math.floor(b / 8) & 31;
+
+        var i = (b << 10) | (g << 5) | r;
+        return [i & 0xff, i >> 8];
 
     }
 
 };
+
+
+//console.log(
+    //Convert.rgbToBGR(239, 255, 222),
+    //Convert.rgbToBGR(173, 215, 148),
+    //Convert.rgbToBGR(82, 146, 115),
+    //Convert.rgbToBGR(24, 52, 66)
+//);
 
 // Reverse Convert the Tile Defs from the binary and the tilesheet ------------
 var Reverse = {
@@ -1327,7 +1342,6 @@ var Reverse = {
     }
 
 };
-
 
 // Setup Paths ----------------------------------------------------------------
 IO.setSource(path.join(process.cwd(), process.argv[2]));
