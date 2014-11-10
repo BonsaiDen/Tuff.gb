@@ -47,19 +47,6 @@ save_load_from_sram:; a = 1 triggers defaults
     cp      c
     jr      nz,.defaults
 
-    ; check header
-    ld      a,[hli]
-    cp      $12
-    jr      nz,.defaults
-
-    ld      a,[hli]
-    cp      $34
-    jr      nz,.defaults
-
-    ld      a,[hli]
-    cp      $56
-    jr      nz,.defaults
-
     ; version
     ld      a,[hli]
     cp      SAVE_GAME_VERSION
@@ -72,37 +59,16 @@ save_load_from_sram:; a = 1 triggers defaults
     ld      a,[hli]
     ld      [mapRoomY],a
 
-    ; Player Data
-    ld      a,[hli]
-    ld      [playerX],a
+    ; Player State
+    ld      b,10
+    ld      de,playerX
 
+.loop_player_state:
     ld      a,[hli]
-    ld      [playerY],a
-
-    ld      a,[hli]
-    ld      [playerDirection],a
-
-    ; Player Abilities
-    ld      a,[hli]
-    ld      [playerCanJump],a
-    
-    ld      a,[hli]
-    ld      [playerCanWallJump],a
-
-    ld      a,[hli]
-    ld      [playerCanSwim],a
-
-    ld      a,[hli]
-    ld      [playerCanDive],a
-
-    ld      a,[hli]
-    ld      [playerCanPound],a
-
-    ld      a,[hli]
-    ld      [playerCanRun],a
-
-    ld      a,[hli]
-    ld      [playerCanDoubleJump],a
+    ld      [de],a
+    inc     de
+    dec     b
+    jr      nz,.loop_player_state
 
     ; stored entity state seperator
     ld      a,[hli] ; E5, "verified" via the checksum
@@ -151,23 +117,11 @@ save_load_player:
     ; Abilities
     ld      a,1
     ld      [playerCanJump],a
-
-    ld      a,1
     ld      [playerCanWallJump],a
-
-    ld      a,1
     ld      [playerCanSwim],a
-
-    ld      a,1
     ld      [playerCanDive],a
-
-    ld      a,1
     ld      [playerCanPound],a
-
-    ld      a,1
     ld      [playerCanRun],a
-
-    ld      a,1
     ld      [playerCanDoubleJump],a
 
 .init:
@@ -209,16 +163,6 @@ save_store_to_sram:
     ld      [hli],a
     ld      [hli],a
 
-    ; header prefix
-    ld      a,$12
-    ld      [hli],a
-
-    ld      a,$34
-    ld      [hli],a
-
-    ld      a,$56
-    ld      [hli],a
-
     ; game version
     ld      a,SAVE_GAME_VERSION
     ld      [hli],a
@@ -230,37 +174,16 @@ save_store_to_sram:
     ld      a,[mapRoomY]
     ld      [hli],a
 
-    ; Player Data
-    ld      a,[playerX]
-    ld      [hli],a
+    ; Player State
+    ld      b,10
+    ld      de,playerX
 
-    ld      a,[playerY]
+.loop_player_state:
+    ld      a,[de]
+    inc     de
     ld      [hli],a
-
-    ld      a,[playerDirection]
-    ld      [hli],a
-
-    ; Player Abilities
-    ld      a,[playerCanJump]
-    ld      [hli],a
-
-    ld      a,[playerCanWallJump]
-    ld      [hli],a
-
-    ld      a,[playerCanSwim]
-    ld      [hli],a
-
-    ld      a,[playerCanDive]
-    ld      [hli],a
-
-    ld      a,[playerCanPound]
-    ld      [hli],a
-
-    ld      a,[playerCanRun]
-    ld      [hli],a
-
-    ld      a,[playerCanDoubleJump]
-    ld      [hli],a
+    dec     b
+    jr      nz,.loop_player_state
 
     ; Entity Data
     ld      a,$E5
@@ -315,19 +238,6 @@ save_check_state: ; return 1 in a if a save state exists in sram
     ; low byte
     ld      a,[hli]
     cp      c
-    jr      nz,.missing
-
-    ; check header
-    ld      a,[hli]
-    cp      $12
-    jr      nz,.missing
-
-    ld      a,[hli]
-    cp      $34
-    jr      nz,.missing
-
-    ld      a,[hli]
-    cp      $56
     jr      nz,.missing
 
     ; game version

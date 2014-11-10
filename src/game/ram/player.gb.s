@@ -59,10 +59,23 @@ PLAYER_POUND_DELAY_END        EQU 37; delay in frames for pound end
 PLAYER_POUND_ALIGN_BORDER     EQU 4 ; number of x pixels in which players gets aligned with nearest breakable block
 
 
-; Variables -------------------------------------------------------------------
-playerHasControl:          DB
+; Player Variables for Save State ---------------------------------------------
 playerX:                   DB 
 playerY:                   DB 
+playerDirection:           DB
+
+; Power Up States
+playerCanJump:             DB
+playerCanWallJump:         DB
+playerCanSwim:             DB
+playerCanDive:             DB
+playerCanPound:            DB
+playerCanRun:              DB
+playerCanDoubleJump:       DB
+
+
+; Variables -------------------------------------------------------------------
+playerHasControl:          DB
 playerYOffset:             DB ; y offset the player is rendered at, only visual
 playerSpeedRight:          DB 
 playerSpeedLeft:           DB 
@@ -77,7 +90,6 @@ playerAnimation:           DB
 playerAnimationLast:       DB
 playerAnimationUpdate:     DB
 
-playerDirection:           DB
 playerDirectionLast:       DB
 playerDirectionWall:       DB
 playerBounceFrames:        DB
@@ -131,12 +143,4 @@ playerWaterHitDepth:       DB ; value to check how deep the player should splash
 ; Dissolving
 playerDissolveTick:        DB ; tick for when the player is dissolving
 
-; Power Up States
-playerCanJump:             DB
-playerCanWallJump:         DB
-playerCanSwim:             DB
-playerCanDive:             DB
-playerCanPound:            DB
-playerCanRun:              DB
-playerCanDoubleJump:       DB
 
