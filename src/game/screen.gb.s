@@ -143,8 +143,7 @@ _screen_animate_palette:
     add     b
 
     ; and update palette
-    ld      d,a
-    call    _screen_update_palette
+    call    _screen_update_palette_dmg
 
     ; flag palette as changed for update during next vblank
     ld      a,$01
@@ -159,64 +158,67 @@ _screen_animate_palette:
     ret
 
 
-_screen_update_palette:; d = fade value
+_screen_update_palette_dmg:; a = fade index
+
+    ; load color fading entry for current index
+    ld      hl,_screen_fade_table_dmg
+    add     a,l
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    ; load color map for the given fade index into d
+    ld      d,[hl]
 
     ld      hl,_screen_palette_bg
-    call    _color_from_palette
+    call    _color_from_palette_dmg
     ld      [corePaletteBG],a
 
     ld      hl,_screen_palette_sprite0
-    call    _color_from_palette
+    call    _color_from_palette_dmg
     ld      [corePaletteSprite0],a
 
     ld      hl,_screen_palette_sprite1
-    call    _color_from_palette
+    call    _color_from_palette_dmg
     ld      [corePaletteSprite1],a
 
     ret
 
-_color_from_palette:; hl = palette pointer; d = offset
+_color_from_palette_dmg:; hl = palette pointer; d = offset
     xor     a
-    ld      e,%11000000
-    call    _screen_mix_color_two
-    ld      e,%00110000
-    call    _screen_mix_color_two
-    ld      e,%00001100
-    call    _screen_mix_color_two
-    ld      e,%00000011
-    call    _screen_mix_color_two
+    call    _screen_mix_color_dmg
+    call    _screen_mix_color_dmg
+    call    _screen_mix_color_dmg
+    call    _screen_mix_color_dmg
     ret
 
-_screen_mix_color_two:; hl = color pointer, d = offset, e = mask, a = color input -> color output
+_screen_mix_color_dmg:; hl = color pointer, a = current color, d = brigthness to mix with
+    
+    ; store current color value
+    ld      e,a
 
-    ; store current color into c
-    ld      c,a
-    push    bc
+    ; load mask value and apply to input color
+    ld      b,[hl]
+    inc     hl
 
-    ; load color palette pointer
+    ; apply color selection mask
+    ld      a,d
+    and     b
+    ld      b,a; b is now the mix color
+
+    ; load shift value and apply to mix color
     ld      a,[hli]
-    ld      c,a
-    ld      a,[hli]
-    ld      b,a
+    cp      0
+    jr      z,.mix
 
-    ; add offset value to bc
-    ld      a,d; offset value
-    add     a,c
-    ld      c,a
-    adc     a,b
-    sub     c
-    ld      b,a
+    ; shift correction
+    sla     b
+    sla     b
 
-    ; load mix color value
-    ld      a,[bc]
-
-    ; restore current color
-    pop     bc
-
-    ; mix colors
-    and     e; apply mask
-    or      c; combine
-
+.mix:; b now has the final color to mix with
+    ld      a,e
+    or      b
     ret
 
 
@@ -230,83 +232,41 @@ _screen_fade_out_map:
 _screen_fade_in_map:
     DB      $04,$04,$04,$04,$03,$02,$01,$00,$FF
 
+_screen_fade_table_dmg:
+    ; darker
+    ; black, dark, light, white
+    DB      %11_10_01_00 
+    DB      %11_10_01_01 
+    DB      %11_10_10_10 
+    DB      %11_11_10_10 
+    DB      %11_11_11_11 
+                         
+    ; lighter            
+    ; black, dark, light, white
+    DB      %11_10_01_00 
+    DB      %11_10_01_00 
+    DB      %10_01_01_00 
+    DB      %01_01_00_00 
+    DB      %00_00_00_00 
 
-; Palette and Color Data ------------------------------------------------------
 _screen_palette_bg:
-    DW _screen_color_back
-    DW _screen_color_dark_gray
-    DW _screen_color_light_gray
-    DW _screen_color_white
+    ;       mask, shift
+    DB      %11000000,0
+    DB      %00110000,0
+    DB      %00001100,0
+    DB      %00000011,0
 
 _screen_palette_sprite0:
-    DW _screen_color_back
-    DW _screen_color_light_gray
-    DW _screen_color_white
-    DW _screen_color_white; not used, always transparent
+    ;       mask, shift
+    DB      %11000000,0
+    DB      %00001100,2
+    DB      %00000011,2
+    DB      %00000011,0; not used, always transparent 
 
 _screen_palette_sprite1:
-    DW _screen_color_dark_gray
-    DW _screen_color_light_gray
-    DW _screen_color_white
-    DW _screen_color_white; not used, always transparent
-
-_screen_color_back:
-    ; darker
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-
-    ; lighter
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-    DB      %10_10_10_10
-    DB      %01_01_01_01
-    DB      %00_00_00_00
-
-_screen_color_dark_gray:
-    ; darker
-    DB      %10_10_10_10
-    DB      %10_10_10_10
-    DB      %10_10_10_10
-    DB      %11_11_11_11
-    DB      %11_11_11_11
-
-    ; lighter
-    DB      %10_10_10_10
-    DB      %10_10_10_10
-    DB      %01_01_01_01
-    DB      %01_01_01_01
-    DB      %00_00_00_00
-
-_screen_color_light_gray:
-    ; darker
-    DB      %01_01_01_01
-    DB      %01_01_01_01
-    DB      %10_10_10_10
-    DB      %10_10_10_10
-    DB      %11_11_11_11
-
-    ; lighter
-    DB      %01_01_01_01
-    DB      %01_01_01_01
-    DB      %01_01_01_01
-    DB      %00_00_00_00
-    DB      %00_00_00_00
-
-_screen_color_white:
-    ; darker
-    DB      %00_00_00_00
-    DB      %01_01_01_01
-    DB      %10_10_10_10
-    DB      %10_10_10_10
-    DB      %11_11_11_11
-
-    ; lighter
-    DB      %00_00_00_00
-    DB      %00_00_00_00
-    DB      %00_00_00_00
-    DB      %00_00_00_00
-    DB      %00_00_00_00
+    ;       mask, shift
+    DB      %00110000,2
+    DB      %00001100,2
+    DB      %00000011,2
+    DB      %00000011,0; not used, always transparent 
 
