@@ -84,14 +84,12 @@ entity_update:
     pop     bc
 
 .skip:
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
+    ld      a,8
+    add     a,e
+    ld      e,a
+    adc     a,d
+    sub     e
+    ld      d,a
 
 .next:
     inc     b
@@ -410,14 +408,12 @@ entity_store:
     jr      .next
 
 .skip:
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
-    inc     de
+    ld      a,8
+    add     a,e
+    ld      e,a
+    adc     a,d
+    sub     e
+    ld      d,a
 
 .next:
     inc     b
