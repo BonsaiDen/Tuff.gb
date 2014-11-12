@@ -54,15 +54,13 @@ _screen_shake_timer:
     ld      a,b
     and     %00000011 ; 0-8
     ld      [coreScrollY],a
-    jr      .done
+    ret
 
 .negative_y:
     ld      a,b
     and     %00000011 ; 0-8
     add     254
     ld      [coreScrollY],a
-
-.done:
     ret
 
 .reset:

@@ -153,7 +153,7 @@ core_decode_eom:
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ld      [de],a
+    ld      [de],a; a is zero after the and
     inc     de
     dec     b
     jr      nz,.repeat_zero_loop
@@ -177,9 +177,8 @@ core_decode_eom:
     inc     de
 
     ; second byte
-    ld      a,[hl];
+    ld      a,[hld]; go back to first value byte 
     ld      [de],a
-    dec     hl; go back to first value byte
     inc     de
 
     dec     b

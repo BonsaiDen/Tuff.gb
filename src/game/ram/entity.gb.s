@@ -28,7 +28,7 @@ entityScreenState:      DS  32 ; 8 bytes per entity
 
 entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into vram
 
-entityStoredState:      DS ENTITY_STORED_STATE_SIZE 
+entityStoredState:      DS  ENTITY_STORED_STATE_SIZE 
                               ; 4 bytes per bucket entry
 
 entityUpdateActive:     DS  1  ; whether entity logic updates are performed

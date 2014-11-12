@@ -40,17 +40,16 @@ core_mem_cpy: ; hl = source, de = dest, bc = bytecount
 
 
 ; VRAM Set --------------------------------------------------------------------
-core_vram_set: ; a = value, hl = address, bc = bytecount
+core_vram_set: ; d = value, hl = address, bc = bytecount
     inc     b
     inc     c
     jr      .skip
 
 .loop:
-    push    af
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    pop     af
+    ld      a,d
     ld      [hli],a
 
 .skip:

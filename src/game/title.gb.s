@@ -270,8 +270,7 @@ title_draw_logo:
     call    core_decode_eom
 
     ; clear screen buffer
-    ld      a,$00
-    sub     128
+    ld      d,-127
     ld      hl,$9800
     ld      bc,512
     call    core_vram_set
@@ -332,8 +331,7 @@ title_draw_room:
     ld      [mapCurrentScreenBuffer],a
 
     ; clear screen buffer
-    ld      a,$00
-    sub     128
+    ld      d,-127
     ld      hl,$9800
     ld      bc,512
     call    core_vram_set
@@ -544,12 +542,12 @@ title_draw_cursor:
 .start:
     ld      hl,$9800 + 487; "> Start"
     ld      bc,1
-    ld      a,$1B
+    ld      d,$1B
     call    core_vram_set
 
     ld      hl,$9800 + 518; " Continue"
     ld      bc,1
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    ld      d,MAP_BACKGROUND_TILE_LIGHT
     sub     128
     call    core_vram_set
     ret
@@ -557,13 +555,13 @@ title_draw_cursor:
 .continue:
     ld      hl,$9800 + 487; "Start"
     ld      bc,1
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
+    ld      d,MAP_BACKGROUND_TILE_LIGHT
     sub     128
     call    core_vram_set
 
     ld      hl,$9800 + 518; "> Continue"
     ld      bc,1
-    ld      a,$1A
+    ld      d,$1A
     call    core_vram_set
     ret
 
