@@ -218,18 +218,17 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     cp      127
     jr      nc,.collision 
 
-    ; check top screen border
-    xor     a
-    cp      c
-    jr      nc,.collision 
-
     ; check right screen border
     ld      a,b
     cp      159
     jr      nc,.collision 
 
-    ; check left screen border
+    ; check top screen border
     xor     a
+    cp      c
+    jr      nc,.collision 
+
+    ; check left screen border
     cp      b
     jr      nc,.collision 
 
@@ -334,8 +333,7 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     jr      nz,@-4          ; ----+
 
     ; set tile value
-    ld      a,d
-    ld      [hl],a
+    ld      [hl],d
 
     pop     hl
     pop     de
@@ -938,6 +936,7 @@ _map_load_tile_block: ; a = origin block, b = target block
     dec     h
     dec     h
     dec     h
+
     dec     b
     dec     b
     dec     b

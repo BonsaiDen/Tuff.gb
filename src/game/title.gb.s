@@ -301,9 +301,8 @@ title_draw_logo:
 
     ld      a,[de]
     sub     128
-    ld      [hl],a
+    ld      [hli],a
     inc     de
-    inc     hl
 
     ; loop
     dec     c

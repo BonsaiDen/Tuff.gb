@@ -177,8 +177,7 @@ sound_update:
 
 .wait:
     ; increase tick count and store back
-    inc     a
-    ld      [hl],a
+    inc     [hl]
 
 .skip:
     inc     b

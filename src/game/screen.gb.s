@@ -196,13 +196,10 @@ _screen_mix_color_dmg:; hl = color pointer, a = current color, d = brigthness to
     ; store current color value
     ld      e,a
 
-    ; load mask value and apply to input color
-    ld      b,[hl]
-    inc     hl
-
     ; apply color selection mask
     ld      a,d
-    and     b
+    and     [hl] ; load mask value and apply to input color
+    inc     hl
     ld      b,a; b is now the mix color
 
     ; load shift value and apply to mix color

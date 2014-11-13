@@ -205,8 +205,7 @@ save_store_to_sram:
     ld      hl,$A000 
     ld      a,b
     ld      [hli],a
-    ld      a,c
-    ld      [hl],a
+    ld      [hl],c
 
     ; disable external RAM
     ld      hl,$0000 
