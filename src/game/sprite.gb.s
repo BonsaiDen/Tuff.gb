@@ -10,18 +10,23 @@ sprite_animate_all:
     ; check if active and animating
     ld      a,b
     call    _sprite_meta_offset
-    ld      a,[hl]
-    push    af ; store sprite animation flags
-    and     %00000101
-    cp      5; active and animating
-    jr      nz,.skip_sprite
+
+    ; load flags
+    ld      a,[hli]
+
+    ; check if active
+    bit     0,a
+    jr      z,.next_sprite
+
+    ; check if animating
+    bit     2,a
+    jr      z,.next_sprite
 
     ; load animation frame number
-    inc     hl
     ld      c,[hl] 
+    inc     hl
 
     ; load animation id
-    inc     hl 
     ld      l,[hl] 
     ld      h,0
 
@@ -41,22 +46,16 @@ sprite_animate_all:
     ld      e,c
     add     hl,de ; hl is the data offset
 
-    ; get tile for animation index
-    ld      e,[hl]
-
     ; now update the sprite to the tile index
+    ld      d,a; store sprite flags
     ld      a,b ; sprite index (counter)
-    ld      b,e ; 16x16 sprite tile 
+    ld      b,[hl] ; ; get tile for animation index (16x16 sprite tile )
     call    sprite_set_tile_index
     ld      b,a ; restore sprite counter
+    ld      a,d; restore sprite flags
 
     ; Restore flags
-    pop     af
     call    _sprite_update_animation
-    jr      .next_sprite
-
-.skip_sprite:
-    pop    af
 
 .next_sprite:
     inc    b
@@ -84,27 +83,17 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
 
 
     ; advance frame index based on direction
-    ld      a,d ; store animation flags for bounce check
-    and     %00010000
-    cp      16
-    jr      nz,.forwards
-
-.backwards:
-    dec     c ; previous animation frame
-    dec     hl ; previous frame value
-    jr      .update_mode
+    bit     4,d
+    jr      nz,.backwards
 
 .forwards:
     inc     c ; next animation frame
     inc     hl ; next frame value
-    jr      .update_mode
-
 
 .update_mode:
 
     ; load new frame timing data
-    ld      e,[hl]
-    ld      a,e
+    ld      a,[hl]
 
     ; if it is a stop frame do nothing
     cp      $ff
@@ -119,19 +108,30 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     jr      z,.bounce
     jr      .update
 
+.backwards:
+    dec     c ; previous animation frame
+    dec     hl ; previous frame value
+    jr      .update_mode
 
     ; reset frame number for looping
 .loop:
     ld      c,1
-    jr      .update
 
+    ; store the new animation index
+.update:
+    ld      a,b ; sprite index (counter)
+    call    _sprite_meta_offset
+    inc     hl
+    ld      [hl],c ; store new frame number
+    inc     hl ; skip animation id
+    inc     hl
+    ld      [hl],0 ; reset timing data
+    ret
 
     ; toggle bounce direction
 .bounce:
-    ld      a,d
-    and     %00010000 ; backwards flag
-    cp      16
-    jr      nz,.switch_to_backwards
+    bit     4,d; backwards flag
+    jr      z,.switch_to_backwards
 
 .switch_to_forwards:
     ld      a,b
@@ -144,18 +144,6 @@ _sprite_update_animation: ; a = sprite flags, hl = animation data base offset
     call    sprite_animation_backward
     dec     c
     jr      .update
-
-
-    ; store the new animation index
-.update:
-    ld      a,b ; sprite index (counter)
-    call    _sprite_meta_offset
-    inc     hl
-    ld      [hl],c ; store new frame number
-    inc     hl ; skip animation id
-    inc     hl
-    ld      [hl],0 ; reset timing data
-    ret
 
 
 sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
@@ -239,9 +227,8 @@ sprite_animation_start: ; a = sprite index
     ld      [hli],a
     ld      a,1
     ld      [hli],a ; set current animation frame
-    ld      a,[hl]; load animation id
+    ld      a,[hli]; load animation id
     ld      b,a
-    inc     hl; frames left
 
     ; set frames left
     push    de
@@ -395,8 +382,7 @@ sprite_set_tile_offset: ; a = sprite, b = tile offset
     inc     hl
     inc     hl
     inc     hl
-    ld      a,b
-    ld      [hl],a ; store offset
+    ld      [hl],b ; store offset
 
     pop     hl
     pop     af
@@ -416,8 +402,7 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
 
     ld      e,a ; store index for get_left / get_right
     call    _sprite_meta_offset
-    ld      a,[hl]
-    ld      d,a ; store flags
+    ld      d,[hl]; store flags
 
     ; add tile offset
     inc     hl
@@ -443,9 +428,8 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
 
     call    _sprite_get_right
     ld      a,b
-    add     a,2
-    ld      [hl],a
-    inc     hl
+    add     2
+    ld      [hli],a
     set     5,[hl]
 
     jr     .index_done
@@ -459,9 +443,8 @@ sprite_set_tile_index: ; a = sprite index, b = tile index
 
     call    _sprite_get_right
     ld      a,b
-    add     a,2
-    ld      [hl],a
-    inc     hl
+    add     2
+    ld      [hli],a
     res     5,[hl]
 
 .index_done:
