@@ -31,12 +31,12 @@ player_slide_wall:
     ; check if falling
     ld      a,[playerFallSpeed]
     cp      0
-    jp      z,.not_pressing_wall ; if fall speed is <= 1 do not slide
+    jr      z,.not_pressing_wall ; if fall speed is <= 1 do not slide
 
     ; check if pressing against a wall
     ld      a,[playerDirectionWall]
     cp      0
-    jp      z,.not_pressing_wall 
+    jr      z,.not_pressing_wall 
 
     ; check if player is pressing joypad in wall direction
     ld      b,a
@@ -50,7 +50,7 @@ player_slide_wall:
     ; check if already sliding
     ld      a,[playerWallSlideTick]
     cp      0 ; check if not sliding
-    jp      nz,.sliding
+    jr      nz,.sliding
 
     ; if pressing against a wall and not sliding and 
     ; directionWall != slideDirection init slide
@@ -63,7 +63,7 @@ player_slide_wall:
     ; check if player fully touches the wall before initiating a slide
     ld      a,[playerDirection]
     cp      PLAYER_DIRECTION_RIGHT
-    jp      z,.slide_right
+    jr      z,.slide_right
 
 .slide_left:
     call    player_collision_left_all
@@ -84,7 +84,7 @@ player_slide_wall:
 
     ; if sliding for more than X frames end slide
     cp      PLAYER_SLIDE_DURATION
-    jp      z,.sliding_done
+    jr      z,.sliding_done
 
 
     ; otherwise continue sliding
@@ -113,7 +113,7 @@ player_slide_wall:
     ; check wall jump window
     ld      a,[playerWallJumpWindow]
     cp      0
-    jp      nz,.check_wall_jump
+    jr      nz,.check_wall_jump
 
     ; if sliding and no longer pressing, end slide
     ld      a,[playerWallSlideTick]
@@ -226,12 +226,12 @@ player_slide_wall:
     dec     a
     ld      [playerWallJumpTick],a
     cp      0
-    jp      z,.stop
+    jr      z,.stop
 
     ; modify player speed variable
     ld      a,[playerWallJumpDir]
     cp      PLAYER_DIRECTION_LEFT
-    jp      z,.right
+    jr      z,.right
 
 .left:
     ld      a,2

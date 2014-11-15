@@ -219,7 +219,7 @@ player_scroll_map:
 
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
-    jp      .scrolled
+    jr      .scrolled
 
 .done:
     xor     a

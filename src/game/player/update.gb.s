@@ -9,7 +9,7 @@ player_update:
     ; check if we're dissolving
     ld      a,[playerDissolveTick]
     cp      255
-    jp      z,.control
+    jr      z,.control
 
     ; wait for 25 ticks before flashing screen and resetting player position
     ld      a,[playerY]
@@ -56,7 +56,7 @@ player_update:
     ; ignore when pounding
     ld      a,[playerIsPounding]
     cp      0
-    jp      nz,.pounding
+    jr      nz,.pounding
 
     call    player_accelerate
     call    player_decelerate
@@ -67,11 +67,11 @@ player_update:
     ; check for hazard (checked before gravity so we actually overlap a few pixels)
     ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_LAVA
-    jp      z,player_dissolve
+    jr      z,.dissolve
     cp      MAP_COLLISION_SPIKES
-    jp      z,player_dissolve
+    jr      z,.dissolve
     cp      MAP_COLLISION_ELECTRIC
-    jp      z,player_dissolve
+    jr      z,.dissolve
 
     ; pounding logic
     call    player_pound
@@ -83,11 +83,11 @@ player_update:
     ; check for hazard once more after gravity got applied
     ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_LAVA
-    jp      z,player_dissolve
+    jr      z,.dissolve
     cp      MAP_COLLISION_SPIKES
-    jp      z,player_dissolve
+    jr      z,.dissolve
     cp      MAP_COLLISION_ELECTRIC
-    jp      z,player_dissolve
+    jr      z,.dissolve
 
     ; check for map scrolling
     call    player_scroll_map
@@ -119,19 +119,21 @@ player_update:
     ; check if was diving
     ld      a,[playerWasUnderWater]
     cp      1
-    jp      nz,.check_diving
+    jr      nz,.check_diving
 
     ; ignore surface checks when at the very bottom of the screen
     ld      a,[playerY]
     cp      124; we get placed at 125 after upwards screen transition while in water
-    jp      nc,.water
+    jr      nc,.water
 
     ; detect surfacing
     xor     a
     ld      [playerUnderWater],a
     ld      [playerInWater],a
-    jp      .water
+    jr      .water
 
+.dissolve:
+    jp      z,player_dissolve
 
     ; check for deep water (diving)
 .check_diving:
@@ -150,61 +152,61 @@ player_update:
     ld      [playerInWater],a
     ld      [playerUnderWater],a
     ld      [playerWaterHitDone],a
-    jp      .update
+    jr      .update
 
 .under_water:
     ld      a,1
     ld      [playerUnderWater],a
     ld      [playerWasUnderWater],a
-    jp      .water
+    jr      .water
 
 .water:
 
     ; check ability
     ld      a,[playerCanSwim]
     cp      0
-    jp      z,player_dissolve
+    jr      z,.dissolve
 
     call    player_water_update
 
     ; swim animation
     ld      a,[playerUnderWater]
     cp      1
-    jp      nz,.update
+    jr      nz,.update
 
     ; do not overwrite pounding
     ld      a,[playerIsPounding]
     cp      0
-    jp      nz,.update
+    jr      nz,.update
 
     ; set swim animation when moving underwater
     ld      a,[coreInput]
     and     BUTTON_LEFT | BUTTON_RIGHT
     cp      0
-    jp      z,.water_idle
+    jr      z,.water_idle
 
     ; dont set animation when moving up / down
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B
     cp      0
-    jp      nz,.water_idle
+    jr      nz,.water_idle
 
     ; check if pushing against wall
     ld      a,[playerDirectionWall]
     cp      0
-    jp      nz,.update
+    jr      nz,.update
 
     ld      a,PLAYER_ANIMATION_SWIMMING
     ld      [playerAnimation],a
 
-    jp      .update
+    jr      .update
 
     ; set idle animation in case neither a / b is pressed
 .water_idle:
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B
     cp      0
-    jp      nz,.update
+    jr      nz,.update
 
     ld      a,PLAYER_ANIMATION_IDLE
     ld      [playerAnimation],a

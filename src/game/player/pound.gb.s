@@ -72,7 +72,7 @@ player_pound:
     or      %00001000 
     sub     b
     cp      128
-    jp      c,.positive
+    jr      c,.positive
 
     ; make positive
     ld      b,a
@@ -102,9 +102,9 @@ player_pound:
     pop     bc
     ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_NONE; no collision, check next
-    jp      z,.next
+    jr      z,.next
     cp      MAP_COLLISION_BREAKABLE ; found a block
-    jp      z,.found
+    jr      z,.found
 
     ; setup normal collision here to prevent hazard values leaking through
     ; and triggering instant death in mid air
@@ -120,7 +120,7 @@ player_pound:
     ret     nc
 
     ld      c,a
-    jp      .loop_find
+    jr      .loop_find
 
 .found:
     ld      a,1
@@ -133,7 +133,7 @@ player_pound:
     ; check if we're at the start and play the pounding up sound
     ld      a,[playerIsPounding]
     cp      1
-    jp      nz,.skip_sound
+    jr      nz,.skip_sound
 
     ; for the first 3 ticks play a sound each time
     ld      a,[playerPoundTick]
@@ -142,20 +142,20 @@ player_pound:
     sub     b
     ld      b,a
     cp      0
-    jp      z,.sound_low
+    jr      z,.sound_low
     cp      12
-    jp      z,.sound_med
+    jr      z,.sound_med
     cp      24
-    jp      z,.sound_high
-    jp      .skip_sound
+    jr      z,.sound_high
+    jr      .skip_sound
 
 .sound_high:
     ld      a,SOUND_EFFECT_PLAYER_POUND_UP_HIGH
-    jp      .sound_play
+    jr      .sound_play
 
 .sound_med:
     ld      a,SOUND_EFFECT_PLAYER_POUND_UP_MED
-    jp      .sound_play
+    jr      .sound_play
 
 .sound_low:
     ld      a,SOUND_EFFECT_PLAYER_POUND_UP_LOW
@@ -179,12 +179,12 @@ player_pound:
     ; push away from ceiling
     call    player_collision_far_up
     cp      1
-    jp      nz,.push_sides
+    jr      nz,.push_sides
 
     ld      a,[coreLoopCounter]
     and     %00000111
     cp      7
-    jp      nz,.push_sides
+    jr      nz,.push_sides
 
     ld      a,[playerY]
     inc     a
@@ -194,13 +194,13 @@ player_pound:
 .push_sides:
     call    player_collision_far_right
     cp      1
-    jp      nz,.push_left
+    jr      nz,.push_left
 
 .push_right:
     ld      a,[coreLoopCounter]
     and     %00000111
     cp      7
-    jp      nz,.push_left
+    jr      nz,.push_left
 
     ld      a,[playerX]
     dec     a
@@ -209,12 +209,12 @@ player_pound:
 .push_left:
     call    player_collision_far_left
     cp      1
-    jp      nz,.delay_done
+    jr      nz,.delay_done
 
     ld      a,[coreLoopCounter]
     and     %00000111
     cp      7
-    jp      nz,.delay_done
+    jr      nz,.delay_done
 
     ld      a,[playerX]
     inc     a
@@ -242,17 +242,16 @@ player_pound:
     ; compare
     ld      a,[playerX]
     cp      b
-    ret     z
-    jp      c,.left
-    jp      nc,.right
-
-.left:
-    inc     a
-    ld      [playerX],a
-    ret
+    ret     z; centered
+    jr      c,.left
 
 .right:
     dec     a
+    ld      [playerX],a
+    ret
+
+.left:
+    inc     a
     ld      [playerX],a
     ret
 
@@ -270,7 +269,7 @@ player_pound:
     ; check if we hit water
     ld      a,[playerInWater]
     cp      1
-    jp      z,.water
+    jr      z,.water
 
     ; check if we hit ground
     ld      a,[playerOnGround]
@@ -304,23 +303,23 @@ player_pound:
 .water:
     ld      a,[playerCanDive]
     cp      1
-    jp      z,.can_dive
+    jr      z,.can_dive
 
     ; if the player cant dive we exit early
     ld      a,[playerInWater]
     cp      1
-    jp      z,.water_end ; TODO fix y offset
-    jp      .water_slow
+    jr      z,.water_end ; TODO fix y offset
+    jr      .water_slow
 
 .can_dive:
     ld      a,[playerWaterTick]
-    cp      25
-    jp      nc,.water_end
+    jr      25
+    jr      nc,.water_end
 
     ; slow down after the first 5 frames
 .water_slow:
     cp      5
-    jp      c,.water_next
+    jr      c,.water_next
     ld      a,1
     ld      [playerFallSpeed],a
 
@@ -335,14 +334,14 @@ player_pound:
     ; skip water offset 
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.under_water
+    jr      z,.under_water
 
     ld      a,PLAYER_WATER_OFFSET_MAX
-    jp      .water_end_set
+    jr      .water_end_set
 
 .under_water:
     ld      a,15
-    jp      .water_end_set
+    jr      .water_end_set
 
 .water_end_set:
     ld      [playerWaterTick],a
