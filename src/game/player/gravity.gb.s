@@ -119,7 +119,7 @@ player_jump:
     ld      a,[coreInput]
     and     BUTTON_A
     cp      BUTTON_A
-    jp      nz,.not_pressed
+    jr      nz,.not_pressed
 
     ; check if the player is continuosly pressing the button
     ld      a,[playerJumpPressed]
@@ -133,12 +133,12 @@ player_jump:
     ; no sound when not on ground
     ld      a,[playerOnGround]
     cp      0
-    jp      z,.check_swimming
+    jr      z,.check_swimming
 
     ; no sound under water (even when on ground)
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.no_sound
+    jr      z,.no_sound
 
     ; when on ground play normal jump
     ld      a,SOUND_EFFECT_PLAYER_JUMP
@@ -149,15 +149,15 @@ player_jump:
     ; check if swimming
     ld      a,[playerWaterHitDone]
     cp      1
-    jp      nz,.no_sound
+    jr      nz,.no_sound
 
     ld      a,[playerInWater]
     cp      0
-    jp      z,.no_sound
+    jr      z,.no_sound
     
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.no_sound
+    jr      z,.no_sound
 
     ; player normal jump sound plus water leave sound
     ld      a,SOUND_EFFECT_PLAYER_JUMP
@@ -170,23 +170,23 @@ player_jump:
 .no_sound:
     ld      a,[playerUnderWater]
     cp      1
-    jp      z,.jump_swim
+    jr      z,.jump_swim
 
     ; check if we're in water (and the splash offset is done)
     ld      a,[playerWaterHitDone]
     cp      1
-    jp      z,.jump_water
+    jr      z,.jump_water
 
     ; and check if we're on the ground
     ld      a,[playerOnGround]
     cp      1
-    jp      nz,.check_double; if not check for double jump
+    jr      nz,.check_double; if not check for double jump
 
     ; land jump force 
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,PLAYER_GRAVITY_INTERVAL
-    jp      .init_jump
+    jr      .init_jump
 
     ; water jump force
 .jump_water:
@@ -207,7 +207,7 @@ player_jump:
     ld      [playerGravityTick],a
     xor     a
     ld      [playerJumpFrames],a
-    jp      .jump
+    jr      .jump
 
     ; reset the jump state
 .not_pressed:
@@ -215,33 +215,33 @@ player_jump:
     ld      [playerJumpPressed],a
     ld      [playerJumpHold],a
     ld      [playerWallJumpPressed],a
-    jp      .jump
+    jr      .jump
 
 .check_double:
     
     ; don't allow any sort of double jump during wall sliding / jumping
     ld      a,[playerDirectionWall]
     cp      0
-    jp      nz,.jump
+    jr      nz,.jump
 
     ld      a,[playerWallSlideDir]
     cp      0
-    jp      nz,.jump
+    jr      nz,.jump
 
     ld      a,[playerWallJumpTick]
     cp      0
-    jp      nz,.jump
+    jr      nz,.jump
 
     ; check if we really hit the button on this frame
     ld      a,[coreInputOn]
     and     BUTTON_A
     cp      BUTTON_A
-    jp      nz,.jump
+    jr      nz,.jump
 
     ; check if we already double jumped
     ld      a,[playerDoubleJumped]
     cp      1
-    jp      z,.jump
+    jr      z,.jump
 
     ld      a,1
     ld      [playerDoubleJumped],a
@@ -251,7 +251,7 @@ player_jump:
     ; since the jump height is smaller
     ld      a,[playerJumpFrames]
     cp      PLAYER_DOUBLE_JUMP_THRESHOLD
-    jp      c,.jump; if playerJumpFrames - threshold < 0 don't jump
+    jr      c,.jump; if playerJumpFrames - threshold < 0 don't jump
 
     ; set up double jump
     ld      a,SOUND_EFFECT_PLAYER_JUMP_DOUBLE
@@ -264,14 +264,14 @@ player_jump:
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,PLAYER_GRAVITY_INTERVAL
-    jp      .init_jump
+    jr      .init_jump
 
     ; if we're still pressing the button or are in the air update the jump value
 .still_pressed:
     ld      a,[playerJumpHold]
     inc     a
     cp      $ff; limit to 255
-    jp      z,.jump
+    jr      z,.jump
     ld      [playerJumpHold],a
 
 .jump:
@@ -285,7 +285,7 @@ player_jump:
     ; check if we're the button was released
     ld      a,[playerJumpPressed]
     cp      0
-    jp      nz,.apply_force ; if not continue applying jump force
+    jr      nz,.apply_force ; if not continue applying jump force
     ret     z ; otherwise end here
 
     ; move player upwards
@@ -301,7 +301,7 @@ player_jump:
     ; check collision at current top pixel
     call    player_collision_up
     cp      1
-    jp      z,.collision
+    jr      z,.collision
 
     ld      a,[playerY]
     dec     a
@@ -309,7 +309,7 @@ player_jump:
     ; check again with new top pixel
     call    player_collision_up
     cp      1
-    jp      z,.collision
+    jr      z,.collision
 
     ; finally set new top pixel
     ld      a,[playerY]
@@ -323,7 +323,7 @@ player_jump:
 
     ; loop until stored jump force reaches 0
     dec     d
-    jp      nz,.apply_force 
+    jr      nz,.apply_force 
     ret      
 
 .collision:
@@ -348,7 +348,7 @@ player_decrease_jump:
     ; if not we decrease the jump force more quickly
     ld      a,[playerJumpPressed]
     cp      0
-    jp      nz,.fast ; fast decrease in case the jump button was released
+    jr      nz,.fast ; fast decrease in case the jump button was released
 
     ; load current jump force
     ld      a,[playerJumpForce]
@@ -401,8 +401,8 @@ player_fall:
         
     ; loop until stored fall speed reaches 0
     dec     d
-    jp      nz,.fall
-    jp      .no_collision
+    jr      nz,.fall
+    jr      .no_collision
 
 .collision:
 
@@ -425,33 +425,38 @@ player_fall:
     ; check how long we've been falling
     ld      a,[playerFallFrames]
     cp      14
-    jp      c,.soft
+    jr      c,.soft
     cp      50
-    jp      c,.normal
+    jr      c,.normal
 
     ; if we'be been falling for more than 30 frames play a landing animation
     ; and delay further movement
     ld      a,16
     ld      [playerLandingFrames],a
 
-    ; set ground and play landing animation
-    ld      a,PLAYER_ANIMATION_LANDING
-    ld      [playerAnimation],a
-
     ld      a,SOUND_EFFECT_PLAYER_LAND_HARD
     call    sound_play_effect_two
 
-    jp      .done
+    ; skip landing animation if pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jr      nz,.done
+
+    ; play landing animation
+    ld      a,PLAYER_ANIMATION_LANDING
+    ld      [playerAnimation],a
+
+    jr      .done
 
 .normal:
     ld      a,SOUND_EFFECT_PLAYER_LAND
     call    sound_play_effect_two
-    jp      .done
+    jr      .done
 
 .soft:
     ld      a,SOUND_EFFECT_PLAYER_LAND_SOFT
     call    sound_play_effect_two
-    jp      .done
+    jr      .done
 
 .done:
     xor     a
@@ -464,7 +469,7 @@ player_fall:
     ; decrease the numbers of jump frames
     ld      a,[playerJumpFrames]
     cp      0
-    jp      z,.dec_fall
+    jr      z,.dec_fall
     dec     a
     ld      [playerJumpFrames],a
 
