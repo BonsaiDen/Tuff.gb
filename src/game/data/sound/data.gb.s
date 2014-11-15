@@ -47,10 +47,10 @@ SoundEffectTable:
   DB 15, 16
   DB 15, 17
   DB 15, 18
-  DB 15, 19
+  DB 3, 19; break
   DB 15, 20
   DB 15, 21
-  DB 15, 22
+  DB 5, 22
   DB 15, 23
 
 ; Instruments -----------------------------------------------------------------
@@ -226,6 +226,8 @@ sound_pattern_game_menu_select_18:
   DB $FF
 
 sound_pattern_player_pound_break_19:
+  DB 0, 17
+  DB $FF,0
   DB 0, 17
   DB $FF
 

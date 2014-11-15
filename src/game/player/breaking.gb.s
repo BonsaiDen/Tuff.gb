@@ -80,6 +80,7 @@ break_horizontal_blocks:; a = block y, b = block x
 
     ret
 
+    ; TODO finish
 .delay:
 
     ld      a,3
@@ -87,7 +88,7 @@ break_horizontal_blocks:; a = block y, b = block x
 
     ; sound
     ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
-    call    sound_play_effect_two
+    call    sound_play_effect_two_wait
 
     ; align player y to 
     ld      a,[playerY]
@@ -203,7 +204,7 @@ break_vertical_blocks:; a = block x, c = block y
 
     ; sound
     ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
-    call    sound_play_effect_two
+    call    sound_play_effect_two_wait
 
     ; align player y to 
     ld      a,[playerY]
@@ -304,10 +305,6 @@ _destroy_breakable_block:; a = block group to break
     call    map_set_tile_value; set background tile
     dec     d
     jr      nz,.loop
-
-    ; play sound
-    ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
-    call    sound_play_effect_two
 
     pop     bc
     pop     de
