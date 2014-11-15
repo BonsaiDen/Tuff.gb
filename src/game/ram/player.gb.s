@@ -88,7 +88,7 @@ playerDecTick:             DB
 
 playerAnimation:           DB
 playerAnimationLast:       DB
-playerAnimationUpdate:     DB
+playerAnimationRow:        DB
 
 playerDirectionLast:       DB
 playerDirectionWall:       DB

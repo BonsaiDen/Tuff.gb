@@ -20,10 +20,6 @@ playerAnimationRowMap:
 
 player_animation_update: ; executed during vblank
 
-    ld      a,[rLY]
-    cp      148
-    ret     nc
-
     ; check for direction changes
     ld      a,[playerDirectionLast]
     ld      b,a
@@ -63,7 +59,7 @@ player_animation_update: ; executed during vblank
     ld      b,a
     ld      a,[playerAnimation]
     cp      b
-    jr      z,.done
+    ret     z
 
     ; get new animation
     ld      a,[playerAnimation]
@@ -78,11 +74,34 @@ player_animation_update: ; executed during vblank
     ld      a,b
     ld      [playerAnimationLast],a
 
-    ; flag for update
-    ld      a,1
-    ld      [playerAnimationUpdate],a
+    ; calculate offset into sprite RAM 
+    add     dataPlayerSpriteMap >> 8
+    ld      h,a; x256
+    ld      l,0
 
-.done:
+    ; setup sprite ram target pointer ($8000 or $8100)
+    ld      a,[playerAnimationRow]
+    add     $80
+    ld      d,a
+    ld      e,0
+    ld      bc,128; 256 bytes
+    call    core_vram_cpy
+
+    ; set up tile offset
+    ld      a,[playerAnimationRow]
+    add     a; x2
+    add     a; x4
+    ld      b,a
+
+    ; update offset for player sprite
+    ld      a,PLAYER_SPRITE_INDEX
+    call    sprite_set_tile_offset
+
+    ; toggle row
+    ld      a,[playerAnimationRow]
+    xor     1
+    ld      [playerAnimationRow],a
+
     ret
 
 
@@ -109,27 +128,5 @@ player_animation_init:
     ld     a,b
     cp     PLAYER_ANIMATION_COUNT
     jr     nz,.loop
-    ret
-
-
-player_animation_update_tile:
-
-    ; check if we need to update the tile data for the player
-    ld      a,[playerAnimationUpdate]
-    cp      0
-    ret     z
-    
-    ; calculate offset into sprite RAM 
-    ld      a,[playerAnimation]
-    add     dataPlayerSpriteMap >> 8
-    ld      h,a; x256
-    ld      l,0
-
-    ld      de,$8000
-    ld      bc,128; 256 bytes
-    call    core_vram_cpy
-
-    xor     a
-    ld      [playerAnimationUpdate],a
     ret
 

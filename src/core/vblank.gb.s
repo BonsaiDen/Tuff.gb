@@ -33,10 +33,9 @@ core_vblank_handler:
     ; now copy OAM to match the sprites
     call    $ff80 
 
-    ; copy new player tiles into vram from the last update
-    call    player_animation_update_tile
-
-    ; update player animations during vblank to prevent flicker 
+    ; update player animations 
+    ; we use tow of the tile rows in vram and toggle between them
+    ; this prevents flicker and articacts
     call    player_animation_update
 
     ; update scroll registers
