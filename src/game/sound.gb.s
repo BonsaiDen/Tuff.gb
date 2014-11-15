@@ -39,13 +39,21 @@ sound_disable:
 
     ret
 
+sound_play_effect_two_wait:; a = song id
+    ld      c,a
+    ld      b,5
+    call    _track_get_pointer_hl
+    bit     7,[hl]
+    ret     nz
+    ld      a,c
+    jr      sound_play_effect_two
 
-sound_play_effect_one:; de = track data pointer
+sound_play_effect_one:; a = song id
     push    bc
     ld      b,4
     jr      _sound_play_effect
 
-sound_play_effect_two:; de = track data pointer
+sound_play_effect_two:; a = song id
     push    bc
     ld      b,5
 
@@ -60,7 +68,7 @@ _sound_play_effect:
     ld      d,a
     ld      c,%00100000
 
-_sound_load_track:; de = track data, a = track id, c = effect
+_sound_load_track:; de = track data, b = track id, c = effect
 
     push    hl
 
@@ -455,6 +463,9 @@ _update_track:; c = flags
 
     ; store NoteIndex into B
     ld      a,[de]
+    cp      $ff
+    ret     z; check for rest note
+
     ld      b,a
     inc     de
 
