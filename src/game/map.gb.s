@@ -585,7 +585,14 @@ map_check_fallable_blocks:
     ; setup instant fall and play sound
     call    _map_update_falling_block
     ld      a,SOUND_EFFECT_MAP_FALLING_BLOCK
-    call    sound_play_effect_two
+    call    sound_play_effect_two_wait
+
+    ; prevent player from jumping over platforms
+    xor     a
+    ld      [playerOnGround],a
+    ld      a,PLAYER_GRAVITY_MAX
+    ld      [playerFallSpeed],a
+
     jr      .active
 
 .delayed:
@@ -650,7 +657,7 @@ map_update_falling_blocks:
 
     ; play sound if the delay reached 0
     ld      a,SOUND_EFFECT_MAP_FALLING_BLOCK
-    call    sound_play_effect_one
+    call    sound_play_effect_two_wait
 
     ; loop
 .inactive:
