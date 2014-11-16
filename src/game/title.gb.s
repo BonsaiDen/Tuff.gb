@@ -214,10 +214,10 @@ title_screen_movement:
 
     ld      a,[titlePlayerDir]
     cp      0
-    jp      z,.left
+    jr      z,.left
 
     cp      3
-    jp      z,.right
+    jr      z,.right
 
     jp      .control
 
@@ -226,17 +226,16 @@ title_screen_movement:
     ; don't leave the screen
     ld      a,[playerX]
     cp      16
-    jp      c, .switch_to_right; x < 8
+    jr      c, .switch_to_right; x < 8
 
     ld      a,c
     or      BUTTON_LEFT
     ld      c,a
-    jp      .control
+    jr      .control
 
 .switch_to_right:
     ld      a,3
     ld      [titlePlayerDir],a
-    jp      .right
 
 .right:
 
@@ -253,7 +252,7 @@ title_screen_movement:
 .switch_to_left:
     xor     a
     ld      [titlePlayerDir],a
-    jp      .left
+    jr      .left
 
 .control:
     ld      a,c
@@ -306,7 +305,7 @@ title_draw_logo:
 
     ; loop
     dec     c
-    jp      nz,.loop_x
+    jr      nz,.loop_x
 
     ; next line
     push    bc
@@ -315,7 +314,7 @@ title_draw_logo:
     pop     bc
 
     dec     b
-    jp      nz,.loop_y
+    jr      nz,.loop_y
 
     ret
 

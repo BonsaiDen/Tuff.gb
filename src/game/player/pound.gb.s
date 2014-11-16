@@ -166,7 +166,7 @@ player_pound:
 .skip_sound:
     ld      a,[playerPoundTick]
     cp      0
-    jp      z,.pounding
+    jr      z,.pounding
     dec     a
     ld      [playerPoundTick],a
 

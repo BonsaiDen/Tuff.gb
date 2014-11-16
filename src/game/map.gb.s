@@ -313,11 +313,12 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     ; set tile value in screen buffer
     ld      d,a
     ld      a,[mapCurrentScreenBuffer]
+    ; TODO optimize
     cp      0
-    jp      z,.screen_9c
+    jr      z,.screen_9c
     ld      a,d; restore
     ld      d,$98
-    jp      .set
+    jr      .set
 
 .screen_9c:
     ld      a,d; restore
@@ -606,7 +607,7 @@ map_check_fallable_blocks:
     inc     b
     ld      a,[mapFallableBlockCount]
     cp      b
-    jp      nz,.loop
+    jr      nz,.loop
     ret
 
 
