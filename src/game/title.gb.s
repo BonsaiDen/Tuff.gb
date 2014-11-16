@@ -64,6 +64,11 @@ title_update:
     cp      0
     ret     nz
 
+    ; allow to skip logo
+    ld      a,[coreInputOn]
+    and     BUTTON_START
+    jr      nz,.skip_logo
+
     ; delay
     ld      a,[titleWaitCounter]
     dec     a
@@ -71,6 +76,7 @@ title_update:
     cp      0
     ret     nz
 
+.skip_logo:
     ld      a,SCREEN_PALETTE_FADE_OUT | SCREEN_PALETTE_LIGHT
     call    screen_animate
 
