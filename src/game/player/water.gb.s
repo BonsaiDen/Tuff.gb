@@ -138,8 +138,7 @@ player_water_update:
     ld      [playerAnimation],a
 
     ; load y offset value
-    ld      a,[hl]
-    ld      b,a
+    ld      b,[hl]
 
     ; adjust the depth based on the fall speed
     ld      a,[playerWaterHitDepth]
@@ -171,8 +170,7 @@ player_water_update:
     ld      b,0
     ld      c,a
     add     hl,bc
-    ld      a,[hl]
-    ld      b,a
+    ld      b,[hl]
 
     ld      a,[playerWaterTick]
     cp      8
