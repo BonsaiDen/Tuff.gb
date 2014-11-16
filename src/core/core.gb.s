@@ -23,11 +23,29 @@ coreDecodeLabel:    DS 3
 
 
 ; Code ------------------------------------------------------------------------
+SECTION "CoreLoop",ROM0[$0000]
+    INCLUDE "loop.gb.s"
+
+SECTION "CoreScreen",ROM0
+    INCLUDE "screen.gb.s"
+
 SECTION "Core $0040",ROM0[$0040]
     jp      core_vblank_handler ; Interrupt Handler
 
 SECTION "Core $0050",ROM0[$0050]
     jp      core_timer_handler ; Interrupt Handler
+
+SECTION "CoreMath",ROM0
+    INCLUDE "math.gb.s"
+
+SECTION "CoreDMA",ROM0
+    INCLUDE "dma.gb.s"
+
+SECTION "CoreInput",ROM0
+    INCLUDE "input.gb.s"
+
+SECTION "CoreTimer",ROM0
+    INCLUDE "timer.gb.s"
 
 SECTION "Core $0100",ROM0[$100]
     nop
@@ -60,16 +78,16 @@ DW 0                         ; $14e - Global checksum (not important)
 
 
 ; Core Program ----------------------------------------------------------------
-SECTION "CoreCode",ROM0[$0150]
+SECTION "CoreInit",ROM0[$0150]
     INCLUDE "include/gbhw.inc"
-    INCLUDE "decode.gb.s"
-    INCLUDE "dma.gb.s"
     INCLUDE "init.gb.s"
-    INCLUDE "input.gb.s"
-    INCLUDE "loop.gb.s"
-    INCLUDE "math.gb.s"
+
+SECTION "CoreDecode",ROM0
+    INCLUDE "decode.gb.s"
+
+SECTION "CoreMemory",ROM0
     INCLUDE "memory.gb.s"
-    INCLUDE "screen.gb.s"
-    INCLUDE "timer.gb.s"
+
+SECTION "CoreVBlank",ROM0
     INCLUDE "vblank.gb.s"
 
