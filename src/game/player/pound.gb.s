@@ -313,7 +313,7 @@ player_pound:
 
 .can_dive:
     ld      a,[playerWaterTick]
-    jr      25
+    cp      25
     jr      nc,.water_end
 
     ; slow down after the first 5 frames
