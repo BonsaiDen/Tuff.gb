@@ -429,8 +429,7 @@ map_animate_tiles:
     sla     c
     sla     c
     add     hl,bc
-    ld      a,[hl] 
-    ld      d,a ; base tile value $00 - $ff
+    ld      d,[hl] ; base tile value $00 - $ff
 
     ; get the current tile value of the animation into B (base + d * 8 + a + 2)
     ld      c,e 
@@ -688,15 +687,13 @@ _map_update_falling_block: ; b = index
     push    hl
 
     ; skip frame count
-    ld      a,[hl]
+    ld      a,[hli]
     ld      d,a; store frame count
-    inc     hl
 
     ; load x / y coordinates
     ld      a,[hli]; load x
     ld      b,a
-    ld      a,[hl]; load y
-    ld      c,a
+    ld      c,[hl]; load y
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
 
@@ -882,7 +879,7 @@ _map_load_block_definitions:
 .not_mapped:
     srl     c; shift to next bit
 
-    ; we check 8 bits we DO not expect more than 4 blocks to be active
+    ; we check 8 bits we DO not expect more than 4 blocks def rows to be active
     inc     a
     cp      8
     jr      nz,.next
@@ -989,8 +986,7 @@ _map_load_room_data:
     ld      de,mapRoomBlockBuffer
 
     ; setup loop counts
-    ld      b,8 ; row
-    ld      c,0 ; col
+    ld      bc,$0800; row / col
 
 .loop_y:
 
@@ -1005,9 +1001,6 @@ _map_load_room_data:
 
 .loop_x:
 
-    ld      a,[de] ; fetch next 16x16 block
-    inc     de
-
     dec     c ; reduce column counter
 
 .draw_block:
@@ -1018,9 +1011,9 @@ _map_load_room_data:
 
     ; drawing ------------------------------------------
     push    bc; store row / col
-    
-    ld      d,a ; save block data
-    ld      c,d ; low byte index into block definitions
+
+    ld      a,[de] ; fetch 16x16 block
+    ld      c,a ; low byte index into block definitions
 
     ; upper left
     ld      b,mapBlockDefinitionBuffer >> 8 ; block def row 0 offset
@@ -1033,10 +1026,8 @@ _map_load_room_data:
     ld      [hl],a ; draw +1
 
     ; skip one screen buffer row
-    ld      b,0
-    ld      c,31
-    add     hl,bc
-    ld      c,d
+    ld      de,31
+    add     hl,de
 
     ; lower left
     ld      b,(mapBlockDefinitionBuffer >> 8) + 2 ; block def row 2 offset
@@ -1048,10 +1039,12 @@ _map_load_room_data:
     ld      a,[bc] ; tile value
     ld      [hl],a ; draw + 33
 
+    ; restore 16x16 block value
+    ld      a,c
+
     pop     bc; restore row / col
 
     ; check for falling blocks -------------------------
-    ld      a,d
     cp      MAP_FALLABLE_BLOCK_LIGHT
     jr      nz,.normal_block
 
@@ -1069,7 +1062,7 @@ _map_load_room_data:
     
     ; store tile type (dark / light) and reset active
     ; TODO store correct value based on tile value
-    ld      a,%00000010; 7 bytes type, 1 bytes active
+    ld      a,%00000010; 6 bytes type, 1 bytes active
     ld      [hli],a
 
     ; reset frames 
@@ -1095,6 +1088,9 @@ _map_load_room_data:
     pop     de
     pop     hl
 
+    ; goto next 16x16 block
+    inc     de
+
     ; next x block (we skip two 8x8 tiles in the background buffer)
     inc     hl
     inc     hl
@@ -1106,7 +1102,6 @@ _map_load_room_data:
 
     ; y loop end (skip one 16x16 screen data row)
     ld      a,44 ; 12 8x8 tiles left on this row + one full row of 32
-    and     a; clear carry
     add     a,l
     ld      l,a
     adc     a,h
