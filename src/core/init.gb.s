@@ -83,24 +83,6 @@ core_init:
     ld      [rOBP0],a
     ld      [rOBP1],a
 
-    ; clear sound registers
-    ld      [$ff10],a
-    ld      [$ff11],a
-    ld      [$ff12],a
-    ld      [$ff13],a
-    ld      [$ff14],a
-
-    ld      [$ff15],a
-    ld      [$ff16],a
-    ld      [$ff17],a
-    ld      [$ff18],a
-    ld      [$ff19],a
-
-    ld      [$ff20],a
-    ld      [$ff21],a
-    ld      [$ff22],a
-    ld      [$ff23],a
-
     ; Run init code and the loop once so we don't have a blank frame on powerup
     call    math_update_random
     call    core_input
