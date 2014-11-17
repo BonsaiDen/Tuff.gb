@@ -1,7 +1,7 @@
 # Build
 rom: convert
 	@mkdir -p build
-	@gbasm -o build/game.gb -m stdout -s build/game.sym src/main.gb.s
+	@gbasm -O -o build/game.gb -m stdout -s build/game.sym src/main.gb.s
 
 convert:
 	@mkdir -p src/data/bin

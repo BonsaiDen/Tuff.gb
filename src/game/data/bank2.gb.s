@@ -1,4 +1,4 @@
-SECTION "Bank2 Data",ROMX,BANK[2]
+SECTION "Bank2 MapData",ROMX,BANK[2]
 
 ; Map Data --------------------------------------------------------------------
 DataMapMain:

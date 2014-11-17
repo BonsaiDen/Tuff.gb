@@ -915,6 +915,55 @@ var Convert = {
 
     },
 
+    TiledImage: function(file) {
+
+        console.log('[tiledimage] Converting tiled image "%s"...', file);
+
+        var palette = (/\.bg\.png$/).test(file) ? Palette.Background : Palette.Sprite;
+
+        return IO.load(file).then(function(img) {
+
+            var tiles = [],
+                tileCount = 0,
+                index = {},
+                blocks = [];
+
+            for(var y = 0; y < img.height / 8; y++) {
+                for(var x = 0; x < img.width / 8; x++) {
+
+                    var tile = Parse.tileFromImageBlock(img, palette, x, y),
+                        hash = tile.join(',');
+
+                    if (!index.hasOwnProperty(hash)) {
+                        index[hash] = tileCount++;
+                        tiles.push.apply(tiles, tile);
+                    }
+
+                    blocks.push(index[hash] - 128);
+
+                }
+            }
+
+            return Promise.all([
+                Pack.encode(tiles, true),
+                Pack.encode(blocks, true)
+            ]);
+
+        }).then(function(bytes) {
+            return bytes[0].concat(bytes[1]);
+
+        }).then(function(data) {
+            return IO.saveAs('bin', file, data);
+
+        }).then(function() {
+            console.log('[tiledimage] Done!');
+
+        }).error(function(err) {
+            console.error(('[tiledimage] Error: ' + err).red);
+        });
+
+    },
+
     BlockDef: function(file, tileset) {
 
         console.log('[blocks] Parsing 16x16 block defs "%s" using tileset "%s"...', file, tileset);
@@ -1356,7 +1405,7 @@ if (process.argv[4] === '-reverse') {
 
     Promise.all([
         Convert.Tileset('tiles.bg.png'),
-        Convert.Tileset('logo.bg.png'),
+        Convert.TiledImage('logoTree.bg.png'),
         Convert.Tileset('title.bg.png'),
         Convert.Tileset('animation.bg.png'),
         Convert.TileRowMap('player.ch.png'),

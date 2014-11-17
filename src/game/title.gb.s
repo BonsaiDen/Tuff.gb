@@ -40,7 +40,8 @@ title_update:
     cp      0
     ret     nz
 
-    call    title_draw_logo
+    ld     hl,DataLogoImg
+    call   tileset_draw_image
 
     ; setup fade in
     ld      a,GAME_MODE_LOGO
@@ -188,7 +189,6 @@ title_update:
     ret
 
 
-
 title_screen_movement:
 
     ; clean up actual input state
@@ -267,64 +267,6 @@ title_screen_movement:
     ret
 
 
-title_draw_logo:
-
-    ; load title screen graphics into vram
-    ld      hl,DataLogoImg
-    ld      de,$8800; start target for decode write
-    call    core_decode_eom
-
-    ; clear screen buffer
-    ld      d,-127
-    ld      hl,$9800
-    ld      bc,512
-    call    core_vram_set
-
-    ; initial screen offset
-    ld      hl,$9800 + 128
-    ld      de,DataLogoLayout
-
-    ; copy logo data into vram
-    ld      b,8; 8 rows
-
-.loop_y:
-    ld      c,8; 8 bytes per row
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-
-
-.loop_x:
-
-    ; wait for vblank
-    ld      a,[rSTAT]       ; <---+
-    and     STATF_BUSY      ;     |
-    jr      nz,@-4          ; ----+
-
-    ld      a,[de]
-    sub     128
-    ld      [hli],a
-    inc     de
-
-    ; loop
-    dec     c
-    jr      nz,.loop_x
-
-    ; next line
-    push    bc
-    ld      bc,18
-    add     hl,bc
-    pop     bc
-
-    dec     b
-    jr      nz,.loop_y
-
-    ret
-
-
 title_draw_room:
 
     ; turn screen off for all the vram accessing
@@ -335,9 +277,9 @@ title_draw_room:
     ld      [mapCurrentScreenBuffer],a
 
     ; clear screen buffer
-    ld      d,-127
-    ld      hl,$9800
-    ld      bc,512
+    ld      d,$DF
+    ld      hl,$9A00
+    ld      bc,64
     call    core_vram_set
 
     ; setup title screen room graphics

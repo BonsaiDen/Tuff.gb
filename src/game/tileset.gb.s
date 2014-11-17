@@ -45,3 +45,51 @@ tileset_load_animations:; hl = source
     call    core_decode_eom
     ret
 
+
+tileset_draw_image:; hl = image source
+
+    ; decompress tiles into vram
+    ld      de,$8800; start target for decode write
+    call    core_decode_eom
+
+    ld      de,mapRoomTileBuffer; start target for decode write
+    call    core_decode_eom
+
+    ; copy data pointer into de
+    ld      de,mapRoomTileBuffer
+
+    ; screen tile base pointer
+    ld      hl,$9800 
+
+    ld      b,18
+.loop_y:
+    ld      c,20
+
+.loop_x:
+
+    ; wait for vblank
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+
+    ld      a,[de]
+    ld      [hli],a
+    inc     de
+
+    ; loop x
+    dec     c
+    jr      nz,.loop_x
+
+    ld      a,l
+    add     a,12
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+    
+    ; loop y
+    dec     b
+    jr      nz,.loop_y
+
+    ret
+
