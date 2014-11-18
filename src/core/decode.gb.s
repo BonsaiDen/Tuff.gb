@@ -3,46 +3,32 @@ CORE_DECODE_MIN_COPY_LENGTH     EQU 2
 CORE_DECODE_MIN_REPEAT_LENGTH   EQU 2
                                 
 
-; Wrapper for Decompression with custom end marker in BC ----------------------
-; -----------------------------------------------------------------------------
-core_decode: ; HL = source, DE = target, BC = end (DE + size of data)
-
-    ; setup trampolin
-    ld      a,.loop & $0ff
-    ld      [coreDecodeLabel + 1],a
-    ld      a,.loop >> 8
-    ld      [coreDecodeLabel + 2],a
-    jr      .next
-
-.loop:
-    pop     bc; restore end pointer
-
-    ; check if we reached the end of the data uncompressed data 
-    ld      a,e
-    cp      c 
-    jr      nz,.next ; check low byte
-
-    ld      a,d; check high byte
-    cp      b
-    jr      z,.done
-
-.next:
-    push    bc; store end pointer
-    jr      core_decode_eom
-
-.done:
-    ; restore eom code marker trampolin
-    ld      a,core_decode_eom & $0ff
-    ld      [coreDecodeLabel + 1],a
-    ld      a,core_decode_eom >> 8
-    ld      [coreDecodeLabel + 2],a
-    ret
-
-
 ; Decompression Algorithm -----------------------------------------------------
 ; -----------------------------------------------------------------------------
-core_decode_eom:
+core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
+
+    ; check there is a end address specified 
+    ld      a,[coreDecodeAddress]
+    cp      0
+    jr      z,.decode
+
+    ; check low byte
+    ld      a,[coreDecodeAddress + 1]
+    cp      e 
+    jr      nz,.decode
+
+    ; check high byte
+    ld      a,[coreDecodeAddress]
+    cp      d
+    jr      nz,.decode
+
+    ; reset decode address
+    xor     a
+    ld      [coreDecodeAddress],a
+    ret
+
     ; fetch next instruction byte and goto first data byte
+.decode:
     ld      a,[hli]
     bit     7,a
     jr      nz,.repeat ; if set we have a repeat token
@@ -50,6 +36,7 @@ core_decode_eom:
     jr      nz,.literal ; if set we have a literal token
     bit     5,a
     jr      nz,.repeat_zero; if we have a zero repeater
+
 
 ; Copy ------------------------------------------------------------------------
 .copy:
@@ -88,7 +75,7 @@ core_decode_eom:
     jr      nz,.copy_loop
 
     pop     hl; restore next instruction offset
-    jp      coreDecodeLabel
+    jr      core_decode_eom
             
 
 ; Literals --------------------------------------------------------------------
@@ -110,7 +97,7 @@ core_decode_eom:
     inc     de
     dec     b
     jr      nz,.literal_copy
-    jp      coreDecodeLabel
+    jr      core_decode_eom
 
 
 ; Repeating -------------------------------------------------------------------
@@ -138,7 +125,7 @@ core_decode_eom:
     inc     de
     dec     b
     jr      nz,.repeat_one_loop
-    jp      coreDecodeLabel
+    jr      core_decode_eom
 
 .repeat_zero:
     bit     4,a
@@ -157,7 +144,7 @@ core_decode_eom:
     inc     de
     dec     b
     jr      nz,.repeat_zero_loop
-    jp      coreDecodeLabel
+    jp      core_decode_eom
 
 .repeat_two:
     and     %00111111; number of times to repeat
@@ -185,5 +172,5 @@ core_decode_eom:
     jr      nz,.repeat_two_loop
     inc     hl; goto second value byte
     inc     hl; goto next instruction byte
-    jp      coreDecodeLabel
+    jp      core_decode_eom
 

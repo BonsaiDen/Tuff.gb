@@ -37,6 +37,8 @@ core_init:
     ld      [coreRandomHigh],a
     ld      [coreRandomLow],a
     ld      [corePaletteChanged],a
+    ld      [coreDecodeAddress],a
+    ld      [coreDecodeAddress + 1],a
     ld      [coreScrollX],a
     ld      [coreScrollY],a
 
@@ -62,16 +64,6 @@ core_init:
     ld      hl,$9800
     ld      bc,1024
     call    core_mem_set
-
-    ; setup decode jump trampolin
-    ld      a,$C3
-    ld      [coreDecodeLabel],a
-
-    ; defaults to EOM version
-    ld      a,core_decode_eom & $0ff
-    ld      [coreDecodeLabel + 1],a
-    ld      a,core_decode_eom >> 8
-    ld      [coreDecodeLabel + 2],a
 
     ; Reset Scroll registers
     xor     a

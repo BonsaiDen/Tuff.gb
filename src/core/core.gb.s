@@ -19,7 +19,7 @@ corePaletteSprite1: DB
 coreColorEnabled:   DB
 coreScrollX:        DB
 coreScrollY:        DB
-coreDecodeLabel:    DS 3
+coreDecodeAddress:  DS 2
 
 
 ; Code ------------------------------------------------------------------------

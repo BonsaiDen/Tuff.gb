@@ -83,7 +83,11 @@ map_load_room: ; b = x, c = y
     ; unpack the tile data
     ld      de,mapRoomBlockBuffer
     ld      bc,mapRoomBlockBuffer + MAP_ROOM_SIZE
-    call    core_decode
+    ld      a,b
+    ld      [coreDecodeAddress],a
+    ld      a,c
+    ld      [coreDecodeAddress + 1],a
+    call    core_decode_eom
 
     ; bank switch
     ld      hl,$2000
