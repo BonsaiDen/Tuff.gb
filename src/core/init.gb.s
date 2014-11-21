@@ -39,6 +39,7 @@ core_init:
     ld      [corePaletteChanged],a
     ld      [coreDecodeAddress],a
     ld      [coreDecodeAddress + 1],a
+    ld      [coreTimerToggle],a
     ld      [coreScrollX],a
     ld      [coreScrollY],a
 

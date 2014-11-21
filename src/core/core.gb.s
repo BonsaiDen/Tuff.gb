@@ -17,6 +17,7 @@ corePaletteBG:      DB
 corePaletteSprite0: DB
 corePaletteSprite1: DB
 coreColorEnabled:   DB
+coreTimerToggle:    DB
 coreScrollX:        DB
 coreScrollY:        DB
 coreDecodeAddress:  DS 2
