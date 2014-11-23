@@ -1198,24 +1198,148 @@ var Convert = {
 
     rgbToBGR: function(r, g, b) {
 
-        r = Math.floor(r / 8) & 31;
-        g = Math.floor(g / 8) & 31;
-        b = Math.floor(b / 8) & 31;
+        var r1 = Math.floor(r / 8) & 31,
+            g1 = Math.floor(g / 8) & 31,
+            b1 = Math.floor(b / 8) & 31;
 
-        var i = (b << 10) | (g << 5) | r;
-        return [i & 0xff, i >> 8];
+        var i = (b1 << 10) | (g1 << 5) | r1;
+
+
+        var r2 = i       & 0x1F,
+            g2 = i >>  5 & 0x1F,
+            b2 = i >> 10 & 0x1F,
+            r3 = ((r2 * 13 + g2 * 2 + b2) >> 1) ,
+            g3 = (g2 * 3 + b2) << 1,
+            b3 = (r2 * 3 + g2 * 2 + b2 * 11) >> 1;
+
+        console.log(r, g, b);
+        console.log(r3, g3, b3);
+
+        return [i & 0xff, i >> 8].map(function(i) {
+            return '$' + i.toString(16);
+
+        }).join(', ');
 
     }
 
 };
 
+// Color Conversion -----------------------------------------------------------
+var Color = {
 
-//console.log(
-    //Convert.rgbToBGR(239, 255, 222),
-    //Convert.rgbToBGR(173, 215, 148),
-    //Convert.rgbToBGR(82, 146, 115),
-    //Convert.rgbToBGR(24, 52, 66)
-//);
+    // Convert a RGB color into its closest approximated 15 bit color value
+    rgbToGameboy: function(r, g, b) {
+        var approx = Color.approximateColor(r, g, b);
+        return Color.getBGRBytes.apply(null, approx);
+    },
+
+    // Convert a RGB color into a 15 bit GameBoy Color
+    rgbToBGR: function(r, g, b) {
+
+        var r1 = Math.floor(r / 8) & 31,
+            g1 = Math.floor(g / 8) & 31,
+            b1 = Math.floor(b / 8) & 31;
+
+        return (b1 << 10) | (g1 << 5) | r1;
+
+    },
+
+    // Convert a 15 bit GameBoy Color back into full RGB
+    bgrToRGB: function(i) {
+
+        var r2 = i       & 0x1F,
+            g2 = i >>  5 & 0x1F,
+            b2 = i >> 10 & 0x1F,
+            r3 = ((r2 * 13 + g2 * 2 + b2) >> 1) ,
+            g3 = (g2 * 3 + b2) << 1,
+            b3 = (r2 * 3 + g2 * 2 + b2 * 11) >> 1;
+
+        return [r3, g3, b3];
+
+    },
+
+    getBGRBytes: function(r, g, b) {
+
+        var i = Color.rgbToBGR(r, g, b);
+        return [i & 0xff, i >> 8].map(function(i) {
+            return '$' + i.toString(16);
+
+        }).join(', ');
+
+    },
+
+    getBGRDiff: function(r, g, b, tr, tg, tb) {
+
+        var i = Color.rgbToBGR(r, g, b),
+            out = Color.bgrToRGB(i);
+
+        return (Math.abs(out[0] - tr) + Math.abs(out[1] - tg) + Math.abs(out[2] - tb));
+
+    },
+
+    // Base on a RGB input color it will return the closest matching RGB color
+    // that can be displayed on the Gameboy Color
+    approximateColor: function (tr, tg, tb) {
+
+        function search(rs, re, gs, ge, bs, be, res) {
+
+            for(var r = rs; r < re; r += res) {
+                for(var g = gs; g < ge; g += res) {
+                    for(var b = bs; b < be; b += res) {
+
+                        var d = Color.getBGRDiff(r, g, b, tr, tg, tb);
+                        if (d < maxDiff) {
+                            fr = r;
+                            fg = g;
+                            fb = b;
+                            maxDiff = d;
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        var maxDiff = 256,
+            fr = 0,
+            fg = 0,
+            fb = 0;
+
+        var lastDiff = 0,
+            res = 4,
+            rs = 0,
+            re = 256,
+            gs = 0,
+            ge = 256,
+            bs = 0,
+            be = 256;
+
+        while(res >= 1) {
+
+            lastDiff = maxDiff;
+            search(rs, re, gs, ge, bs, be, res);
+
+            rs = Math.max(fr - (maxDiff ), 0);
+            re = Math.min(fr + (maxDiff ), 256);
+
+            gs = Math.max(fg - (maxDiff ), 0);
+            ge = Math.min(fg + (maxDiff ), 256);
+
+            bs = Math.max(fb - (maxDiff ), 0);
+            be = Math.min(fb + (maxDiff ), 256);
+
+            res /= 2;
+
+        }
+
+        //console.log(tr, tg, tb, '-> diff', maxDiff, '->', fr, fg, fb, 'in', Date.now() - start, 'ms');
+        return [fr, fg, fb];
+
+    }
+
+};
+
 
 // Reverse Convert the Tile Defs from the binary and the tilesheet ------------
 var Reverse = {
@@ -1448,6 +1572,13 @@ if (process.argv[4] === '-reverse') {
 
     ]).then(function() {
         console.log('Complete!');
+        //console.log('DB  ' + [
+            //Color.rgbToGameboy(239, 255, 222),
+            //Color.rgbToGameboy(173, 215, 148),
+            //Color.rgbToGameboy(82, 146, 115),
+            //Color.rgbToGameboy(24, 52, 66)
+
+        //].join('\nDB  '));
 
     }).error(function(err) {
         console.error(err.toString().red);
