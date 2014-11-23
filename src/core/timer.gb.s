@@ -9,6 +9,9 @@ core_timer_handler:
 
     ; When in color mode we need to step down the timer by 2
     ld      a,[coreColorEnabled]
+    cp      0
+    jr      z,.timer
+
     ld      a,[coreTimerToggle]
     inc     a
     and     %00000001

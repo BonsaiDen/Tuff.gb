@@ -16,6 +16,14 @@ core_vblank_handler:
     xor     a
     ld      [corePaletteChanged],a
 
+    ; check if we need to update the color palette
+    ld      a,[coreColorEnabled]
+    cp      0
+    jr      z,.palette_dmg
+    call    screen_update_palette_color
+    jr      .palette_done
+
+.palette_dmg:
     ld      a,[corePaletteBG]
     ld      [rBGP],a
 
@@ -24,7 +32,6 @@ core_vblank_handler:
 
     ld      a,[corePaletteSprite1]
     ld      [rOBP1],a
-
 
 .palette_done:
 
