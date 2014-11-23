@@ -91,5 +91,11 @@ tileset_draw_image:; hl = image source
     dec     b
     jr      nz,.loop_y
 
+    ; clear room tile buffer to avoid collisions errors later on
+    ld      hl,mapRoomTileBuffer; start target for decode write
+    ld      bc,512
+    ld      a,$DF
+    call    core_mem_set
+
     ret
 
