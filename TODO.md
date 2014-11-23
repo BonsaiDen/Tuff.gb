@@ -1,4 +1,31 @@
 
+# Additions
+
+- Conveyor Belts
+- Moving Spikes
+- Wind Gusts
+- Gameboy Color Support
+- Super Gameboy Border
+
+
+# Fixes
+
+- Finish horizontal block breaking
+
+    - sound effects
+    - screen shaking
+    - movement delay
+    - force running mode for a few more frames after each destroyed block
+
+
+# Current Updates
+
+- Switch Effects to Table based indexing
+- Make patterns end not based on a $FF but by setting the highbyte of the second to last note index value
+- Double Speed Mode
+
+
+
 # Gameplay
 
 ## Player
