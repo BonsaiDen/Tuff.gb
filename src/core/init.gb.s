@@ -7,6 +7,13 @@ core_init:
     cp      $11; GBC leaves 0x11 in the accumulator after startup
     jr      nz,.nocolor
 
+    ; check if the header ALSO enabled color mode if not we get stuck with a
+    ; black screen because the Gameboy only actually performs the switch mode
+    ; when the header is set ($11 ends up in the acummulator either way)
+    ld      a,CART_GBC_SUPPORT
+    cp      $80
+    jr      nz,.nocolor
+
     ; switch to double speed mode
     xor     a
     ld      [$FFFF],a
