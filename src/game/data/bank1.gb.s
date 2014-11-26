@@ -97,6 +97,9 @@ DataEntityDefinitions:
 DataCutsceneDefinitions:
     INCLUDE "cutscenes/cutscenes.gb.s"
 
+DataScriptDefinitions:
+    INCLUDE "scripts/scripts.gb.s"
+
 DataSoundDefinitions:
     INCLUDE "sound/data.gb.s"
 
