@@ -39,7 +39,7 @@ DB $00, $00,$01,$02,$03, $00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 DB $fd, $06,$0B,$06,$0B, $fe,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff 
     
 ; Dissolving 
-DB $00, $00,$01,$02,$03, $04,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
+DB $00, $00,$01,$02,$03, $08,$00,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
 DB $fd, $05,$04,$03,$02, $02,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff   
 
 ; Swimming to the Surface

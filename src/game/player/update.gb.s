@@ -11,7 +11,7 @@ player_update:
     cp      255
     jr      z,.control
 
-    ; wait for 25 ticks before flashing screen and resetting player position
+    ; add additional Y offset
     ld      a,[playerY]
     add     2
     ld      [playerYOffset],a
@@ -22,8 +22,7 @@ player_update:
 
     ; initialize flash before we actually reset
     cp      20
-    jr      z,.flash_reset
-    jr      .check_reset
+    jr      nz,.check_reset
 
 .flash_reset:
     ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_DARK
@@ -31,8 +30,9 @@ player_update:
     ret
 
 .check_reset:
-    cp      30
-    jp      nz,.update
+    ; wait for 40 ticks before resetting player position
+    cp      40
+    ret     nz
 
     ; reset player
     ld      a,255
