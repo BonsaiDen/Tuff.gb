@@ -678,8 +678,21 @@ var Parse = {
             };
 
         } else {
-            // Merge the offset arrays into one big array (removing and sub level arrays)
-            return [].concat.apply([], offsets);
+
+            var merged = [],
+                l = offsets[0].length;
+
+            for(var e = 0; e < l; e++) {
+                merged.push(
+                    offsets[0][e],
+                    offsets[1][e],
+                    offsets[2][e],
+                    offsets[3][e]
+                );
+            }
+
+            return merged;
+
         }
 
     }
@@ -797,13 +810,7 @@ var Map = {
             animationCount = 0;
 
         tileBytes.forEach(function(b) {
-            [
-                blockDefinitions[b],
-                blockDefinitions[b + 256],
-                blockDefinitions[b + 512],
-                blockDefinitions[b + 768]
-
-            ].forEach(function(t) {
+            blockDefinitions.slice(b * 4, b * 4 + 4).forEach(function(t) {
 
                 if (t >= animationOffset) {
                     t -= animationOffset;
@@ -1016,7 +1023,8 @@ var Convert = {
 
             // tiled index starts at i
             var data = map.layers[0].data.map(function(i) {
-                    return ((i - 1) + 256) % 256;
+                    return i - 1;
+                    //return ((i - 1) + 256) % 256;
                 }),
                 entityData = map.layers[1].data,
                 mapBytes = [],

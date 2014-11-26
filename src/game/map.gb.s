@@ -63,6 +63,10 @@ map_load_room: ; b = x, c = y
     ld      a,c
     ld      [mapRoomY],a
 
+    ; trigger room enter scripts
+    ld      a,SCRIPT_TRIGGER_ROOM_ENTER
+    call    script_execute
+
     ; bank switch
     di
     ld      hl,$2000
@@ -910,47 +914,38 @@ _map_load_tile_block: ; a = origin block, b = target block
     ld      c,l
 
     ; setup origin
-    ld      h,0
-    ld      l,a
-    add     hl,hl; x64
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
+    ld      h,a
+    ld      l,0
     ld      de,DataBlockDef
     add     hl,de; add data location
 
-    ; copy
+    ; copy the 256 block definition bytes for the 64, 16x16 blocks
 	ld      d,64
 .loop:
-    ld	    a,[hl]
+
+    ; row 1
+    ld	    a,[hli]
 	ld	    [bc],a
-    inc     h
     inc     b
 
-    ld	    a,[hl]
+    ; row 2
+    ld	    a,[hli]
 	ld	    [bc],a
-    inc     h
     inc     b
 
-    ld	    a,[hl]
+    ; row 3
+    ld	    a,[hli]
 	ld	    [bc],a
-    inc     h
     inc     b
 
-    ld	    a,[hl]
+    ; row 4
+    ld	    a,[hli]
 	ld	    [bc],a
-
-    dec     h
-    dec     h
-    dec     h
 
     dec     b
     dec     b
     dec     b
 
-    inc     hl
 	inc	    bc
 
 .skip:
