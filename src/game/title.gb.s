@@ -269,9 +269,6 @@ title_screen_movement:
 
 title_draw_room:
 
-    ; turn screen off for all the vram accessing
-    call    core_screen_off
-
     ; force background buffer at $9800
     xor     a
     ld      [mapCurrentScreenBuffer],a
@@ -325,10 +322,7 @@ title_draw_room:
     ld      b,$06
     call    core_vram_cpy_low
 
-    ; turn screen back on
 .done:
-    call    core_screen_on
-
     ret
 
 

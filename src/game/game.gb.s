@@ -67,9 +67,6 @@ game_continue:
 
 game_setup:
 
-    ; Disable screen for vram updates
-    call    core_screen_off
-
     ; load tile data and animations
     ld      hl,DataTileImg
     call    tileset_load
@@ -89,9 +86,6 @@ game_setup:
 
     ld      a,GAME_MODE_PLAYING
     ld      [gameMode],a
-
-    ; Re-enable screen
-    call    core_screen_on
 
     ret
 
