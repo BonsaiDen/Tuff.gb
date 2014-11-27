@@ -81,6 +81,11 @@ screen_animate:; a = animation type
 ; Color Mixing ----------------------------------------------------------------
 _screen_animate_palette:
 
+    ; only animate once the current change has been applied to vram
+    ld      a,[corePaletteChanged]
+    cp      0
+    ret     nz
+
     ; check if active
     ld      a,[screenAnimation]
     bit     0,a
@@ -219,7 +224,7 @@ _screen_mix_color_dmg:; hl = color pointer, a = current color, d = brigthness to
 
 ; Fading and Flashing Data ----------------------------------------------------
 _screen_flash_map:
-    DB      $02,$03,$04,$04,$04,$04,$04,$04,$04,$03,$02,$01,$00,$FF
+    DB      $01,$02,$03,$04,$04,$04,$04,$04,$04,$03,$02,$01,$00,$FF
 
 _screen_fade_out_map:
     DB      $00,$00,$00,$00,$01,$02,$03,$04,$FF
