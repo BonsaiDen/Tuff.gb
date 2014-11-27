@@ -311,6 +311,17 @@ sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
     push    hl
     push    de
 
+    ; check for gameboy color
+    ld      a,[coreColorEnabled]
+    cp      1
+    jr      nz,.no_color
+
+    ; adjust palette bits
+    ld      a,b
+    swap    a
+    ld      b,a
+
+.no_color:
     ld      e,a ; store index
     call    _sprite_meta_offset
 
