@@ -142,7 +142,7 @@ title_update:
     call    title_screen_movement
 
     call    player_update
-    call    sprite_animate_all
+    call    new_sprite_update
     call    sound_update
 
     call    title_animate_logo
