@@ -1,584 +1,652 @@
 SECTION "SpriteLogic",ROM0
 
+; Update all Sprites ----------------------------------------------------------
+new_sprite_update:
 
-; Sprite Animation Update -----------------------------------------------------
-sprite_animate_all:
-    ld      b,0 ; loop counter
-    
-.update_loop:
+    ; update sprite row information
+    call    _new_sprite_update_tile_rows
 
-    ; check if active and animating
-    ld      a,b
-    call    _sprite_meta_offset
+    ; initial sprite pointer
+    ld      a,0
+    call    _get_new_sprite_pointer
 
-    ; load flags
-    ld      a,[hli]
+    ; unrolled sprite update loop
+    call    _new_sprite_update
+    inc     l
+    call    _new_sprite_update
+    inc     l
+    call    _new_sprite_update
+    inc     l
+    call    _new_sprite_update
+    inc     l
+    call    _new_sprite_update
 
-    ; check if active
-    bit     0,a
-    jr      z,.next_sprite
-
-    ; check if animating
-    bit     2,a
-    jr      z,.next_sprite
-
-    ; load animation frame number
-    ld      c,[hl] 
-    inc     hl
-
-    ; load animation id
-    ld      l,[hl] 
-    ld      h,0
-
-    ; multiply by 32 to get into the animation table offset
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-
-    ; add the animation table base address
-    ld      de,DataSpriteAnimation
-    add     hl,de
-
-    ; add the current frame index
-    ld      d,0
-    ld      e,c
-    add     hl,de ; hl is the data offset
-
-    ; now update the sprite to the tile index
-    ld      d,a; store sprite flags
-    ld      a,b ; sprite index (counter)
-    ld      b,[hl] ; ; get tile for animation index (16x16 sprite tile )
-    call    sprite_set_tile_index
-    ld      b,a ; restore sprite counter
-    ld      a,d; restore sprite flags
-
-    ; Restore flags
-    call    _sprite_update_animation
-
-.next_sprite:
-    inc    b
-    ld     a,b
-    cp     20 ; 20 sprites overall
-    jr     nz,.update_loop
     ret
 
 
-_sprite_update_animation: ; a = sprite flags, hl = animation data base offset
-
-    ; load frame timing data
-    ld      d,0
-    ld      e,16
-    add     hl,de
-    ld      e,[hl]
-
-
-    ; update number of frames left for this animation index
-    ld      d,a
-    ld      a,b ; sprite index (counter)
-    call    sprite_animation_timer
-    cp      0 
-    ret     nz ; if there are still frames to play, dont advance index
-
-
-    ; advance frame index based on direction
-    bit     4,d
-    jr      nz,.backwards
-
-.forwards:
-    inc     c ; next animation frame
-    inc     hl ; next frame value
-
-.update_mode:
-
-    ; load new frame timing data
-    ld      a,[hl]
-
-    ; if it is a stop frame do nothing
-    cp      $ff
-    ret     z
-
-    ; if it is a loop frame jump back to the first frame
-    cp      $fe
-    jr      z,.loop
-
-    ; if it is a bounce frame toggle the bounce direction 
-    cp      $fd
-    jr      z,.bounce
-    jr      .update
-
-.backwards:
-    dec     c ; previous animation frame
-    dec     hl ; previous frame value
-    jr      .update_mode
-
-    ; reset frame number for looping
-.loop:
-    ld      c,1
-
-    ; store the new animation index
-.update:
-    ld      a,b ; sprite index (counter)
-    call    _sprite_meta_offset
-    inc     hl
-    ld      [hl],c ; store new frame number
-    inc     hl ; skip animation id
-    inc     hl
-    ld      [hl],0 ; reset timing data
-    ret
-
-    ; toggle bounce direction
-.bounce:
-    bit     4,d; backwards flag
-    jr      z,.switch_to_backwards
-
-.switch_to_forwards:
-    ld      a,b
-    call    sprite_animation_forward
-    inc     c
-    jr      .update
-
-.switch_to_backwards:
-    ld      a,b
-    call    sprite_animation_backward
-    dec     c
-    jr      .update
-
-
-sprite_animation_timer: ; a = sprite index, e = frame count, a -> frames left
-
+new_sprite_enable: ; a = sprite id
     push    hl
+    call    _get_new_sprite_pointer
 
-    call    _sprite_meta_offset
-    inc     hl ; skip flags
-    inc     hl ; skip skip id
-    inc     hl ; go to frames left
-    ld      a,[hl] ; a now has the number of frames left
+    ; check if sprite is already enabled
+    bit     7,[hl]
+    jr      nz,.done
 
-    ; if zero frames are left, initialize them 
-    cp      0
-    jr      nz,.decrease
-    ld      a,e
-    dec     a; This is done since otherwise we'll get one extra frame playing
-    ld      [hl],a
-    jr      .done
+    ; set enabled
+    set     7,[hl]
 
-    ; otherwise decrease it and put the value into a
-.decrease:
-    dec     a
-    ld      [hl],a
+    ; unset wasEnabled
+    res     6,[hl]
+
+    ; skip flags
+    inc     l
+
+    ; unset tile row
+    ld      a,$ff
+    ld      [hli],a
+
+    ; unset animations frames left
+    ld      [hli],a
+
+    ; unset animation id
+    ld      [hli],a
+
+    ; reset animation index
+    xor     a
+    ld      [hli],a
+
+    ; reset animation frame
+    ld      [hli],a
 
 .done:
     pop     hl
     ret
 
-
-
-; Animation Controls ----------------------------------------------------------
-sprite_animation_set: ; a = sprite index, b = animation id
-
+new_sprite_disable: ; a = sprite id
     push    hl
-    push    de
-    push    bc
+    call    _get_new_sprite_pointer
 
-    call    _sprite_meta_offset
-    inc     hl; skip flags
-    ld      [hl],1 ; reset frame (0 and 15 are option frames)
-    inc     hl
-    ld      [hl],b ; set id
-    inc     hl
+    ; check if sprite is actually enabled
+    bit     7,[hl]
+    jr      z,.done
 
-    ; add the animation table base address
-    ld      l,b
-    ld      h,0
+    ; unset enabled
+    res     7,[hl]
 
-    ; multiply by 32 to get into the animation table offset
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
+    ; set wasEnabled
+    set     6,[hl]
+    inc     l
 
-    ; add base offset
-    ld      de,DataSpriteAnimation
-    add     hl,de
-    inc     hl
+    ; mark the sprite's tile row as "was used"
+    ld      a,[hl]
+    call    _new_sprite_tile_row_set_was_used
 
-    ; now update the sprite to the tile index
-    ld      b,[hl] ; 16x16 sprite tile 
-    call    sprite_set_tile_index
-
-    pop     bc
-    pop     de
+.done:
     pop     hl
     ret
 
-
-sprite_animation_start: ; a = sprite index
-
-    push    af
+new_sprite_set_animation:; a = sprite id, b = animation id
     push    hl
-    push    bc
+    call    _get_new_sprite_pointer
 
-    call    _sprite_meta_offset
-    ld      a,[hl]
-    or      %00000100 ; set animating
+    ; mark as changed
+    set     4,[hl]
+    inc     l
+    inc     l
+
+    ; reset frames left
+    xor     a
     ld      [hli],a
-    ld      a,1
-    ld      [hli],a ; set current animation frame
-    ld      a,[hli]; load animation id
-    ld      b,a
 
-    ; set frames left
-    push    de
-    push    hl
-
-    ; calculate the animation offset from the id
-    ld      l,b
-    ld      h,0
-
-    ; multiply by 32 to get into the animation table offset
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl
-
-    ; add base offset
-    ld      de,DataSpriteAnimation + 17; get timing data of first frame
-    add     hl,de
-    ld      a,[hl]
-    pop     hl; restore sprite data offset
-    ld      [hl],a ; set frames left
-
-    pop     de
-    pop     bc
-
-    pop     hl
-    pop     af
-    ret
-
-
-sprite_animation_pause: ; a = sprite index
-    push    hl
-    call    _sprite_meta_offset
-    res     2,[hl] ; unset animating flag
-    pop     hl
-    ret
-
-
-sprite_animation_resume: ; a = sprite index
-    push    hl
-    call    _sprite_meta_offset
-    set     2,[hl] ; set animating flag
-    pop     hl
-    ret
-
-
-sprite_animation_stop: ; a = sprite index
-
-    push    hl
-
-    call    _sprite_meta_offset
-    res     2,[hl] ; unset animating flag
+    ; set animation id
+    ld      [hl],b
+    inc     l
+    
+    ; reset animation index
+    ld      [hli],a
 
     ; reset animation frame
-    inc     hl
-    ld      [hl],1 ; 0 and 15 are border frames
+    ld      [hl],a
 
     pop     hl
     ret
 
-
-sprite_animation_forward: ; a = sprite index
+new_sprite_set_palette:; a = sprite id, b = palette index
     push    hl
-    call    _sprite_meta_offset
-    res     4,[hl]; unset backwards flag
+    call    _get_new_sprite_pointer
+
+    ; load flags
+    ld      a,[hl]
+    and     %11110000; mask of palette bits
+    or      b; or with palette index (bits 2-0)
+    ld      [hl],a
+
     pop     hl
     ret
 
-sprite_animation_backward: ; a = sprite index
+new_sprite_set_mirrored:; a = sprite id
     push    hl
-    call    _sprite_meta_offset
-    set     4,[hl]; set backwards flag
+    call    _get_new_sprite_pointer
+
+    ; set mirrored flag
+    set     5,[hl]
+
+    pop     hl
+    ret
+
+new_sprite_unset_mirrored:; a = sprite id 
+    push    hl
+    call    _get_new_sprite_pointer
+
+    ; unset mirrored flag
+    res     5,[hl]
+
+    pop     hl
+    ret
+
+new_sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
+    push    hl
+    call    _get_new_sprite_pointer
+    ld      a,l
+    add     8
+    ld      l,a
+    ld      [hl],b
+    pop     hl
+    ret
+
+new_sprite_set_position:; a = sprite id, b = x, c = y
+    push    hl
+    call    _get_new_sprite_pointer
+    set     3,[hl]
+    ld      a,l
+    add     6
+    ld      l,a
+    ld      [hl],b
+    inc     l
+    ld      [hl],c
     pop     hl
     ret
 
 
-sprite_set_palette: ; a = sprite index, b = palette (0 or 16)
-    push    af
+; Update a Single Sprite (using 2 8x16 hardware sprites) ----------------------
+_new_sprite_update: ; hl = sprite data pointer
+
+    ; load flags
+    ld      a,[hli]
+
+    ; check if the sprite is enabled
+    bit     7,a
+    jp      z,.disabled
+
+    ; store flags
+    ld      c,a
+
+    ; check if animation changed
+    and     %00010000
+    jr      z,.animate
+
+.update_animation_tiles:
+
+    ; check if there is a tile row available to use
+    ld      a,[coreSpriteRow]
+    cp      $ff
+    jp      z,.skip ; if not wait until the next frame
+
+    ; check if the sprite was using a tile row in the first place
+    ld      a,[hl]
+    cp      $ff
+    jr      z,.no_row_used
+
+    ; mark the old row as "was used"
+    call    _new_sprite_tile_row_set_was_used; a is the tile row index
+
+.no_row_used:
+
+    ; store sprite pointer
     push    hl
-    push    de
 
-    ; check for gameboy color
-    ld      a,[coreColorEnabled]
-    cp      1
-    jr      nz,.no_color
+    ; update the sprite's tile row
+    ld      a,[coreSpriteRow]
+    ld      b,a; copy into b for sprite loading
+    ld      [hli],a
 
-    ; adjust palette bits
-    ld      a,b
-    swap    a
+    ; mark the new row as used
+    call    _new_sprite_tile_row_set_used; a is the tile row index
+
+    inc     l; skip frames left
+
+    ; load tile row data into vram
+    ld      a,[hl]; load animation id
+
+    ; store flags
+    push    bc
+    call    _new_sprite_load_tiles
+    pop     bc
+
+    ; restore sprite pointer
+    pop     hl
+
+    ; unset the unused row index until the next frame
+    ld      a,$ff
+    ld      [coreSpriteRow],a
+
+    ; unset animation changed flag of the sprite
+    dec     l
+    res     4,[hl]
+    inc     l
+
+    ; next animation frame
+.animate:
+
+    ; load tile row that is used by the sprite and multiply it by 16
+    ; in order to adjust for the tile data offset in vram
+    ld      a,[hli]
+    add     a; x 16
+    add     a
+    add     a
+    add     a
+
+    ; store tile row offset into b
     ld      b,a
 
-.no_color:
-    ld      e,a ; store index
-    call    _sprite_meta_offset
-
-    ld      d,3
-    call    _sprite_get_left
+    ; check number of frames left
     ld      a,[hl]
-    and     %11100000 ; clear palette bit
-    or      b
-    ld      [hl],a
+    cp      0
+    jr      nz,.wait_animation
 
-    ld      d,3
-    call    _sprite_get_right
+    ; check for stopped length
+    cp      $ff
+    jr      z,.halt_animation
+    
+    ; load next animation frame data
+    inc     l; skip frames left
+
+.next_animation_frame:
+
+    ; load animation id
+    ld      a,[hli]
+
+    ; load animation pointer into de (TODO optimize)
+    push    hl
+    call    _get_animation_pointer
+    ld      d,h
+    ld      e,l
+    pop     hl
+
+    ; load animation index, and increase it
     ld      a,[hl]
-    and     %11100000 ; clear palette bit
-    or      b
-    ld      [hl],a
+    inc     a
+    ld      [hli],a
+    add     3; add initial offset for animation header
 
-    pop     de
-    pop     hl
-    pop     af
-    ret
+    ; add offset to base pointer of animation 
+    add     e
+    ld      e,a
+    adc     a,d
+    sub     e
+    ld      d,a
+    
+    ; load frame value from animation
+    ld      a,[de]
+    
+    ; check for end marker
+    cp      $ff
+    jr      z,.stop_animation
 
+    ; check for loop marker ($fe)
+    cp      $fe
+    jr      nz,.advance_animation
 
-; Sprite Control --------------------------------------------------------------
-sprite_enable: ; a = sprite index
-    push    hl
-    call    _sprite_meta_offset
-    ld      [hl],1
-    pop     hl
-    ret
+.loop_animation:
+    dec     l; go back to index
 
+    ; set index back to 0
+    xor     a
+    ld      [hld],a; go back to id
+    jr      .next_animation_frame
 
-sprite_disable: ; a = sprite index
-    push    hl
-    push    bc
+.stop_animation:
 
-    ; reset all flags
-    call    _sprite_meta_offset
-    ld      [hl],0 
+    ; go back to frames left and set to $ff
+    dec     l; back to index
+    dec     l; back to id
+    dec     l; back to frames left
+    ld      [hli],a; set frames left to $ff
+    jr      .halt_animation
 
-    ; reset tile index
-    ld      b,0
-    call    sprite_set_tile_index
+.advance_animation:
 
-    ; reset position
-    ld      b,0
-    ld      c,0
-    call    sprite_set_position
+    ; write frame value to sprite data
+    ld      [hld],a; going back to index
 
-    ; reset palette
-    ld      b,0
-    call    sprite_set_palette
+    dec     l; go back to id
+    dec     l; go back to frames left
+    
+    ; add offset for animation frame data
+    ld      a,14
+    add     e
+    ld      e,a
+    adc     a,d
+    sub     e
+    ld      d,a
 
-    pop     bc
-    pop     hl
-    ret
+    ; load new frame length
+    ld      a,[de]
 
+.wait_animation:
 
-sprite_set_tile_offset: ; a = sprite, b = tile offset
+    ; reduce frames left
+    dec     a
+    ld      [hli],a
 
-    push    af
-    push    hl
+.halt_animation:
+    inc     l; skip animation index
+    inc     l; skip animation id
 
-    ; multiple tile offset by 4
-    sla     b
-    sla     b
-    call    _sprite_meta_offset
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    ld      [hl],b ; store offset
+    ; load animation frame value and multiply by 4
+.set_animation_frame:
+    ld      a,[hli]
+    add     a
+    add     a
 
-    pop     hl
-    pop     af
+    ; check for frame value of $04 and hide sprite
+    cp      16
+    jr      nz,.set_animation_tile
 
-    ret
+    ; setup 0x0 position to hide the sprite
+    ld      e,0
+    inc     l
 
+    ld      d,0
+    inc     l
+    jr      .draw_hardware_sprite
 
-sprite_set_tile_index: ; a = sprite index, b = tile index
-
-    push    af
-    push    hl
-    push    de
-
-    ; multiple tile index by 4
-    sla     b
-    sla     b
-
-    ld      e,a ; store index for get_left / get_right
-    call    _sprite_meta_offset
-    ld      d,[hl]; store flags
-
-    ; add tile offset
-    inc     hl
-    inc     hl
-    inc     hl
-    inc     hl
-    ld      a,[hl]
+.set_animation_tile:
+    ; add tile row offset to animation frame offset
     add     b
     ld      b,a
 
-    ; check flags
-    ld      a,d
-    and     %00000010
-    jr      z,.not_mirrored
+    ; load sprite x position
+    ld      a,[hli]
+    ld      d,a
 
-.mirrored:
+    ; add x scroll offset
+    ld      a,[coreScrollX]
+    add     d
+    ld      d,a
 
-    ld      d,2
-    call    _sprite_get_left
-    ld      [hl],b
-    inc     hl
-    set     5,[hl]
+    ; load sprite y position
+    ld      a,[hli]
+    ld      e,a
 
-    call    _sprite_get_right
-    ld      a,b
-    add     2
-    ld      [hli],a
-    set     5,[hl]
+    ; add y scroll offset
+    ld      a,[coreScrollY]
+    add     e
+    ld      e,a
 
-    jr     .index_done
+.draw_hardware_sprite:
 
-.not_mirrored:
-    ld      d,2
-    call    _sprite_get_left
-    ld      [hl],b
-    inc     hl
-    res     5,[hl]
+    ; load sprite index
+    ld      a,[hl]
 
-    call    _sprite_get_right
-    ld      a,b
-    add     2
-    ld      [hli],a
-    res     5,[hl]
-
-.index_done:
-    pop     de
+    ; now update the actual hardware sprites
+    push    hl
+    call    _new_sprite_update_hardware
     pop     hl
-    pop     af
+
+    ret
+
+.disabled:
+
+    ; check if the sprite was previously enabled
+    and     %01000000
+    jr      z,.skip
+
+    ; if it was, move it off screen and unset the wasEnabled flag
+    dec     l
+    res     6,[hl]
+
+    ; load sprite index
+    ld      a,l
+    add     8
+    ld      l,a
+    ld      a,[hl]
+
+    ; move hardware sprites off screen to hide it
+    ld      d,0
+    ld      e,0
+    push    hl
+    call    _new_sprite_update_hardware
+    pop     hl
+
+    ; setup pointer to next sprite
+    ret     
+
+.skip:
+    ; skip to next sprite
+    ld      a,l
+    add     7
+    ld      l,a
     ret
 
 
-sprite_set_position: ; a = sprite index, b = xpos, c = ypos
+_new_sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos, e = ypos
 
-    push    hl
-    push    de
+    ; multiply sprite index by 16 to get the hardware offset 
+    ; as uneven sprites are consumed by the 8x16 sprite mode
+    ; and we need two of these 8x16 sprites to show a full 16x16 sprite
+    add     a
+    add     a
+    add     a
+    add     a
 
-    ld      e,a ; store index
+    ; get address of the first hardware sprite
+    ld      h,spriteOam >> 8
+    ld      l,a
 
-    ; add scroll offset
-    ld      a,[coreScrollX]
-    cp      0
-    jr      z,.no_x_offset
-    ld      d,a
-    ld      a,b
-    sub     d
-    ld      b,a
+    ; adjust palette bits
+    ld      a,[coreColorEnabled]
+    cp      1
+    jr      z,.direction
 
-.no_x_offset:
-    ld      a,[coreScrollY]
-    cp      0
-    jr      z,.no_y_offset
-    ld      d,a
+    ; adjust palette for DMG
     ld      a,c
-    sub     d
+    and     %00000001; mask of unused palette bits
+    swap    a
+    or      c
     ld      c,a
 
-.no_y_offset:
-    ld      a,e
-    call    _sprite_meta_offset
+.direction:
+
+    ; mask of non used sprite flag bits
+    ld      a,c
+    and     %00110111
+    ld      c,a
+
+    ; setup tile index correction for second sprite
+    ld      a,2
+
+    ; check if the sprite is mirrored
+    bit     5,c
+    jr      z,.first
+    
+.right:; mirrored direction, facing left, sprite tiles get switch
+
+    ; add tile index offset for first sprite
+    inc     b
+    inc     b
+
+    ; setup tile index correction for second sprite
+    ld      a,$FE
+
+.first:
+
+    ; first hardware sprite
+    ld      [hl],e; ypos
+    inc     l
+    ld      [hl],d; xpos
+    inc     l
+    ld      [hl],b; tile index
+    inc     l
+    ld      [hl],c
+    inc     l
+
+    ; add index correction for second sprite
+    add     b
+    ld      b,a
+
+    ; add x position offset for second sprite
+    ld      a,d
+    add     8
+    ld      d,a
+
+    ; second hardware sprite
+    ld      [hl],e; ypos
+    inc     l
+    ld      [hl],d; xpos
+    inc     l
+    ld      [hl],b; tile index
+    inc     l
+    ld      [hl],c
+
+    ret
+
+
+; Tile Row Management ---------------------------------------------------------
+_new_sprite_load_tiles:; a = animation id, b = tile row index
+
+    ; load animation data address and row index
+    call    _get_animation_pointer
+    
+    ; load source tile row
+    ld      a,[hli]
+    ld      c,a
+
+    ; load low byte of tile map address
+    ld      a,[hli]
+    
+    ; load high byte of tile map address
+    ld      h,[hl]
+    ld      l,a
+
+    ; decompress sprite row into vram
+    ld      de,$8000
+    call    _load_new_sprite_row
+
+    ret
+
+
+_new_sprite_update_tile_rows:
+
+    ; go through all tile rows 
+    ld      hl,spriteRowsUsed + 7
+    ld      c,8; loop counter / row index
+    ld      b,$ff; tmp var holding the last unused row
+
+.loop:
+
+    ; load row flag
     ld      a,[hl]
-    and     %00000010
-    jr      z,.not_mirrored
-.mirrored:
 
-    ld      d,0
-    call    _sprite_get_right
-    ld      [hl],c
-    inc     hl
-    ld      [hl],b
+    ; check if the row was until the the previous frame and reset it for the next frame
+    cp      2
+    jr      z,.was_used
+    
+    ; check if the row is currently used
+    cp      1
+    jr      z,.next
 
-    call    _sprite_get_left
-    ld      [hl],c
-    inc     hl
+    ; otherwise the row is available and we point the unused row index to it
     ld      a,b
-    add     a,8
+
+    ; otherwise the row is available so we set b to it (correct for zero indexing)
+    ld      b,c
+    dec     b
+    jr      .next
+
+    ; mark the row as available on the next frame
+.was_used:
+    xor     a
     ld      [hl],a
 
-    jr     .pos_done
+.next:
+    dec     l
+    dec     c
+    jr      nz,.loop
 
-.not_mirrored:
-    ld      d,0
-    call    _sprite_get_left
-    ld      [hl],c
-    inc     hl
-    ld      [hl],b
-    
-    call    _sprite_get_right
-    ld      [hl],c
+    ; store unused row index into high ram
     ld      a,b
-    add     a,8
-    inc     hl
-    ld      [hl],a
-    
+    ld      [coreSpriteRow],a
 
-.pos_done:
-    pop     de
-    pop     hl
     ret
 
 
-sprite_set_mirror: ; a = sprite index
-    push    hl
-    call    _sprite_meta_offset
-    set     1,[hl]; set mirror flag
-    pop     hl
+_new_sprite_tile_row_set_was_used:; a = tile row index
+    ld      de,spriteRowsUsed; base pointer
+    add     e; add row index
+    ld      e,a
+    ld      a,2
+    ld      [de],a; mark as used
     ret
 
 
-sprite_unset_mirror: ; a = sprite index
-    push    hl
-    call    _sprite_meta_offset
-    res     1,[hl]; unset mirror flag
-    pop     hl
+_new_sprite_tile_row_set_used:; a = tile row index
+    ld      de,spriteRowsUsed; base pointer
+    add     e; add row index
+    ld      e,a
+    ld      a,1
+    ld      [de],a; mark as used
     ret
 
 
-; Helper ----------------------------------------------------------------------
-_sprite_get_left: ; e = raw index, d = value byte offset
+; Helpers ---------------------------------------------------------------------
+_get_new_sprite_pointer:; a = sprite index -> hl = pointer
     ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
-    ld      a,e
-    add     a
-    add     a
-    add     a
-    add     a,d
+    ld      l,a
+    add     a; x 2
+    add     a; x 4
+    add     a; x 8
+    add     l; x 9
     ld      l,a
     ret
 
-
-_sprite_get_right: ; e = raw index, d = value byte offset
-    ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
-    ld      a,e
-    add     a
-    add     a
-    add     a
-    add     a,d
-    add     a,4; skip one hardware sprite
+_get_animation_pointer:; a = animation id -> hl = pointer
+    ld      de,DataSpriteAnimation
+    ld      h,0
     ld      l,a
+    add     hl,hl; x32
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl
+    add     hl,de
     ret
 
+; hl = sprite map pointer, b = target row in ram, c = row index in sprite map, de = target base in ram
+_load_new_sprite_row: ; load a compressed tile row into vram
 
-_sprite_meta_offset: ; a = sprite index -> hl = offset
-    ld      h,spriteMeta >> 8; high byte, needs to be aligned at 256 bytes
-    ld      l,a
-    sla     l
-    sla     l
-    sla     l
+    ; adjust target pointer for target row
+    ld      a,d 
+    add     b
+    ld      d,a
+
+    ; offset into location table
+    ld      b,0
+    sla     c; each table entry is two bytes
+    add     hl,bc ; hl = table offset data pointer
+
+    ; read high and low byte for the offset
+    ld      a,[hli]
+    ld      b,a
+    ld      a,[hli]
+    ld      c,a; bc = offset until row data (from current table index position)
+
+    ; create final data pointer for tile row data
+    ; the offset value is pre calcuated to be relative from the table data pointer + 2
+    add     hl,bc
+
+    ; decode with end marker in stream
+    call    core_decode_eom
+
     ret
 

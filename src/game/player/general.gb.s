@@ -25,13 +25,10 @@ player_init:
 
     ; Sprite
     ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_enable
-    ld      b,0
-    call    sprite_set_tile_offset
-
-    ; Load initial sprite data
-    call    player_animation_init
-    call    player_animation_update
+    call    new_sprite_enable
+    ld      a,PLAYER_SPRITE_INDEX
+    ld      b,4
+    call    new_sprite_set_hardware_index
 
     ret
 
@@ -131,7 +128,7 @@ player_dissolve:
 
 
 ; Handle Map Scrolling --------------------------------------------------------
-player_scroll_map:
+player_scroll_map:; -> a 1 if scrolled 0 if not
 
     ; left ------------------------------
     ld      a,[playerX]
@@ -226,10 +223,11 @@ player_scroll_map:
     ret
 
 .scrolled:
-    ld      b,255
-    ld      c,255
+    ld      b,0
+    ld      c,0
     ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_set_position
+    call    new_sprite_set_position
+
     ld      a,1
     ret
 

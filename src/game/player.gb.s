@@ -3,7 +3,6 @@ SECTION "PlayerLogic",ROM0
 
 ; Player Logic ----------------------------------------------------------------
 INCLUDE     "player/general.gb.s"
-INCLUDE     "player/animation.gb.s"
 INCLUDE     "player/update.gb.s"
 INCLUDE     "player/collision.gb.s"
 INCLUDE     "player/gravity.gb.s"

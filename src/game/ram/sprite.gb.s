@@ -1,13 +1,23 @@
-SECTION "SpriteRam",WRAM0[$C000]; must be at $C000 for DMA copy
+SECTION "SpriteRamOam",WRAM0[$C000]; must be at $C000 for DMA copy
 
 ; OAM Sprite Data Buffer ------------------------------------------------------
-spriteData:     DS 160  ; Sprite data to be later copied into OAM during vblank
+spriteOam:      DS 160  ; Sprite data to be later copied into OAM during vblank
 
 
 ; Sprite Meta Data-------------------------------------------------------------
-SECTION "SpriteRamMeta", WRAM0[$CC00]; must be aligned at 256 bytes for spriteData
+SECTION "SpriteRamData", WRAM0[$CC00]; must be aligned at 256 bytes for spriteData
 
-spriteMeta:     DS 160  ; 20 sprites, 6 bytes per sprite (each sprite is 2 hardware sprites)
-                        ; [flags][frame][id][framesLeft] [tileOffset][unused][unused][unused]
-                        ; flags: 000[direction][loop][animating][mirrored][enabled]
+SPRITE_MAX      EQU 7
+spriteData:     DS SPRITE_MAX * 9
+spriteRowsUsed: DS 8
+
+; 0: flags 7:enabled, 6:wasEnabled, 5:mirrored, 4:animationChanged, 3:unused, 2-0:palette
+; 1: tileRow
+; 2: animationFramesLeft
+; 3: animationId
+; 4: animationIndex
+; 5: animationFrame
+; 6: x
+; 7: y
+; 8: sprite index
 

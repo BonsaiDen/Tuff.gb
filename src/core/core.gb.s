@@ -20,6 +20,7 @@ coreColorEnabled:   DB
 coreTimerToggle:    DB
 coreScrollX:        DB
 coreScrollY:        DB
+coreSpriteRow:      DB
 coreDecodeAddress:  DS 2
 
 

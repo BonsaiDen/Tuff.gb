@@ -114,7 +114,7 @@ game_loop:
 .logic:
     call    player_update
     call    entity_update
-    call    sprite_animate_all
+    call    new_sprite_update
     call    map_check_fallable_blocks
     call    sound_update
     ret

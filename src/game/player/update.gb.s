@@ -220,7 +220,50 @@ player_update:
     ld      a,[playerYOffset]
     ld      c,a
     ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_set_position
+    call    new_sprite_set_position
 
-    ret     
+    ; check for direction changes
+    ld      a,[playerDirectionLast]
+    ld      b,a
+    ld      a,[playerDirection]
+    cp      b
+    jr      z,.no_direction_change
+
+    ; switch to new direction
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.direction_right
+
+.direction_left:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    new_sprite_unset_mirrored
+    jr      .direction_changed
+
+.direction_right:
+    ld      a,PLAYER_SPRITE_INDEX
+    call    new_sprite_set_mirrored
+
+.direction_changed:
+    ld      a,[playerDirection]
+    ld      [playerDirectionLast],a
+    xor     a
+    ld      [playerIsRunning],a
+    xor     a
+    ld      [playerRunningTick],a
+
+.no_direction_change:
+
+    ; check for animation changes
+    ld      a,[playerAnimationLast]
+    ld      b,a
+    ld      a,[playerAnimation]
+    cp      b
+    ret     z
+
+    ; switch to new animation
+    ld      a,[playerAnimation]
+    ld      [playerAnimationLast],a
+    ld      b,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    new_sprite_set_animation
+    ret
 
