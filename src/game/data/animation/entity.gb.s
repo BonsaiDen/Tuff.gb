@@ -6,8 +6,15 @@
 ; FF FD and FE are special values for frame lengths which are used to control
 ; the animation behavior. FF means STOP, FE means loop, FD means bounce
 
-; Save Point
+; Save Point Light
 DB $00; Image Row Index
+DW DataEntityImg ; Image Data Pointer
+DB $FF; Unused
+DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
+DB $09,$09,$09,$09, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
+
+; Save Point Dark
+DB $01; Image Row Index
 DW DataEntityImg ; Image Data Pointer
 DB $FF; Unused
 DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
@@ -21,7 +28,7 @@ DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 DB $02,$02,$02,$02, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 
 ; Powerup Hover
-DB $01; Image Row Index
+DB $03; Image Row Index
 DW DataEntityImg ; Image Data Pointer
 DB $FF; Unused
 DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff

@@ -22,22 +22,21 @@ entity_update:
     ld      l,a ; store type
 
     ; get sprite index
-    call    _entity_sprite_offset
-    add     a,b; offset + entity index
+    ld      a,ENTITY_SPRITE_OFFSET
+    add     b
     ld      h,a; store sprite index for position code
+    ld      c,a; store sprite index for update handler
 
     ; store counter, screen state address and indecies
     push    bc
     push    hl
     push    de
 
-    ld      c,a; store sprite index for update handler
-
     ; invoke custom entity update handler
     ld      a,l
     dec     a; convert into 0 based offset
     ld      hl,DataEntityUpdateHandlerTable
-    add     a,a  ; multiply entity type by 4
+    add     a,a ; multiply entity type by 4
     add     a,a
     add     a,l ; add a to hl
     ld      l,a
@@ -67,8 +66,9 @@ entity_update:
 
     ld      a,[de] ; y position
     ld      b,a
-    ld      a,h  
-    call    sprite_set_position
+
+    ld      a,h; restore entity sprite index
+    call    new_sprite_set_position
     inc     de
 
     pop     bc
@@ -79,8 +79,8 @@ entity_update:
     jr      .next
 
 .disabled:
-    ld      a,c
-    call    sprite_disable
+    ld      a,h
+    call    new_sprite_disable
     pop     bc
 
 .skip:
@@ -157,37 +157,43 @@ entity_load:
     ld      a,c ; type / dir flags
     and     %00111111 ; mask type bits
     ld      l,a; store entity type
+
+    ; set sprite hardware offset (index + bg/fg offset)
+    ld      a,c; restore flags
     call    _entity_sprite_offset
-    add     a,b ; offset + entity index
-    ld      c,a ; store sprite index
-    call    sprite_enable
+    add     b; add entity index to offset
+    ld      h,a; store hardware offset
+
+    ; calculate and store sprite index into c
+    ld      a,ENTITY_SPRITE_OFFSET
+    add     b ; offset + entity index
+    ld      c,a
+
+    ; store sprite index 
+    push    bc
+
+    ; enable sprite
+    call    new_sprite_enable
+    ld      b,h; setup hardware index
+    ld      a,c; setup sprite index
+    call    new_sprite_set_hardware_index
 
     ; Get palette flag
-    push    bc
     ld      a,l; load type
     call    _entity_defintion
     and     %01000000
+    swap    a
     srl     a
     srl     a
     ld      b,a
     ld      a,c
-    call    sprite_set_palette
+    call    new_sprite_set_palette
     pop     bc
 
     ; get screen entity offset
     call    _entity_screen_offset_de
     push    bc
     push    de
-
-
-    ; load entity sprite data into one of the available sprite row slots
-    ; in the upper half of the sprite memory
-    ld      a,[de] ; load type
-    call    _entity_load_tile_row ; -> a = tile offset
-    ld      b,a ; load tile offset 
-    ld      a,c ; load sprite index
-    call    sprite_set_tile_offset
-
 
     ; call custom load handler
     ld      a,l
@@ -219,7 +225,7 @@ entity_load:
     ld      a,[de] ; load x position
     ld      b,a
     ld      a,l ; load sprite index
-    call    sprite_set_position
+    call    new_sprite_set_position
 
     pop     bc;  restore entity / loop index
     pop     hl
@@ -234,7 +240,7 @@ entity_load:
 
     pop     hl
     ld      a,c
-    call    sprite_disable
+    call    new_sprite_disable
 
 .next:
     inc     hl
@@ -435,10 +441,9 @@ entity_reset:
     jr      z,.skip; not loaded
 
     ; disable sprite 
-    call    _entity_sprite_offset
-    add     a,b; offset + entity index
-    call    sprite_disable
-    ;call    sprite_unset_mirror ; TODO needed?
+    ld      a,b
+    add     ENTITY_SPRITE_OFFSET
+    call    new_sprite_disable
 
     ; unset type
     xor     a
@@ -602,66 +607,6 @@ _entity_reset_tile_row_mapping:
     ld      [hli],a
     ld      [hl],a
     ret
-
-
-_entity_load_tile_row: ; a = entity type -> a = sprite tile offset for the entity
-
-    push    de
-    push    hl
-    push    bc
-
-    call    _entity_defintion
-    and     %00111111 ; mask tile source row
-    ld      c,a ; store tile row into c
-    
-    ; start search loop for tilerow map
-    ld      b,0
-    ld      hl,entityTileRowMap
-
-.loop:
-    ld      a,[hl]
-
-    ; check if tilerow at this offset is the row required by the entity
-    cp      c 
-    jr      z,.done
-
-    ; otherwise check if we got a free slow in vram to put the tilerow into
-    cp      255
-    jr      z,.load
-
-    inc     hl
-    inc     b
-    cp      4
-    jr      nz,.loop
-
-    ; FIXME 
-    ; we should never end up here because we got at most 4 different entity
-    ; sprite rows
-    ld      b,0; failsafe
-
-.load: ; b is the index we we'll be mapping into, c is the sprite row of the entity that needs to be loaded
-    
-    ; mark tilerow as used
-    ld      a,c ; c = sprite row index used for the row at [hl]
-    ld      [hl],a
-
-    ; load sprite row for entity
-    ld      hl,DataEntityRows
-    ld      de,$8400
-    call    tileset_load_sprite_row
-
-.done:
-    ld      a,b ; load the row into which the sprite data got loaded
-    add     a ; x4
-    add     a
-    add     a,16 ; skip the first 4 rows in vram
-
-    pop     bc
-    pop     hl
-    pop     de
-
-    ret
-
 
 
 ; Helper ----------------------------------------------------------------------

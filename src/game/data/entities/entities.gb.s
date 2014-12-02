@@ -8,10 +8,10 @@ _DataEntityDefinitions:
 
 ; Entity Handler Table --------------------------------------------------------
 DataEntityLoadHandlerTable:
-    jp      entity_handler_load_save ; 3 byte
+    jp      entity_handler_load_save_light ; 3 byte
     nop     ; alignment
 
-    jp      entity_handler_load_save
+    jp      entity_handler_load_save_dark
     nop
 
     jp      entity_handler_load_glow

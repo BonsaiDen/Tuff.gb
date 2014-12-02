@@ -81,7 +81,7 @@ DataTitleSpriteLayoutYOffsets:
 DataPlayerImg:
     INCBIN  "/data/bin/player.ch.bin" 
 
-DataEntityRows:
+DataEntityImg:
     INCBIN  "/data/bin/entities.ch.bin" 
 
 DataSpriteAnimation:

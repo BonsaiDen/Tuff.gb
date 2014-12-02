@@ -1,8 +1,9 @@
 entity_handler_load_powerup:
+    ; TODO set hardware sprite indexes for entity sprites!
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_POWERUP
-    call    sprite_animation_set
-    call    sprite_animation_start
+    call    new_sprite_set_animation
+    ;call    sprite_animation_start
 
     ; TODO check the actual powerup
     ld      a,[playerCanJump]; check if powerup is already collected

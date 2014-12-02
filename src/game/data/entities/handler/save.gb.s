@@ -1,11 +1,15 @@
-entity_handler_load_save: ; generic, b = entity index, c = sprite index
+entity_handler_load_save_light: ; generic, b = entity index, c = sprite index
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE_LIGHT
+    jr      _entity_handler_load_save
+
+entity_handler_load_save_dark: ; generic, b = entity index, c = sprite index
+    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE_DARK
+
+_entity_handler_load_save:
     ld      a,c
-    ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_SAVE
-    call    sprite_animation_set
-    call    sprite_animation_start
+    call    new_sprite_set_animation
     xor     a
     ret
-
 
 entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = screen data
 
