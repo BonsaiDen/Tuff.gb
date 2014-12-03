@@ -107,9 +107,6 @@ entity_load:
     ld      a,1
     ld      [entityUpdateActive],a
 
-    ; clear tile row mapping
-    call    _entity_reset_tile_row_mapping
-
     ; get offset for entity map data
     ld      hl,mapRoomBlockBuffer + MAP_ROOM_SIZE
     ld      b,0
@@ -596,16 +593,6 @@ _entity_sprite_offset: ; a = sprite type -> a = background offset
 
 .foreground:
     ld      a,ENTITY_FG_SPRITE_INDEX
-    ret
-
-
-_entity_reset_tile_row_mapping:
-    ld      hl,entityTileRowMap
-    ld      a,255
-    ld      [hli],a
-    ld      [hli],a
-    ld      [hli],a
-    ld      [hl],a
     ret
 
 
