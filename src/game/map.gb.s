@@ -114,6 +114,9 @@ map_load_room: ; b = x, c = y
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
 
+    ; update all sprites
+    call    new_sprite_update
+
     pop     bc
     pop     de
     pop     hl
