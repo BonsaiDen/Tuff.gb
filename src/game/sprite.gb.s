@@ -232,6 +232,7 @@ _new_sprite_update: ; hl = sprite data pointer
 
     ; unset animation changed flag of the sprite
     dec     l
+    res     4,c; make sure to reset the flag bit to avoid palette messups
     res     4,[hl]
     inc     l
 
@@ -440,9 +441,11 @@ _new_sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = x
     add     a
     add     a
 
-    ; get address of the first hardware sprite
-    ld      h,spriteOam >> 8
+    ; load the low byte of the first hardware sprite's address
     ld      l,a
+
+    ; load the high byte of the first hardware sprite's address
+    ld      h,spriteOam >> 8
 
     ; adjust palette bits
     ld      a,[coreColorEnabled]
