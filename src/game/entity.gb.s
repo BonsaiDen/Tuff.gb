@@ -11,7 +11,6 @@ entity_update:
 
     ; entity screen state pointer
     ld      de,entityScreenState
-    ld      b,0
 
 .loop:
 
@@ -22,19 +21,17 @@ entity_update:
     ld      l,a ; store type
 
     ; get sprite index
-    ld      a,ENTITY_SPRITE_OFFSET
-    add     b
-    ld      h,a; store sprite index for position code
+    ld      a,e; divide e by 8
+    srl     a
+    srl     a
+    srl     a
+    add     ENTITY_SPRITE_OFFSET
     ld      c,a; store sprite index for update handler
-
-    ; store counter, screen state address and indecies
-    push    bc
-    push    hl
-    push    de
 
     ; invoke custom entity update handler
     ld      a,l
     dec     a; convert into 0 based offset
+
     ld      hl,DataEntityUpdateHandlerTable
     add     a,a ; multiply entity type by 4
     add     a,a
@@ -44,57 +41,51 @@ entity_update:
     sub     l
     ld      h,a
 
+    ; store counter, screen state address and indecies
+    push    de
     push    bc
     call    _entity_handler_jump
     pop     bc
-
     pop     de
-    pop     hl
 
     ; check if the update handler disabled the entity
     ld      a,[de]
     cp      0
     jr      z,.disabled; not active skip
 
-    inc     de; skip type
-    inc     de; skip flags
-    inc     de; skip direction
+    inc     e; skip type
+    inc     e; skip flags
+    inc     e; skip direction
+
+    ld      h,c; 
+    ld      a,[de] ; y position
+    ld      c,a
+    inc     e
 
     ld      a,[de] ; x position
-    ld      c,a
-    inc     de
-
-    ld      a,[de] ; y position
     ld      b,a
 
     ld      a,h; restore entity sprite index
     call    new_sprite_set_position
-    inc     de
 
-    pop     bc
-
-    inc     de
-    inc     de
-    inc     de
+    inc     e; skip x
+    inc     e; tileslot?
+    inc     e; custom
+    inc     e; custom
     jr      .next
 
 .disabled:
-    ld      a,h
+    ld      a,c
     call    new_sprite_disable
-    pop     bc
 
 .skip:
-    ld      a,8
-    add     a,e
+    ld      a,e
+    add     8
     ld      e,a
-    adc     a,d
-    sub     e
-    ld      d,a
 
 .next:
-    inc     b
-    ld      a,b
-    cp      ENTITY_PER_ROOM
+    ld      a,e
+    cp      (entityScreenState + ENTITY_PER_ROOM * 8) & $ff
     jr      nz,.loop
     ret
 
@@ -112,7 +103,6 @@ entity_load:
     ld      b,0
 
 .loop:
-
     ld      a,[mapRoomEntityCount]
     cp      b
     ret     z
@@ -121,21 +111,21 @@ entity_load:
     ld      a,[hl]
     ld      c,a ; store byte
     and     %00111111 ; mask type bits
-    cp      0
     jr      z,.next ; entity is not set for room
 
     ; init base state
-    push    hl
-    call    _entity_screen_offset_hl
+    call    _entity_screen_offset_de
 
     ; set type
     ld      a,c
     and     %00111111 ; mask type bits
-    ld      [hli],a
+    ld      [de],a
+    inc     e
 
     ; reset flags
     xor     a
-    ld      [hli],a
+    ld      [de],a
+    inc     e
 
     ; set default direction 
     ld      a,c
@@ -143,12 +133,10 @@ entity_load:
     swap    a
     srl     a
     srl     a
-    ld      [hl],a
-    pop     hl; restore screen state address
+    ld      [de],a
 
     call    _entity_load
 
-.init:
     push    hl
 
     ld      a,c ; type / dir flags
@@ -166,7 +154,10 @@ entity_load:
     add     b ; offset + entity index
     ld      c,a
 
-    ; store sprite index 
+    ; get screen entity offset
+    call    _entity_screen_offset_de
+
+    ; store entity and sprite index 
     push    bc
 
     ; enable sprite
@@ -185,12 +176,6 @@ entity_load:
     ld      b,a
     ld      a,c
     call    new_sprite_set_palette
-    pop     bc
-
-    ; get screen entity offset
-    call    _entity_screen_offset_de
-    push    bc
-    push    de
 
     ; call custom load handler
     ld      a,l
@@ -205,28 +190,28 @@ entity_load:
     ld      h,a
 
     ; call the load handler
+    push    de
     call    _entity_handler_jump
     pop     de
     cp      1
     jr      z,.ignore_load
 
     ; set sprite position
-    inc     de ; skip type
-    inc     de ; skip flags
-    inc     de ; skip direction
+    inc     e ; skip type
+    inc     e ; skip flags
+    inc     e ; skip direction
 
     ld      l,c ; restore sprite index
     ld      a,[de] ; load y position
     ld      c,a
-    inc     de
+    inc     e
+
     ld      a,[de] ; load x position
     ld      b,a
     ld      a,l ; load sprite index
     call    new_sprite_set_position
 
     pop     bc;  restore entity / loop index
-    pop     hl
-
     jr      .next
 
 .ignore_load:
@@ -235,11 +220,11 @@ entity_load:
     call    _entity_screen_offset_hl
     ld      [hl],0
 
-    pop     hl
     ld      a,c
     call    new_sprite_disable
 
 .next:
+    pop     hl
     inc     hl
     inc     hl
 
@@ -270,7 +255,7 @@ _entity_load:
 
     ; get entity screen offset for b into de
     call    _entity_screen_offset_de
-    inc     de; skip type
+    inc     e; skip type
 
     ; load flags, direction and entity id (FFFFDDII)
     ld      a,[hli]
@@ -280,7 +265,7 @@ _entity_load:
     swap    a
     and     %00001111
     ld      [de],a; set flags
-    inc     de
+    inc     e
 
     ; get direction
     ld      a,b; load origin value one more time
@@ -288,17 +273,17 @@ _entity_load:
     srl     a
     and     %00000011
     ld      [de],a; set direction
-    inc     de
+    inc     e
 
     ; load y position
     ld      a,[hli]
     ld      [de],a
-    inc     de
+    inc     e
     
     ; load x position
     ld      a,[hl]
     ld      [de],a
-    inc     de
+    inc     e
 
     ; restore registers
     pop     bc
@@ -321,9 +306,9 @@ _entity_load:
     
     ; get entity screen offset for b into de
     call    _entity_screen_offset_de
-    inc     de ; skip type
-    inc     de ; skip flags
-    inc     de ; skip direction
+    inc     e ; skip type
+    inc     e ; skip flags
+    inc     e ; skip direction
 
     ; skip stored type and direction
     inc     hl
@@ -333,7 +318,7 @@ _entity_load:
     and     %11110000 ; y position, just works we can skip the x16 here
     add     16 ; anchor at the bottom
     ld      [de],a
-    inc     de
+    inc     e
 
     ; x position
     ld      a,[hl]
@@ -375,19 +360,19 @@ entity_store:
     ld      a,c
     ld      [hli],a ; store room id
 
-    inc     de ; skip type [0]
+    inc     e ; skip type [0]
     
     ; combine flags, entity id and direction
     ; FFFFDDII
     ld      a,[de]; load flags
-    inc     de 
+    inc     e 
     swap    a
     and     %11110000
     or      b; merge with id
     ld      b,a; store into b
 
     ld      a,[de] ; load direction
-    inc     de
+    inc     e
     add     a
     add     a
     and     %00001100
@@ -396,27 +381,24 @@ entity_store:
 
     ; y position
     ld      a,[de]
-    inc     de
+    inc     e
     ld      [hli],a 
 
     ; x position
     ld      a,[de]
-    inc     de
     ld      [hl],a 
 
-    ; skip tileslot, custom and custom
-    inc     de
-    inc     de
-    inc     de
+    ; skip x, tileslot, custom and custom
+    inc     e
+    inc     e
+    inc     e
+    inc     e
     jr      .next
 
 .skip:
-    ld      a,8
-    add     a,e
+    ld      a,e
+    add     8
     ld      e,a
-    adc     a,d
-    sub     e
-    ld      d,a
 
 .next:
     inc     b
