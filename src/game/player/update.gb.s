@@ -182,13 +182,11 @@ player_update:
     ; set swim animation when moving underwater
     ld      a,[coreInput]
     and     BUTTON_LEFT | BUTTON_RIGHT
-    cp      0
     jr      z,.water_idle
 
     ; dont set animation when moving up / down
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B
-    cp      0
     jr      nz,.water_idle
 
     ; check if pushing against wall
@@ -205,7 +203,6 @@ player_update:
 .water_idle:
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B
-    cp      0
     jr      nz,.update
 
     ld      a,PLAYER_ANIMATION_IDLE

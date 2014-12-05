@@ -127,8 +127,6 @@ break_vertical_blocks:; a = block x, c = block y
     srl     a
     srl     a
     and     %00000001
-
-    cp      0
     jr      z,.top
 
     cp      1

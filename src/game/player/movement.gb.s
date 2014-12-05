@@ -11,7 +11,6 @@ player_move:
     ld      b,a
     ld      a,[playerSpeedRight]
     add     a,b
-    cp      0
     jp      z,.stopped
 
     ; set walking animation only when on ground
@@ -278,7 +277,6 @@ player_accelerate:
 
     ld      a,[coreInput]; and either direction is still pressed
     and     BUTTON_RIGHT | BUTTON_LEFT
-    cp      0
     jr      z,.is_not_running
 
     ; increase running tick unless limit is reached
@@ -345,7 +343,6 @@ player_accelerate:
     ld      a,[playerInWater]
     or      b; 
     or      c; 
-    cp      0
     jr      z,.check_direction; if both are false keep running
     
     ; if either is true reset running mode

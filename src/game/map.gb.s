@@ -650,7 +650,6 @@ map_update_falling_blocks:
     ld      a,[hl]
     swap    a
     and     %00001111
-    cp      0
     jr      nz,.delayed
 
     call    _map_update_falling_block

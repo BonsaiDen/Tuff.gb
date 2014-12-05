@@ -36,7 +36,6 @@ player_gravity:
 
     ld      a,[playerGravityTick]
     and     %00000001
-    cp      0
     jr      nz,.delay_move
 
 .move:
