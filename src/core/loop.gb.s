@@ -23,5 +23,5 @@ core_loop:
     and     %00000111
     ld      [coreLoopCounter],a
             
-    jp      core_loop
+    jr      core_loop
 

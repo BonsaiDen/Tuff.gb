@@ -40,7 +40,7 @@ core_vblank_handler:
     ; now copy OAM to match the sprites
     call    $ff80 
 
-    ; update scroll registers
+    ; update scroll registers (values need to be negated)
     ld      a,[coreScrollX]
     dec     a
     cpl     

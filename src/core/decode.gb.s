@@ -46,19 +46,19 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      b,a; ; store the actual match size, this is also used as the loop counter for the copying
 
     ld      a,[hli]; load copy offset and goto instruction byte
-    add     a,b; add match size to get final offset TODO is this really overflow safe?
+    add     b; add match size to get final offset 
     ld      c,a; store offset
 
     ; hl = de - offset
     push    hl; store next instruction offset
-    ld      a,e 
-    or      a ; clear carry
-    sbc     c ; subtract offset from low byte
-    ld      l,a
 
-    ld      a,d ; subtract high byte
+    ld      a,e ; low low byte from current target address
+    sub     c ; subtract offset from low byte (ignoring carry)
+    ld      l,a; store low byte of new source address
+
+    ld      a,d ; load high byte from current target address
     sbc     0; subtract the carry if it exists
-    ld      h,a
+    ld      h,a ; store high byte of new source address
 
 .copy_loop:; b is our loop counter
 
@@ -66,8 +66,8 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ; TODO handle invalid vram access
 
+    ; copy the next byte
     ld      a,[hli]
     ld      [de],a
     inc     de
@@ -90,9 +90,9 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ; TODO handle invalid vram access
 
-    ld      a,[hli]; goto next literal byte and eventually the next instruction byte
+    ; goto next literal byte (and eventually the next instruction byte)
+    ld      a,[hli]
     ld      [de],a
     inc     de
     dec     b
@@ -118,9 +118,9 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ; TODO handle invalid vram access
 
-    ld      a,c; restore repeat byte
+    ; restore repeat byte and set
+    ld      a,c
     ld      [de],a
     inc     de
     dec     b
@@ -140,7 +140,9 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      a,[rSTAT]       ; <---+
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
-    ld      [de],a; a is zero after the and
+
+    ; a is already zero after the compare above
+    ld      [de],a
     inc     de
     dec     b
     jr      nz,.repeat_zero_loop
@@ -150,6 +152,8 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     and     %00111111; number of times to repeat
     add     a,CORE_DECODE_MIN_REPEAT_LENGTH
     ld      b,a; store loop counter
+    ld      a,[hli]; load first data byte
+    ld      c,a
 
 .repeat_two_loop:
 
@@ -158,19 +162,18 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     and     STATF_BUSY      ;     |
     jr      nz,@-4          ; ----+
 
-    ; first byte
-    ld      a,[hli]; goto second value byte
+    ; set first byte
+    ld      a,c
     ld      [de],a
     inc     de
 
-    ; second byte
-    ld      a,[hld]; go back to first value byte 
-    ld      [de],a
+    ; set second byte
+    ld      a,[hl]
+    ld      [de],a; TODO potential vram access issues?
     inc     de
 
     dec     b
     jr      nz,.repeat_two_loop
-    inc     hl; goto second value byte
-    inc     hl; goto next instruction byte
+    ld      a,[hli]; goto next instruction byte (faster than inc hl)
     jp      core_decode_eom
 

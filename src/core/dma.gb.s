@@ -22,7 +22,7 @@ core_DMADataOAM:
     ;
     ;.loop:                
     ;    dec a          
-    ;    jr nz,.loop     
+    ;    jr nz,.loop
     DB      $3E, $C0, $E0, $46, $3E
     DB      $28, $3D, $20, $FD, $C9
 
