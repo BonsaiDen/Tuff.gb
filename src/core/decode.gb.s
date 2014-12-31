@@ -167,9 +167,14 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      [de],a
     inc     de
 
-    ; set second byte
+    ; wait for vblank
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+
+    ; load and set second byte
     ld      a,[hl]
-    ld      [de],a; TODO potential vram access issues?
+    ld      [de],a
     inc     de
 
     dec     b
