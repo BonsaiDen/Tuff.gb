@@ -28,6 +28,7 @@ game_init:
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     call    map_init
     call    player_init
+    call    script_init
 
     ; If both start, select and up are pressed during power on go into debug mode
     ld      a,[coreInput]
