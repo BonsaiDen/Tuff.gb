@@ -119,6 +119,13 @@ player_dissolve:
     ; dissolve player when hitting a hazard
     ld      a,PLAYER_ANIMATION_DISSOLVE
     ld      [playerAnimation],a
+
+    ; play animation here, since it won't update otherwise
+    ld      [playerAnimationLast],a
+    ld      b,a
+    ld      a,PLAYER_SPRITE_INDEX
+    call    new_sprite_set_animation
+
     xor     a
     ld      [playerDissolveTick],a
     ld      [mapCollisionFlag],a
