@@ -1,7 +1,7 @@
 SECTION "SaveLogic",ROM0
 
-; SRAM Handling Routines ------------------------------------------------------
-save_load_from_sram:; a = 1 triggers defaults
+; SRAM Loading ----------------------------------------------------------------
+save_load_from_sram:
     
     di
 
@@ -44,13 +44,22 @@ save_load_from_sram:; a = 1 triggers defaults
     ; Player State
     ld      b,10
     ld      de,playerX
-
 .loop_player_state:
     ld      a,[hli]
     ld      [de],a
     inc     de
     dec     b
     jr      nz,.loop_player_state
+
+    ; Script Status
+    ld      b,SCRIPT_TABLE_MAX_ENTRIES
+    ld      de,scriptTableStatus
+.loop_script_status:
+    ld      a,[hli]
+    ld      [de],a
+    inc     de
+    dec     b
+    jr      nz,.loop_script_status
 
     ; stored entity state seperator
     ld      a,[hli] ; E5, "verified" via the checksum
@@ -119,85 +128,7 @@ save_load_player:
     ret
 
 
-save_store_to_sram:
-
-    di
-
-    ; save current screens entities
-    ld      a,[mapRoomX]
-    ld      [mapRoomLastX],a
-    ld      b,a
-    ld      a,[mapRoomY]
-    ld      [mapRoomLastY],a
-    call    entity_store
-
-    ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
-    ld      hl,$0000 
-    ld      [hl],$0A 
-
-    ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
-    ld      hl,$4000
-    ld      [hl],SAVE_RAM_BANK
-    
-    ; crc16 checksum of the save data bytes starting from $A002
-    ld      hl,$A000 
-    ld      a,$00
-    ld      [hli],a
-    ld      [hli],a
-
-    ; game version
-    ld      a,SAVE_GAME_VERSION
-    ld      [hli],a
-
-    ; Map Data
-    ld      a,[mapRoomX]
-    ld      [hli],a
-
-    ld      a,[mapRoomY]
-    ld      [hli],a
-
-    ; Player State
-    ld      b,10
-    ld      de,playerX
-
-.loop_player_state:
-    ld      a,[de]
-    inc     de
-    ld      [hli],a
-    dec     b
-    jr      nz,.loop_player_state
-
-    ; Entity Data
-    ld      a,$E5
-    ld      [hli],a
-    
-    ; copy entity state to sram
-    ld      bc,SAVE_ENTITY_DATA_SIZE
-    ld      d,h
-    ld      e,l
-    ld      hl,entityStoredState
-    call    core_mem_cpy
-
-    ; caclulate checksum
-    ld      bc,SAVE_COMPLETE_SIZE
-    ld      de,$A000 + SAVE_CHECKSUM_SIZE
-    call    _crc16
-
-    ; write crc checksum 
-    ld      hl,$A000 
-    ld      a,b
-    ld      [hli],a
-    ld      [hl],c
-
-    ; disable external RAM
-    ld      hl,$0000 
-    ld      [hl],$00
-
-    ei
-    ret
-
-
-save_check_state: ; return 1 in a if a save state exists in sram
+save_check_state: ; return 1 in a if a valid save state exists in sram
 
     di
 
@@ -242,9 +173,96 @@ save_check_state: ; return 1 in a if a save state exists in sram
     ret
 
 
+; SRAM Saving -----------------------------------------------------------------
+save_store_to_sram:
+
+    di
+
+    ; save current screens entities
+    ld      a,[mapRoomX]
+    ld      [mapRoomLastX],a
+    ld      b,a
+    ld      a,[mapRoomY]
+    ld      [mapRoomLastY],a
+    call    entity_store
+
+    ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
+    ld      hl,$0000 
+    ld      [hl],$0A 
+
+    ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
+    ld      hl,$4000
+    ld      [hl],SAVE_RAM_BANK
+    
+    ; crc16 checksum of the save data bytes starting from $A002
+    ld      hl,$A000 
+    ld      a,$00
+    ld      [hli],a
+    ld      [hli],a
+
+    ; game version
+    ld      a,SAVE_GAME_VERSION
+    ld      [hli],a
+
+    ; Map Data
+    ld      a,[mapRoomX]
+    ld      [hli],a
+
+    ld      a,[mapRoomY]
+    ld      [hli],a
+
+    ; Player State
+    ld      b,10
+    ld      de,playerX
+.loop_player_state:
+    ld      a,[de]
+    inc     de
+    ld      [hli],a
+    dec     b
+    jr      nz,.loop_player_state
+
+    ; Script State
+    ld      b,SCRIPT_TABLE_MAX_ENTRIES
+    ld      de,scriptTableStatus
+.loop_script_status:
+    ld      a,[de]
+    inc     de
+    ld      [hli],a
+    dec     b
+    jr      nz,.loop_script_status
+
+    ; Entity Data
+    ld      a,$E5
+    ld      [hli],a
+    
+    ; copy entity state to sram
+    ld      bc,SAVE_ENTITY_DATA_SIZE
+    ld      d,h
+    ld      e,l
+    ld      hl,entityStoredState
+    call    core_mem_cpy
+
+    ; caclulate checksum
+    ld      bc,SAVE_COMPLETE_SIZE
+    ld      de,$A000 + SAVE_CHECKSUM_SIZE
+    call    _crc16
+
+    ; write crc checksum 
+    ld      hl,$A000 
+    ld      a,b
+    ld      [hli],a
+    ld      [hl],c
+
+    ; disable external RAM
+    ld      hl,$0000 
+    ld      [hl],$00
+
+    ei
+    ret
+
+
 ; Helpers ---------------------------------------------------------------------
-; de = source address, bc = byte count -> hl = crc
-_crc16:
+_crc16: ; de = source address, bc = byte count -> hl = crc
     push    hl
     ld	    hl,$ffff
 
