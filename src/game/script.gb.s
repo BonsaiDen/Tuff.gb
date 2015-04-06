@@ -48,8 +48,13 @@ script_execute:; b = room x, c = room y, a = trigger flag (LEAVE / ENTER)
     ; now load the script's stored flags from memory
     push    hl
     ld      hl,scriptTableStatus
-    ld      a,l; add current script index
+
+    ; add current script index 
+    ; TODO ensure alignment
+    ld      a,l
     add     b
+    ld      l,a
+
     ld      a,[hl]
     pop     hl
             
