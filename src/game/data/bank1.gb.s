@@ -35,39 +35,39 @@ DataTitleSprite:
 DataTitleSpriteLayout:
 
     ; Upper Part of T
-    DB      0, 0 + DATA_TITLE_SPRITE_X,$60,$0F
-    DB      0, 8 + DATA_TITLE_SPRITE_X,$62,$0F
-    DB      0,16 + DATA_TITLE_SPRITE_X,$64,$0F
-    DB      0,24 + DATA_TITLE_SPRITE_X,$66,$0F
-    DB      0,32 + DATA_TITLE_SPRITE_X,$68,$0F
-    DB      0,40 + DATA_TITLE_SPRITE_X,$6A,$0F
+    DB      0, 0 + DATA_TITLE_SPRITE_X,$60,$10
+    DB      0, 8 + DATA_TITLE_SPRITE_X,$62,$10
+    DB      0,16 + DATA_TITLE_SPRITE_X,$64,$10
+    DB      0,24 + DATA_TITLE_SPRITE_X,$66,$10
+    DB      0,32 + DATA_TITLE_SPRITE_X,$68,$10
+    DB      0,40 + DATA_TITLE_SPRITE_X,$6A,$10
 
     ; Middle Part of T
-    DB      0,12 + DATA_TITLE_SPRITE_X,$6C,$0F
+    DB      0,12 + DATA_TITLE_SPRITE_X,$6C,$10
 
     ; Lower Part of T
-    DB      0,12 + DATA_TITLE_SPRITE_X,$76,$0F
+    DB      0,12 + DATA_TITLE_SPRITE_X,$76,$10
 
     ; Left Half of U
-    DB      0,22 + DATA_TITLE_SPRITE_X,$6E,$0F
+    DB      0,22 + DATA_TITLE_SPRITE_X,$6E,$10
 
     ; Right Half of U
-    DB      0,36 + DATA_TITLE_SPRITE_X,$70,$0F
+    DB      0,36 + DATA_TITLE_SPRITE_X,$70,$10
 
     ; Lower Parts of U
-    DB      0,22 + DATA_TITLE_SPRITE_X,$78,$0F
-    DB      0,30 + DATA_TITLE_SPRITE_X,$7A,$0F
-    DB      0,36 + DATA_TITLE_SPRITE_X,$7C,$0F
+    DB      0,22 + DATA_TITLE_SPRITE_X,$78,$10
+    DB      0,30 + DATA_TITLE_SPRITE_X,$7A,$10
+    DB      0,36 + DATA_TITLE_SPRITE_X,$7C,$10
 
     ; First F
-    DB      0,46 + DATA_TITLE_SPRITE_X,$72,$0F
-    DB      0,54 + DATA_TITLE_SPRITE_X,$74,$0F
-    DB      0,46 + DATA_TITLE_SPRITE_X,$7E,$0F
+    DB      0,46 + DATA_TITLE_SPRITE_X,$72,$10
+    DB      0,54 + DATA_TITLE_SPRITE_X,$74,$10
+    DB      0,46 + DATA_TITLE_SPRITE_X,$7E,$10
 
     ; Second F
-    DB      0,64 + DATA_TITLE_SPRITE_X,$72,$0F
-    DB      0,72 + DATA_TITLE_SPRITE_X,$74,$0F
-    DB      0,64 + DATA_TITLE_SPRITE_X,$7E,$0F
+    DB      0,64 + DATA_TITLE_SPRITE_X,$72,$10
+    DB      0,72 + DATA_TITLE_SPRITE_X,$74,$10
+    DB      0,64 + DATA_TITLE_SPRITE_X,$7E,$10
 
 DataTitleSpriteLayoutAnimation:
     DB      0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6

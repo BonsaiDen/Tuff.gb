@@ -330,7 +330,7 @@ title_draw_logo_sprite:
     xor     a
     ld      [titleSpriteOffsetIndex],a
 
-    ld      de,spriteData + $48
+    ld      de,spriteOam + $48
     ld      hl,DataTitleSpriteLayout
     ld      bc,DATA_TITLE_SPRITE_COUNT * 4
     call    core_mem_cpy
@@ -352,7 +352,7 @@ title_animate_logo:
     ld      c,a; store offset into c
 
     ; setup sprite update loop
-    ld      de,spriteData + $48
+    ld      de,spriteOam + $48
     ld      hl,DataTitleSpriteLayoutYOffsets
     ld      b,DATA_TITLE_SPRITE_COUNT
 
@@ -388,7 +388,7 @@ title_animate_logo:
 
 title_hide_logo:
     xor     a
-    ld      hl,spriteData + $48
+    ld      hl,spriteOam + $48
     ld      bc,DATA_TITLE_SPRITE_COUNT * 4
     call    core_mem_set
     ret
