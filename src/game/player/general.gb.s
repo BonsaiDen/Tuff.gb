@@ -205,12 +205,12 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ; down ------------------------------
 .check_down:
 
-    ld      b,130; normal border when not under water
+    ld      b,130; normal lower screen border when not under water
 
     ld      a,[playerUnderWater]
     cp      1
     jr      nz,.check_down_ground
-    ld      b,126; under water we need to include the swim animation offset
+    ld      b,126; when under water we need to include the swim animation offset
 
 .check_down_ground:
     ld      a,[playerY]
@@ -235,6 +235,15 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,PLAYER_SPRITE_INDEX
     call    new_sprite_set_position
 
+    ; continue wall sliding in case we were already sliding before the screen
+    ; transition happened
+    ld      a,[playerWallSlideTick]
+    cp      0
+    jr      z,.not_sliding
+    ld      a,1
+    ld      [playerWallSlideTick],a
+
+.not_sliding:
     ld      a,1
     ret
 

@@ -209,6 +209,8 @@ player_collision_left_all:
     ; upper half 
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
+    cp      255
+    jr      c,.upper_bound
     ld      c,a
 
     ld      a,[playerX]
@@ -219,6 +221,7 @@ player_collision_left_all:
     ret     z
 
     ; lower half 
+.upper_bound:
     ld      a,[playerY]
     sub     1
     ld      c,a
@@ -292,6 +295,8 @@ player_collision_right_all:
     ; upper half 
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
+    cp      255
+    jr      c,.upper_bound
     ld      c,a
 
     ld      a,[playerX]
@@ -302,6 +307,7 @@ player_collision_right_all:
     ret     z
 
     ; lower half 
+.upper_bound:
     ld      a,[playerY]
     sub     1
     ld      c,a
