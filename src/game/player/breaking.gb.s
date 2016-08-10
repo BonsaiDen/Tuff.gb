@@ -1,8 +1,39 @@
 ; Block Breaking --------------------------------------------------------------
 ; -----------------------------------------------------------------------------
+break_horizontal_blocks_on_scroll:; a = side (0 = left, 1 = right)
+
+    ; store side
+    ld      d,a
+
+    ; check player movement speed
+    call    player_is_running
+    ret     nz
+
+    ; divide player y by 16 to get block
+    ld      a,[playerY]
+    sub     7
+    swap    a
+    and     $f
+    ld      c,a; store y tile
+
+    ; reset break delays
+    xor     a
+    ld      [playerMovementDelay],a
+    ld      a,1
+    ld      [playerBreakDelayed],a
+
+    ; check side to break
+    ld      a,d
+    ld      b,0
+    cp      1
+    jr      z,_break_horizontal_blocks_left
+    ld      b,9
+    jr      _break_horizontal_blocks_right
+
+
 break_horizontal_blocks:; a = block y, b = block x
 
-    ld      c,a; move x tile into b
+    ld      c,a; move y tile into c
 
     ; divide by 8 and modulo 2 to figure out the left / right block
     ld      a,[playerX]
@@ -12,13 +43,13 @@ break_horizontal_blocks:; a = block y, b = block x
     and     %00000001
 
     cp      1
-    jr      z,.left
+    jr      z,_break_horizontal_blocks_left
 
     cp      0
-    jr      z,.right
+    jr      z,_break_horizontal_blocks_right
     ret
 
-.left:
+_break_horizontal_blocks_left:
 
     ; check if block can be broken
     push    bc
@@ -30,26 +61,26 @@ break_horizontal_blocks:; a = block y, b = block x
     ret     nz
 
     ; check if we need to set up the initial delay
-    ;ld      a,[playerBreakDelayed]
-    ;cp      1
-    ;jr      nz,.delay
+    ld      a,[playerBreakDelayed]
+    cp      1
+    jr      nz,_break_horizontal_blocks_delay
 
-    ;; wait for delay to be over
-    ;ld      a,[playerMovementDelay]
-    ;cp      0
-    ;ret     nz
+    ; wait for delay to be over
+    ld      a,[playerMovementDelay]
+    cp      0
+    ret     nz
 
-    ;; reset delay
-    ;xor     a
-    ;ld      [playerBreakDelayed],a
+    ; reset delay
+    xor     a
+    ld      [playerBreakDelayed],a
 
     ; break block
     ld      a,MAP_BLOCK_TILES_LEFT
     call    _destroy_breakable_block
 
     ret
-    
-.right:
+
+_break_horizontal_blocks_right:
     ; check if block can be broken
     push    bc
     sla     b; convert into 8x8 index
@@ -61,18 +92,18 @@ break_horizontal_blocks:; a = block y, b = block x
     ret     nz
 
     ; check if we need to set up the initial delay
-    ;ld      a,[playerBreakDelayed]
-    ;cp      1
-    ;jr      nz,.delay
+    ld      a,[playerBreakDelayed]
+    cp      1
+    jr      nz,_break_horizontal_blocks_delay
 
-    ;; wait for delay to be over
-    ;ld      a,[playerMovementDelay]
-    ;cp      0
-    ;ret     nz
+    ; wait for delay to be over
+    ld      a,[playerMovementDelay]
+    cp      0
+    ret     nz
 
-    ;; reset delay
-    ;xor     a
-    ;ld      [playerBreakDelayed],a
+    ; reset delay
+    xor     a
+    ld      [playerBreakDelayed],a
 
     ; break block
     ld      a,MAP_BLOCK_TILES_RIGHT
@@ -80,8 +111,7 @@ break_horizontal_blocks:; a = block y, b = block x
 
     ret
 
-    ; TODO finish
-.delay:
+_break_horizontal_blocks_delay:
 
     ld      a,3
     call    screen_shake
@@ -90,7 +120,7 @@ break_horizontal_blocks:; a = block y, b = block x
     ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
     call    sound_play_effect_two_wait
 
-    ; align player y to 
+    ; align player y to
     ld      a,[playerY]
     and     %11111000
     ld      [playerY],a
@@ -163,7 +193,7 @@ break_vertical_blocks:; a = block x, c = block y
     call    _destroy_breakable_block
 
     ret
-    
+
 .bottom:
     ; check if block can be broken
     push    bc
@@ -204,7 +234,7 @@ break_vertical_blocks:; a = block x, c = block y
     ld      a,SOUND_EFFECT_PLAYER_POUND_BREAK
     call    sound_play_effect_two_wait
 
-    ; align player y to 
+    ; align player y to
     ld      a,[playerY]
     and     %11111000
     ld      [playerY],a
@@ -262,7 +292,7 @@ _destroy_breakable_block:; a = block group to break
     sla     l
     ld      de,MapBreakableBlockGroupOffsets
     add     hl,de
-    
+
     ; get the 16x16 block tile for checking the new background of the tile
     call    map_get_block_value
     ld      e,a; store block id
@@ -308,6 +338,11 @@ _destroy_breakable_block:; a = block group to break
     pop     de
     pop     hl
 
+    ; for the next 4 frames, prevent the player from loosing speed so they
+    ; don't get stuck in the middle of broken blocks
+    ld      a,4
+    ld      [playerBreakContinue],a
+
     ret
 
 
@@ -322,7 +357,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     dec     b
     call    map_get_tile_value
     pop     bc
-    
+
     cp      MAP_BACKGROUND_TILE_LIGHT
     jr      z,.found_left
 

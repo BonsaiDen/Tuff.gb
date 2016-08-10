@@ -63,6 +63,10 @@ map_load_room: ; b = x, c = y
     ld      a,c
     ld      [mapRoomY],a
 
+    ; TODO trigger room exit scripts
+    ;ld      a,SCRIPT_TRIGGER_ROOM_EXIT
+    ;call    script_execute
+
     ; trigger room enter scripts
     ld      a,SCRIPT_TRIGGER_ROOM_ENTER
     call    script_execute

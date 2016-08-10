@@ -2,11 +2,11 @@
 player_init:
 
     ; Position 
-    ld      a,24
-    ld      [playerX],a
-    ld      a,62
-    ld      [playerY],a
-    ld      [playerYOffset],a
+    ; ld      a,24
+    ; ld      [playerX],a
+    ; ld      a,62
+    ; ld      [playerY],a
+    ; ld      [playerYOffset],a
 
     ; Direction
     ld      a,PLAYER_DIRECTION_RIGHT
@@ -57,6 +57,7 @@ player_reset:
     ld      [playerJumpFrames],a
     ld      [playerBreakDelayed],a
     ld      [playerJumpHold],a
+    ld      [playerBreakContinue],a
 
     ld      a,1
     ld      [playerOnGround],a
@@ -145,6 +146,8 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,157
     ld      [playerX],a
     call    map_scroll_left
+    xor     a
+    call    break_horizontal_blocks_on_scroll
 
     jr      .scrolled
 
@@ -158,6 +161,8 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,3
     ld      [playerX],a
     call    map_scroll_right
+    ld      a,1
+    call    break_horizontal_blocks_on_scroll
 
     jr      .scrolled
 

@@ -109,6 +109,7 @@ playerBreakBlockM:         DB
 playerBreakBlockR:         DB
 playerBreakBlockL:         DB
 playerBreakBlockOffset:    DB
+playerBreakContinue:       DB ; frames for which the player will not loose speed or can control after a horizontal block has been broken
 
 ; Wall Jump
 playerWallSlideDir:        DB ; direction of the wall which the player is/was sliding on

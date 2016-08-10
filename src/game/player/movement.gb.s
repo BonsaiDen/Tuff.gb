@@ -1,6 +1,11 @@
 ; Horizontal Player Movement --------------------------------------------------
 player_move:
 
+    ; check for block breaking delay
+    ld      a,[playerMovementDelay]
+    cp      0
+    jp      nz,.breaking_delayed
+
     ; check for landing frames
     ld      a,[playerLandingFrames]
     cp      0
@@ -232,6 +237,10 @@ player_move:
     ld      [playerAnimation],a
     ret
 
+.breaking_delayed:
+    dec     a
+    ld      [playerMovementDelay],a
+    ret
 
 
 ; Horizontal Acceleration -----------------------------------------------------
@@ -415,6 +424,11 @@ player_accelerate:
 
 player_decelerate:
 
+    ; check for break continuation and skip decrease
+    ld      a,[playerBreakContinue]
+    cp      0
+    jr      nz,.break_continue
+
     ; check for bounce frames and skip decrease
     ld      a,[playerBounceFrames]
     cp      PLAYER_BOUNCE_FRAMES - PLAYER_DECELERATE_FRAMES
@@ -487,7 +501,26 @@ player_decelerate:
     ld      [playerDecTick],a
     ret
 
+.break_continue:
+    dec     a
+    ld      [playerBreakContinue],a
 
+    ; keep full running speed
+    ld      a,2
+    ld      [playerIsRunning],a
+
+    ret
+
+
+player_is_running:; -> a = 0 = is running
+    ld      a,[playerSpeedRight]
+    ld      b,a
+    ld      a,[playerSpeedLeft]
+    or      b
+    ld      c,a
+    and     %00000010; check if speed is >= 2
+    cp      %00000010
+    ret
 
 player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
@@ -502,13 +535,7 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     jr      nz,.done; normal collision
 
     ; check player movement speed
-    ld      a,[playerSpeedRight]
-    ld      b,a
-    ld      a,[playerSpeedLeft]
-    or      b
-    ld      c,a
-    and     %00000010; check if speed is >= 2
-    cp      %00000010
+    call    player_is_running
     jr      nz,.done; normal collision
 
     ; check break blocks
@@ -590,7 +617,6 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ret
 
 
-
 _player_check_wall_break:
 
     ; setup X offset value
@@ -629,7 +655,7 @@ _player_check_wall_break:
     cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_bottom
 
-    ; store MIddle block y coordinate
+    ; store middle block y coordinate
     ld      a,[playerY]; divide y by 16
     sub     7
     swap    a
@@ -688,7 +714,7 @@ _player_check_wall_break:
 .check_blocks:
     
     ; setup x block based on current player direction
-    ld      a,[playerX]; divide by 16
+    ld      a,[playerX]; divide by 16 to get X tile
     add     h
     swap    a
     and     $f
