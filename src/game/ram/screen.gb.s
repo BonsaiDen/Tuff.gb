@@ -1,4 +1,4 @@
-SECTION "ScreenRam",WRAM0[$C0E0]
+SECTION "ScreenRam",WRAM0[$C0E1]
 
 ; Palette Animation -----------------------------------------------------------
 SCREEN_PALETTE_FADE_OUT     EQU %0000_0001

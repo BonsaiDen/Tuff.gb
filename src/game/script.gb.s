@@ -10,7 +10,7 @@ script_init:
 
 
 ; Script Execution ------------------------------------------------------------
-script_execute:; b = room x, c = room y, a = trigger flag (LEAVE / ENTER)
+script_execute:; a = trigger flag (LEAVE / ENTER)
 
     push    hl
     push    de
@@ -20,7 +20,9 @@ script_execute:; b = room x, c = room y, a = trigger flag (LEAVE / ENTER)
     ld      e,a
 
     ; combine x and y coordinates
-    ld      a,b
+    ld      a,[mapRoomY]
+    ld      c,a
+    ld      a,[mapRoomX]
     swap    a
     or      c
     ld      c,a; store coordinates into c
@@ -50,7 +52,7 @@ script_execute:; b = room x, c = room y, a = trigger flag (LEAVE / ENTER)
     ld      hl,scriptTableStatus
 
     ; add current script index 
-    ; TODO ensure alignment
+    ; TODO ensure alignment of script data ?
     ld      a,l
     add     b
     ld      l,a

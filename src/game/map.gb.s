@@ -46,6 +46,11 @@ _map_scroll:
     ld      [mapRoomLastY],a
     add     c
     ld      c,a
+
+    ; trigger room exit scripts
+    ld      a,SCRIPT_TRIGGER_ROOM_LEAVE
+    call    script_execute
+
     call    map_load_room
     ret
 
@@ -62,10 +67,6 @@ map_load_room: ; b = x, c = y
     ld      [mapRoomX],a
     ld      a,c
     ld      [mapRoomY],a
-
-    ; TODO trigger room exit scripts
-    ;ld      a,SCRIPT_TRIGGER_ROOM_EXIT
-    ;call    script_execute
 
     ; trigger room enter scripts
     ld      a,SCRIPT_TRIGGER_ROOM_ENTER
