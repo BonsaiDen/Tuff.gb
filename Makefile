@@ -9,13 +9,13 @@ convert:
 
 # Emulation
 run: rom
-	gngb --fps -a build/game.gb
+	gngb --fps -a --sound build/game.gb
 
 gambatte: rom
-	gambatte_qt build/game.gb
+	gambatte_sdl build/game.gb
 
 bgb: rom
-	WINEPREFIX=~/.local/share/wineprefixes/steam wine ~/.local/bin/bgb.exe build/game.gb
+	wine ~/.local/bin/bgb.exe build/game.gb
 
 
 # Others
@@ -24,7 +24,7 @@ clean:
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 	
 tiled:
-	~/Sources/tiled-qt-0.9.1/build/bin/tiled src/data/main.map.json &
+	~/dev/tiled/bin/tiled src/data/main.map.json &
 
 
 # Video
