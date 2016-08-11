@@ -76,8 +76,7 @@ player_move:
 .loop_right:
 
     call    player_collision_right
-    cp      0
-    jr      z,.not_blocked_right
+    jr      nc,.not_blocked_right
 
     ; check for wall hit
     call    player_wall_hit
@@ -96,8 +95,7 @@ player_move:
 
 .pushing_right:
     call    player_collision_right_all
-    cp      0
-    jr      z,.idle_right
+    jr      nc,.idle_right
     ld      a,[playerOnGround]
     cp      1
     jr      nz,.idle_right
@@ -139,8 +137,7 @@ player_move:
 .loop_left:
 
     call    player_collision_left
-    cp      0
-    jr      z,.not_blocked_left
+    jr      nc,.not_blocked_left
 
     ; check for wall hit
     call    player_wall_hit
@@ -159,8 +156,7 @@ player_move:
 
 .pushing_left:
     call    player_collision_left_all
-    cp      0
-    jr      z,.idle_left
+    jr      nc,.idle_left
     ld      a,[playerOnGround]
     cp      1
     jr      nz,.idle_left

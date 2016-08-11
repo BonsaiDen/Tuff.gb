@@ -178,8 +178,7 @@ player_pound:
 
     ; push away from ceiling
     call    player_collision_far_up
-    cp      1
-    jr      nz,.push_sides
+    jr      nc,.push_sides
 
     ld      a,[coreLoopCounter]
     and     %00000111
@@ -193,8 +192,7 @@ player_pound:
     ; push away from walls
 .push_sides:
     call    player_collision_far_right
-    cp      1
-    jr      nz,.push_left
+    jr      nc,.push_left
 
 .push_right:
     ld      a,[coreLoopCounter]
@@ -208,8 +206,7 @@ player_pound:
 
 .push_left:
     call    player_collision_far_left
-    cp      1
-    jr      nz,.delay_done
+    jr      nc,.delay_done
 
     ld      a,[coreLoopCounter]
     and     %00000111

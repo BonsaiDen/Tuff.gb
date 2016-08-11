@@ -299,16 +299,14 @@ player_jump:
     
     ; check collision at current top pixel
     call    player_collision_up
-    cp      1
-    jr      z,.collision
+    jr      c,.collision
 
     ld      a,[playerY]
     dec     a
 
     ; check again with new top pixel
     call    player_collision_up
-    cp      1
-    jr      z,.collision
+    jr      c,.collision
 
     ; finally set new top pixel
     ld      a,[playerY]

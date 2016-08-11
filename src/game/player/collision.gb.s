@@ -36,8 +36,7 @@ _player_col_up:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; right half 
     ld      a,[playerY]
@@ -48,8 +47,7 @@ _player_col_up:
     add     PLAYER_HALF_WIDTH - 3
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; left half 
     ld      a,[playerY]
@@ -164,8 +162,7 @@ _player_col_left:
     sub     h
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; upper half 
     ld      a,[playerY]
@@ -176,8 +173,7 @@ _player_col_left:
     sub     h
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; lower half 
     ld      a,[playerY]
@@ -201,8 +197,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    cp      0
-    ret     z
+    ret     nc
 
     ; upper half 
     ld      a,[playerY]
@@ -215,8 +210,7 @@ player_collision_left_all:
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
-    cp      0
-    ret     z
+    ret     nc
 
     ; lower half 
 .upper_bound:
@@ -249,8 +243,7 @@ _player_col_right:
     add     h
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; upper half 
     ld      a,[playerY]
@@ -261,8 +254,7 @@ _player_col_right:
     add     h
     ld      b,a
     call    map_get_collision
-    cp      1
-    ret     z
+    ret     c
 
     ; lower half 
     ld      a,[playerY]
@@ -273,7 +265,6 @@ _player_col_right:
     add     h
     ld      b,a
     call    map_get_collision
-
     ret
 
 player_collision_right_all:
@@ -287,8 +278,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    cp      0
-    ret     z
+    ret     nc
 
     ; upper half 
     ld      a,[playerY]
@@ -301,8 +291,7 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    cp      0
-    ret     z
+    ret     nc
 
     ; lower half 
 .upper_bound:

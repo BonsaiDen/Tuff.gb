@@ -67,15 +67,13 @@ player_slide_wall:
 
 .slide_left:
     call    player_collision_left_all
-    cp      0
-    ret     z
+    ret     nc
     call    player_slide_wall_init
     ret
 
 .slide_right:
     call    player_collision_right_all
-    cp      0
-    ret     z
+    ret     nc
     call    player_slide_wall_init
     ret
 
