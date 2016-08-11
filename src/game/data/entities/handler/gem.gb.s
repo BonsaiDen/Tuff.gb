@@ -32,10 +32,10 @@ entity_handler_update_gem: ; b = entity index, c = sprite index, de = screen dat
     ; disable entity
     ld      a,$ff
     ld      [de],a
-    
+
     ; flash screen
-    ; ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_LIGHT
-    ; call    screen_animate
+    ld      a,SCREEN_PALETTE_FLASH_FAST | SCREEN_PALETTE_LIGHT
+    call    screen_animate
 
     ret
 

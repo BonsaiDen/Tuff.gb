@@ -18,6 +18,8 @@ entity_update:
     ld      a,[de]
     cp      0
     jr      z,.skip; not active skip
+    cp      $ff
+    jr      z,.skip; disabled
     ld      l,a ; store type
 
     ; get sprite index

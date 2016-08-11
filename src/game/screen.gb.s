@@ -91,11 +91,18 @@ _screen_animate_palette:
     bit     0,a
     ret     z
 
-    ; check whether fade or flash
+    ; check whether fade or flash or flash fast
     bit     1,a
     jr      z,.fade
+    bit     3,a
+    jr      nz,.flash_fast
+
 .flash:
     ld      hl,_screen_flash_map
+    jr      .color
+
+.flash_fast:
+    ld      hl,_screen_flash_fast_map
     jr      .color
 
 .fade:
@@ -111,7 +118,7 @@ _screen_animate_palette:
 
 .color:
     ; check whether dark or light mode
-    bit     3,a
+    bit     4,a
     jr      nz,.dark
 
 .light:
@@ -225,6 +232,9 @@ _screen_mix_color_dmg:; hl = color pointer, a = current color, d = brigthness to
 ; Fading and Flashing Data ----------------------------------------------------
 _screen_flash_map:
     DB      $01,$02,$03,$04,$04,$04,$04,$04,$04,$03,$02,$01,$00,$FF
+
+_screen_flash_fast_map:
+    DB      $01,$02,$03,$04,$02,$01,$00,$FF
 
 _screen_fade_out_map:
     DB      $00,$00,$00,$00,$01,$02,$03,$04,$FF
