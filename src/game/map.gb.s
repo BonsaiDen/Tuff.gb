@@ -110,6 +110,9 @@ map_load_room: ; b = x, c = y
     call    entity_store ; first store them
     call    entity_reset 
 
+    ; force sprite unloads
+    call    new_sprite_update
+
     ; load room data into vram
     call    _map_load_room_data
 

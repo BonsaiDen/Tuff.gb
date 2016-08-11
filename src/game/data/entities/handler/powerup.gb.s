@@ -23,47 +23,14 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
     cp      1
     ret     z
 
-    ; TODO share this logic across the powerups
+    ; TODO is this aligned, if so we only need to inc e
     inc     de; skip type
     inc     de; skip flags
     inc     de; skip direction
 
-    ; check player x > powerup x - 16 and player x < powerup y 
-
-    ; check bottom edge
-    ld      a,[de] ; y
-    add     1
-    ld      l,a
-    ld      a,[playerY]
-    cp      l
-    ret     nc; edge > player
-
-    ; check left edge
-    ld      a,[de] ; y
-    sub     15
-    ld      l,a
-    ld      a,[playerY]
-    cp      l
-    ret     c; edge < player
-
-    ; check player x > powerup x - 8 and player x < powerup x + 8
-    inc     de
-
-    ; check right edge
-    ld      a,[de] ; x
-    add     7 
-    ld      l,a
-    ld      a,[playerX]
-    cp      l
-    ret     nc; edge > player
-
-    ; check left edge
-    ld      a,[de] ; x
-    sub     6 
-    ld      l,a
-    ld      a,[playerX]
-    cp      l
-    ret     c; edge < player
+    call    entity_col_player
+    cp      0
+    ret     z
 
     ; disable entity
     dec     de

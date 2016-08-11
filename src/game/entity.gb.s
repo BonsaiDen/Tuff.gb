@@ -50,7 +50,7 @@ entity_update:
 
     ; check if the update handler disabled the entity
     ld      a,[de]
-    cp      0
+    cp      $ff
     jr      z,.disabled; not active skip
 
     inc     e; skip type
@@ -76,7 +76,9 @@ entity_update:
 
 .disabled:
     ld      a,c
+    push    de
     call    new_sprite_disable
+    pop     de
 
 .skip:
     ld      a,e
@@ -555,6 +557,54 @@ entity_col_right:; b = x, c = y
 .done:
     pop     bc
     ret
+
+
+entity_col_player:; a -> collision
+
+    ; check player x > powerup x - 16 and player x < powerup y 
+
+    ; check bottom edge
+    ld      a,[de] ; y
+    add     1
+    ld      l,a
+    ld      a,[playerY]
+    cp      l
+    jr      nc,.missed; edge > player
+
+    ; check left edge
+    ld      a,[de] ; y
+    sub     15
+    ld      l,a
+    ld      a,[playerY]
+    cp      l
+    jr      c,.missed; edge < player
+
+    ; check player x > powerup x - 8 and player x < powerup x + 8
+    inc     de
+
+    ; check right edge
+    ld      a,[de] ; x
+    add     7 
+    ld      l,a
+    ld      a,[playerX]
+    cp      l
+    jr      nc,.missed; edge > player
+
+    ; check left edge
+    ld      a,[de] ; x
+    sub     6 
+    ld      l,a
+    ld      a,[playerX]
+    cp      l
+    jr      c,.missed; edge < player
+
+    ld      a,1
+    ret
+
+.missed:
+    xor     a
+    ret
+
 
 
 ; Trampolin for entity logic handler ------------------------------------------

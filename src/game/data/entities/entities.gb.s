@@ -4,6 +4,7 @@ _DataEntityDefinitions:
     DB      %01000001,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Dark
     DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
     DB      %00000011,$00,$00,$00, $00,$00,$00,$00 ; Power up
+    DB      %10000100,$00,$00,$00, $00,$00,$00,$00 ; Gem
 
 
 ; Entity Handler Table --------------------------------------------------------
@@ -20,6 +21,9 @@ DataEntityLoadHandlerTable:
     jp      entity_handler_load_powerup
     nop
 
+    jp      entity_handler_load_gem
+    nop
+
             
 DataEntityUpdateHandlerTable:
     jp      entity_handler_update_save
@@ -34,9 +38,13 @@ DataEntityUpdateHandlerTable:
     jp      entity_handler_update_powerup
     nop
 
+    jp      entity_handler_update_gem
+    nop
+
 
 ; Entity Logic Code Includes --------------------------------------------------
     INCLUDE "handler/save.gb.s"
     INCLUDE "handler/glow.gb.s"
     INCLUDE "handler/powerup.gb.s"
+    INCLUDE "handler/gem.gb.s"
 
