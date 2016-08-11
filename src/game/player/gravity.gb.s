@@ -386,8 +386,7 @@ player_fall:
 
     ; check for downward collision
     call    player_collision_down
-    cp      1
-    jr      z,.collision ; unlikely jump, thus jr and not jp
+    jr      c,.collision ; unlikely jump, thus jr and not jp
 
     ; reset ground state
     xor     a

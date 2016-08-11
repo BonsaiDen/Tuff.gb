@@ -81,8 +81,7 @@ player_collision_down:
     ; check for normal block collision
     ld      h,1
     call    _player_col_check_down
-    cp      1
-    ret     z; 
+    ret     c
 
     ; if pounding check for breaking blocks
     ld      a,[playerIsPounding]
@@ -93,7 +92,6 @@ player_collision_down:
 .col_breakable:
     ld      h,5
     call    _player_col_check_down
-    cp      1
     ret
 
 .pounding:
@@ -140,11 +138,11 @@ _player_col_check_down:
     cp      h
     jr      z,.col
 
-    xor     a
+    and     a
     ret
 
 .col:
-    ld      a,1
+    scf
     ret
 
 

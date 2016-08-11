@@ -478,10 +478,10 @@ player_pounding_collision:
     call    nz,break_vertical_blocks
     pop     bc
 
-    xor     a; fall through breakable blocks
+    and     a; fall through breakable blocks
     ret
 
 .collision:
-    ld      a,1; stop if we touch a normal collision block
+    scf      ; stop if we touch a normal collision block
     ret
 
