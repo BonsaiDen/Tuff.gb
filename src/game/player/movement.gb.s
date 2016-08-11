@@ -644,7 +644,6 @@ _player_check_wall_break:
     add     h
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_BLOCK
     jp      z,.collision
 
@@ -668,7 +667,6 @@ _player_check_wall_break:
     add     h
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
@@ -692,12 +690,10 @@ _player_check_wall_break:
     add     h
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
-
-    cp      1
+    cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
-    cp      5
+    cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_blocks
 
     ; store Top block y coordinate

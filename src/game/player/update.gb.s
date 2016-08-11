@@ -107,8 +107,6 @@ player_update:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_WATER_DEEP
     jr      z,.under_water
 
@@ -142,7 +140,6 @@ player_update:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_WATER_DEEP
     jr      z,.under_water
 

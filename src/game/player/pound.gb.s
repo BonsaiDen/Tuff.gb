@@ -100,7 +100,6 @@ player_pound:
     push    bc
     call    map_get_collision
     pop     bc
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_NONE; no collision, check next
     jr      z,.next
     cp      MAP_COLLISION_BREAKABLE ; found a block
@@ -389,7 +388,6 @@ player_pounding_collision:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_BLOCK
     jp      z,.collision
 
@@ -411,7 +409,6 @@ player_pounding_collision:
     add     7
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
@@ -434,12 +431,10 @@ player_pounding_collision:
     sub     8
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
-
-    cp      1
+    cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
-    cp      5
+    cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_blocks
 
     ; store L block x coordinate

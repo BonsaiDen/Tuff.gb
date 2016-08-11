@@ -106,7 +106,6 @@ _player_col_check_down:
     ld      a,[playerX]
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      h
     jr      z,.col
 
@@ -119,7 +118,6 @@ _player_col_check_down:
     add     PLAYER_HALF_WIDTH - 3
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      h
     jr      z,.col
 
@@ -132,7 +130,6 @@ _player_col_check_down:
     sub     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    ld      a,[mapCollisionFlag]
     cp      h
     jr      z,.col
 

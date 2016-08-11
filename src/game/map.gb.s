@@ -205,6 +205,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
 
     ; check type of collision
     call    map_get_tile_collision
+    ld      [mapCollisionFlag],a
     cp      MAP_COLLISION_BLOCK; normal blocks
     jr      z,.collision
     cp      MAP_COLLISION_BREAKABLE; breakable
@@ -212,12 +213,10 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
 
     ; everything that is not solid has no collision
 .no_collision:
-    ld      [mapCollisionFlag],a
     and     a
     ret
 
 .collision:
-    ld      [mapCollisionFlag],a
     scf
     ret
 

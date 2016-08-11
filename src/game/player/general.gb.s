@@ -1,7 +1,7 @@
 ; High Level Player API -------------------------------------------------------
 player_init:
 
-    ; Position 
+    ; Position
     ; ld      a,24
     ; ld      [playerX],a
     ; ld      a,62
@@ -219,7 +219,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
 
 .check_down_ground:
     ld      a,[playerY]
-    cp      b ; 
+    cp      b
     jr      c,.done
 
     ld      a,6
