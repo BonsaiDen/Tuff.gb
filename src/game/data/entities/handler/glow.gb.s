@@ -83,10 +83,7 @@ entity_glow_movement:; de = pointer at direction flag
 ; Left ------------------------------------------------------------------------
 .left:
     call    entity_col_left
-    jr      z,.left_move
-    jr      .direction
-    
-.left_move:
+    jr      c,.direction
     dec     b
     dec     b
     jr      .done
@@ -94,10 +91,7 @@ entity_glow_movement:; de = pointer at direction flag
 ; Right -----------------------------------------------------------------------
 .right:
     call    entity_col_right
-    jr      z,.right_move
-    jr      .direction
-
-.right_move:
+    jr      c,.direction
     inc     b
     inc     b
     jr      .done
@@ -105,10 +99,7 @@ entity_glow_movement:; de = pointer at direction flag
 ; Up --------------------------------------------------------------------------
 .up:
     call    entity_col_up
-    jr      z,.up_move
-    jr      .direction
-
-.up_move:
+    jr      c,.direction
     dec     c
     dec     c
     jr      .done
@@ -116,10 +107,7 @@ entity_glow_movement:; de = pointer at direction flag
 ; Down ------------------------------------------------------------------------
 .down:
     call    entity_col_down
-    jr      z,.down_move
-    jr      .direction
-
-.down_move:
+    jr      c,.direction
     inc     c
     inc     c
     jr      .done

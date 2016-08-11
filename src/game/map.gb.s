@@ -108,7 +108,7 @@ map_load_room: ; b = x, c = y
 
     ; unload entities
     call    entity_store ; first store them
-    call    entity_reset 
+    call    entity_reset
 
     ; force sprite unloads
     call    new_sprite_update
@@ -218,7 +218,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
 
 .collision:
     ld      [mapCollisionFlag],a
-    scf 
+    scf
     ret
 
 .off_screen:
@@ -235,21 +235,21 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     ; check bottom screen border
     ld      a,c
     cp      127
-    jr      nc,.collision 
+    jr      nc,.collision
 
     ; check right screen border
     ld      a,b
     cp      159
-    jr      nc,.collision 
+    jr      nc,.collision
 
     ; check top screen border
     xor     a
     cp      c
-    jr      nc,.collision 
+    jr      nc,.collision
 
     ; check left screen border
     cp      b
-    jr      nc,.collision 
+    jr      nc,.collision
 
     ; divide x by 8
     srl     b
@@ -266,11 +266,14 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
     cp      0
     jr      nz,.collision
     pop     bc
+
+    ; no collision
+    and     a
     ret
 
 .collision:
     pop     bc
-    ld      a,1
+    scf
     ret
 
 
@@ -313,7 +316,7 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     ld      e,b ; store xpos
 
     ; calculate base offset for the tile into either buffer
-    ld      h,0 
+    ld      h,0
     ld      l,c
     add     hl,hl ; x2
     add     hl,hl ; x4
@@ -400,7 +403,7 @@ map_animate_tiles:
 
     ; animate the tile -------------------------------------
 
-    ; get the default delay value 
+    ; get the default delay value
     push    bc; store delay point counter
     ld      bc,DataTileAnimation
 
@@ -438,7 +441,7 @@ map_animate_tiles:
     ; store animation index value
     inc     a; offset into animation data
     inc     a
-    ld      e,a 
+    ld      e,a
 
     ; get base tile value of the animation (base + d * 8)
     ld      hl,DataTileAnimation
@@ -451,7 +454,7 @@ map_animate_tiles:
     ld      d,[hl] ; base tile value $00 - $ff
 
     ; get the current tile value of the animation into B (base + d * 8 + a + 2)
-    ld      c,e 
+    ld      c,e
     add     hl,bc
     ld      b,[hl] ; store current tile value $00 - $ff
 
@@ -467,7 +470,7 @@ map_animate_tiles:
     ld      d,a ; store into DE
     ld      e,l
 
-    ; get the current animation address into HL 
+    ; get the current animation address into HL
     ; (multiply the current (tile - TILE_ANIMATION_BASE_OFFSET) by 16 + DataTileImg)
     ld      a,b; restore tile value
     ld      h,0
@@ -539,7 +542,7 @@ map_check_fallable_blocks:
     and     %00000001
     cp      1
     jr      z,.active
-            
+
     ; skip frame
     inc     hl
 
@@ -700,7 +703,7 @@ _map_update_falling_block: ; b = index
     inc     a
     ld      [hl],a
 
-    ; store loop counter and frame pointer 
+    ; store loop counter and frame pointer
     push    bc
     push    hl
 
@@ -765,7 +768,7 @@ map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ld      a,b ; store x
 
     ; y * 32
-    ld      h,0 
+    ld      h,0
     ld      l,c
 
     add     hl,hl ; 2
@@ -860,7 +863,7 @@ _map_load_tile_map:
     ; load and setup the rooms tile block definition mapping
     ld      a,[mapRoomHeaderFlags]
     bit     1,a; check if this room has a custom tile block map
-    ld      a,$0f; default mapping 
+    ld      a,$0f; default mapping
     jr      z,.skip_tile_map_byte
     ld      a,[hli]
 
@@ -930,42 +933,42 @@ _map_load_tile_block: ; a = origin block, b = target block
     add     hl,de; add data location
 
     ; copy the 256 block definition bytes for the 64, 16x16 blocks
-	ld      d,64
+    ld      d,64
 .loop:
 
     ; row 1
-    ld	    a,[hli]
-	ld	    [bc],a
+    ld      a,[hli]
+    ld      [bc],a
     inc     b
 
     ; row 2
-    ld	    a,[hli]
-	ld	    [bc],a
+    ld      a,[hli]
+    ld      [bc],a
     inc     b
 
     ; row 3
-    ld	    a,[hli]
-	ld	    [bc],a
+    ld      a,[hli]
+    ld      [bc],a
     inc     b
 
     ; row 4
-    ld	    a,[hli]
-	ld	    [bc],a
+    ld      a,[hli]
+    ld      [bc],a
 
     dec     b
     dec     b
     dec     b
 
-	inc	    bc
+    inc     bc
 
 .skip:
-	dec	    d
-	jr	    nz,.loop
+    dec     d
+    jr      nz,.loop
 
     pop     bc
     pop     af
     ret
-    
+
 
 _map_load_entities:
 
@@ -983,7 +986,7 @@ _map_load_entities:
 
 
 _map_load_room_data:
-    
+
     xor     a
     ld      [mapRoomUpdateRequired],a
     ld      [mapFallableBlockCount],a
@@ -1068,13 +1071,13 @@ _map_load_room_data:
     add     hl,hl; x 2
     add     hl,hl; x 4
     add     hl,de; get offset address
-    
+
     ; store tile type (dark / light) and reset active
     ; TODO store correct value based on tile value
     ld      a,%00000010; 6 bytes type, 1 bytes active
     ld      [hli],a
 
-    ; reset frames 
+    ; reset frames
     xor     a;
     ld      [hli],a
 

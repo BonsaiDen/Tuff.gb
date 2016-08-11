@@ -452,14 +452,14 @@ entity_col_up:; b = x, c = y
 
     ; middle
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; left
     ld      a,b
     sub     7
     ld      b,a
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; right
     ld      a,b
@@ -477,14 +477,14 @@ entity_col_down:; b = x, c = y
 
     ; middle
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; left
     ld      a,b
     sub     7
     ld      b,a
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; right
     ld      a,b
@@ -508,14 +508,14 @@ entity_col_left:; b = x, c = y
     ; bottom
     dec     c
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; middle
     ld      a,c
     sub     7
     ld      c,a
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; top
     ld      a,c
@@ -538,14 +538,14 @@ entity_col_right:; b = x, c = y
     ; bottom
     dec     c
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; middle
     ld      a,c
     sub     7
     ld      c,a
     call    map_get_collision_simple
-    jr      nz,.done
+    jr      c,.done
 
     ; top
     ld      a,c
