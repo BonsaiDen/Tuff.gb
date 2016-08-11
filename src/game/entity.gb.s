@@ -248,10 +248,8 @@ _entity_load:
     push    de
     push    bc
     call    _entity_get_current_room_id
-    call    _entity_find_bucket ; c is the room id, b is the entity id, return a and hl
-
-    cp      1
-    jr      nz,.load_defaults
+    call    _entity_find_bucket ; c is the room id, b is the entity id, return hl
+    jr      nc,.load_defaults
 
 .load_stored:
     
@@ -356,8 +354,7 @@ entity_store:
     pop     de
 
     ; did we find a bucket?
-    cp      1
-    jr      nz,.next
+    jr      nc,.next
 
     ; store into bucket
     ; c is the room id, b is the entity id, hl is the pointer, de the screen data
@@ -561,7 +558,7 @@ entity_col_right:; b = x, c = y
     ret
 
 
-entity_col_player:; a -> collision
+entity_col_player:; scf -> collision
 
     ; check player x > powerup x - 16 and player x < powerup y 
 
@@ -582,7 +579,7 @@ entity_col_player:; a -> collision
     jr      c,.missed; edge < player
 
     ; check player x > powerup x - 8 and player x < powerup x + 8
-    inc     de
+    inc     e
 
     ; check right edge
     ld      a,[de] ; x
@@ -600,11 +597,11 @@ entity_col_player:; a -> collision
     cp      l
     jr      c,.missed; edge < player
 
-    ld      a,1
+    scf
     ret
 
 .missed:
-    xor     a
+    and     a
     ret
 
 
@@ -712,15 +709,11 @@ _entity_get_last_room_id: ; c -> room id
 
 
 
-_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> hl = bucker pointer
+_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> scf = found bucket, hl = bucket pointer
     push    bc
     call    _entity_find_bucket; first check for a existing bucket that contains the entity
-    cp      1
-    jr      z,.done ; found a used bucket for this entity
-
-    ; find a free bucket, if possible
-    call    _entity_find_free_bucket
-.done:
+    ; find a free bucket, if required and possible
+    call    nc,_entity_find_free_bucket
     pop     bc
     ret
     
@@ -754,7 +747,7 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     jr      nz,.skip
 
     ; match found, hl is at the correct offset already
-    ld      a,1
+    scf
     ret
 
 .skip:
@@ -773,13 +766,13 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     jr      .loop
     
 .not_found:
-    xor     a
+    and     a
     ret
 
 
 
 _entity_find_free_bucket:
-    ; return a = 1 if we found a free spot, in which case hl = data pointer to entity state
+    ; return scf if we found a free spot, in which case hl = data pointer to entity state
 
     ; [roomid] (1 based indexing)
     ; [ffffff][ii] flags and entity id
@@ -794,7 +787,7 @@ _entity_find_free_bucket:
     jr      nz,.used; skip used buckets
 
     ; found a free spot, return the pointer
-    ld      a,1
+    scf
     ret
 
 .used:
@@ -813,6 +806,6 @@ _entity_find_free_bucket:
     jr      .loop
     
 .not_found:
-    xor     a
+    and     a
     ret
 

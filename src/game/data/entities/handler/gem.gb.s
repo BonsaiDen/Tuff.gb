@@ -18,8 +18,7 @@ entity_handler_update_gem: ; b = entity index, c = sprite index, de = screen dat
 
     ; check for collection
     call    entity_col_player
-    cp      0
-    ret     z
+    ret     nc
 
     ; disable entity
     dec     e
