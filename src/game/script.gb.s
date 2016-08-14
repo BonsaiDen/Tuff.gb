@@ -53,7 +53,6 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
 
     ; add current script index 
     ; script handler table MUST be at a XX00 offset(!)
-    ; TODO use 16 bit addition?
     ld      a,l
     add     b
     ld      l,a

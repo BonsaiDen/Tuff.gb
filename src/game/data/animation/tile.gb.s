@@ -6,7 +6,7 @@
 ; Water Top
 DB $f0,$03, $00,$01,$02,$03, $00,$00
 
-; Water
+; Water Bottom
 DB $f1,$03, $04,$05,$06,$07, $00,$00
 
 ; Waterfall

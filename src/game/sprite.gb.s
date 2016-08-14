@@ -542,8 +542,8 @@ _new_sprite_load_tiles:; a = animation id, b = tile row index
 _new_sprite_update_tile_rows:
 
     ; go through all tile rows 
-    ld      hl,spriteRowsUsed + 7
-    ld      c,8; loop counter / row index
+    ld      hl,spriteRowsUsed + SPRITE_MAX_TILE_ROWS - 1
+    ld      c,SPRITE_MAX_TILE_ROWS; loop counter / row index
     ld      b,$ff; tmp var holding the last unused row
 
 .loop:
