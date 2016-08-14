@@ -52,11 +52,13 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
     ld      hl,scriptTableStatus
 
     ; add current script index 
-    ; TODO ensure alignment of script data ?
+    ; script handler table MUST be at a XX00 offset(!)
+    ; TODO use 16 bit addition?
     ld      a,l
     add     b
     ld      l,a
 
+    ; load stored script flags
     ld      a,[hl]
     pop     hl
             
@@ -89,10 +91,11 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
     and     SCRIPT_TRIGGER_ROOM_STORE
     jr      z,.no_flags; if flag is not set, skip storing
 
-    ; get pointer to the current script's memory flags
+    ; get pointer to the current script's stored flags
     ld      hl,scriptTableStatus
     ld      a,l; add current script index
     add     b
+    ld      l,a
 
     ; load current script's memory flags and set triggered bit
     ld      a,[hl]
