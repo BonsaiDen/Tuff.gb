@@ -214,7 +214,7 @@ player_update:
     ld      a,[playerYOffset]
     ld      c,a
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_set_position
+    call    sprite_set_position
 
     ; check for direction changes
     ld      a,[playerDirectionLast]
@@ -229,12 +229,12 @@ player_update:
 
 .direction_left:
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_unset_mirrored
+    call    sprite_unset_mirrored
     jr      .direction_changed
 
 .direction_right:
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_set_mirrored
+    call    sprite_set_mirrored
 
 .direction_changed:
     ld      a,[playerDirection]
@@ -258,6 +258,6 @@ player_update:
     ld      [playerAnimationLast],a
     ld      b,a
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_set_animation
+    call    sprite_set_animation
     ret
 

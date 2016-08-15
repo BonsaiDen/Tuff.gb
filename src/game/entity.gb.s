@@ -68,7 +68,7 @@ entity_update:
     ld      b,a
 
     ld      a,h; restore entity sprite index
-    call    new_sprite_set_position
+    call    sprite_set_position
 
     inc     e; skip x
     inc     e; tileslot?
@@ -79,7 +79,7 @@ entity_update:
 .disabled:
     ld      a,c
     push    de
-    call    new_sprite_disable
+    call    sprite_disable
     pop     de
 
 .skip:
@@ -165,10 +165,10 @@ entity_load:
     push    bc
 
     ; enable sprite
-    call    new_sprite_enable
+    call    sprite_enable
     ld      b,h; setup hardware index
     ld      a,c; setup sprite index
-    call    new_sprite_set_hardware_index
+    call    sprite_set_hardware_index
 
     ; Get palette flag
     ld      a,l; load type
@@ -179,7 +179,7 @@ entity_load:
     srl     a
     ld      b,a
     ld      a,c
-    call    new_sprite_set_palette
+    call    sprite_set_palette
 
     ; call custom load handler
     ld      a,l
@@ -213,7 +213,7 @@ entity_load:
     ld      a,[de] ; load x position
     ld      b,a
     ld      a,l ; load sprite index
-    call    new_sprite_set_position
+    call    sprite_set_position
 
     pop     bc;  restore entity / loop index
     jr      .next
@@ -225,7 +225,7 @@ entity_load:
     ld      [hl],0
 
     ld      a,c
-    call    new_sprite_disable
+    call    sprite_disable
 
 .next:
     pop     hl
@@ -423,7 +423,7 @@ entity_reset:
     ; disable sprite 
     ld      a,b
     add     ENTITY_SPRITE_OFFSET
-    call    new_sprite_disable
+    call    sprite_disable
 
     ; unset type
     xor     a

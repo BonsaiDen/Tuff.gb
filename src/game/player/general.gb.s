@@ -25,10 +25,10 @@ player_init:
 
     ; Sprite
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_enable
+    call    sprite_enable
     ld      a,PLAYER_SPRITE_INDEX
     ld      b,4
-    call    new_sprite_set_hardware_index
+    call    sprite_set_hardware_index
 
     ret
 
@@ -125,7 +125,7 @@ player_dissolve:
     ld      [playerAnimationLast],a
     ld      b,a
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_set_animation
+    call    sprite_set_animation
 
     xor     a
     ld      [playerDissolveTick],a
@@ -238,7 +238,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      b,0
     ld      c,0
     ld      a,PLAYER_SPRITE_INDEX
-    call    new_sprite_set_position
+    call    sprite_set_position
 
     ; continue wall sliding in case we were already sliding before the screen
     ; transition happened

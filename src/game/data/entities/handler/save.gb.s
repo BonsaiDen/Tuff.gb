@@ -7,7 +7,7 @@ entity_handler_load_save_dark: ; generic, b = entity index, c = sprite index
 
 _entity_handler_load_save:
     ld      a,c
-    call    new_sprite_set_animation
+    call    sprite_set_animation
     xor     a
     ret
 

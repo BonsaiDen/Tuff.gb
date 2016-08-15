@@ -1,32 +1,32 @@
 SECTION "SpriteLogic",ROM0
 
 ; Update all Sprites ----------------------------------------------------------
-new_sprite_update:
+sprite_update:
 
     ; update sprite row information
-    call    _new_sprite_update_tile_rows
+    call    _sprite_update_tile_rows
 
     ; initial sprite pointer
     ld      a,0
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; unrolled sprite update loop
-    call    _new_sprite_update
+    call    _sprite_update
     inc     l
-    call    _new_sprite_update
+    call    _sprite_update
     inc     l
-    call    _new_sprite_update
+    call    _sprite_update
     inc     l
-    call    _new_sprite_update
+    call    _sprite_update
     inc     l
-    call    _new_sprite_update
+    call    _sprite_update
 
     ret
 
 
-new_sprite_enable: ; a = sprite id
+sprite_enable: ; a = sprite id
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; check if sprite is already enabled
     bit     7,[hl]
@@ -62,9 +62,9 @@ new_sprite_enable: ; a = sprite id
     pop     hl
     ret
 
-new_sprite_disable: ; a = sprite id
+sprite_disable: ; a = sprite id
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; check if sprite is actually enabled
     bit     7,[hl]
@@ -79,15 +79,15 @@ new_sprite_disable: ; a = sprite id
 
     ; mark the sprite's tile row as "was used"
     ld      a,[hl]
-    call    _new_sprite_tile_row_set_was_used
+    call    _sprite_tile_row_set_was_used
 
 .done:
     pop     hl
     ret
 
-new_sprite_set_animation:; a = sprite id, b = animation id
+sprite_set_animation:; a = sprite id, b = animation id
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; mark as changed
     set     4,[hl]
@@ -111,9 +111,9 @@ new_sprite_set_animation:; a = sprite id, b = animation id
     pop     hl
     ret
 
-new_sprite_set_palette:; a = sprite id, b = palette index
+sprite_set_palette:; a = sprite id, b = palette index
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; load flags
     ld      a,[hl]
@@ -124,9 +124,9 @@ new_sprite_set_palette:; a = sprite id, b = palette index
     pop     hl
     ret
 
-new_sprite_set_mirrored:; a = sprite id
+sprite_set_mirrored:; a = sprite id
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; set mirrored flag
     set     5,[hl]
@@ -134,9 +134,9 @@ new_sprite_set_mirrored:; a = sprite id
     pop     hl
     ret
 
-new_sprite_unset_mirrored:; a = sprite id 
+sprite_unset_mirrored:; a = sprite id 
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
 
     ; unset mirrored flag
     res     5,[hl]
@@ -144,9 +144,9 @@ new_sprite_unset_mirrored:; a = sprite id
     pop     hl
     ret
 
-new_sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
+sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
     ld      a,l
     add     8
     ld      l,a
@@ -154,9 +154,9 @@ new_sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
     pop     hl
     ret
 
-new_sprite_set_position:; a = sprite id, b = x, c = y
+sprite_set_position:; a = sprite id, b = x, c = y
     push    hl
-    call    _get_new_sprite_pointer
+    call    _get_sprite_pointer
     set     3,[hl]
     ld      a,l
     add     6
@@ -169,7 +169,7 @@ new_sprite_set_position:; a = sprite id, b = x, c = y
 
 
 ; Update a Single Sprite (using 2 8x16 hardware sprites) ----------------------
-_new_sprite_update: ; hl = sprite data pointer
+_sprite_update: ; hl = sprite data pointer
 
     ; load flags
     ld      a,[hli]
@@ -198,7 +198,7 @@ _new_sprite_update: ; hl = sprite data pointer
     jr      z,.no_row_used
 
     ; mark the old row as "was used"
-    call    _new_sprite_tile_row_set_was_used; a is the tile row index
+    call    _sprite_tile_row_set_was_used; a is the tile row index
 
 .no_row_used:
 
@@ -211,7 +211,7 @@ _new_sprite_update: ; hl = sprite data pointer
     ld      [hli],a
 
     ; mark the new row as used
-    call    _new_sprite_tile_row_set_used; a is the tile row index
+    call    _sprite_tile_row_set_used; a is the tile row index
 
     inc     l; skip frames left
 
@@ -220,7 +220,7 @@ _new_sprite_update: ; hl = sprite data pointer
 
     ; store flags
     push    bc
-    call    _new_sprite_load_tiles
+    call    _sprite_load_tiles
     pop     bc
 
     ; restore sprite pointer
@@ -392,7 +392,7 @@ _new_sprite_update: ; hl = sprite data pointer
 
     ; now update the actual hardware sprites
     push    hl
-    call    _new_sprite_update_hardware
+    call    _sprite_update_hardware
     pop     hl
 
     ret
@@ -417,7 +417,7 @@ _new_sprite_update: ; hl = sprite data pointer
     ld      d,0
     ld      e,0
     push    hl
-    call    _new_sprite_update_hardware
+    call    _sprite_update_hardware
     pop     hl
 
     ; setup pointer to next sprite
@@ -431,12 +431,11 @@ _new_sprite_update: ; hl = sprite data pointer
     ret
 
 
-_new_sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos, e = ypos
+_sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos, e = ypos
 
-    ; multiply sprite index by 16 to get the hardware offset 
+    ; multiply sprite index by 8 to get the hardware offset 
     ; as uneven sprites are consumed by the 8x16 sprite mode
     ; and we need two of these 8x16 sprites to show a full 16x16 sprite
-    add     a
     add     a
     add     a
     add     a
@@ -516,7 +515,7 @@ _new_sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = x
 
 
 ; Tile Row Management ---------------------------------------------------------
-_new_sprite_load_tiles:; a = animation id, b = tile row index
+_sprite_load_tiles:; a = animation id, b = tile row index
 
     ; load animation data address and row index
     call    _get_animation_pointer
@@ -534,12 +533,12 @@ _new_sprite_load_tiles:; a = animation id, b = tile row index
 
     ; decompress sprite row into vram
     ld      de,$8000
-    call    _load_new_sprite_row
+    call    _load_sprite_row
 
     ret
 
 
-_new_sprite_update_tile_rows:
+_sprite_update_tile_rows:
 
     ; go through all tile rows 
     ld      hl,spriteRowsUsed + SPRITE_MAX_TILE_ROWS - 1
@@ -584,7 +583,7 @@ _new_sprite_update_tile_rows:
     ret
 
 
-_new_sprite_tile_row_set_was_used:; a = tile row index
+_sprite_tile_row_set_was_used:; a = tile row index
     ld      de,spriteRowsUsed; base pointer
     add     e; add row index
     ld      e,a
@@ -593,7 +592,7 @@ _new_sprite_tile_row_set_was_used:; a = tile row index
     ret
 
 
-_new_sprite_tile_row_set_used:; a = tile row index
+_sprite_tile_row_set_used:; a = tile row index
     ld      de,spriteRowsUsed; base pointer
     add     e; add row index
     ld      e,a
@@ -603,7 +602,7 @@ _new_sprite_tile_row_set_used:; a = tile row index
 
 
 ; Helpers ---------------------------------------------------------------------
-_get_new_sprite_pointer:; a = sprite index -> hl = pointer
+_get_sprite_pointer:; a = sprite index -> hl = pointer
     ld      h,spriteData >> 8; high byte, needs to be aligned at 256 bytes
     ld      l,a
     add     a; x 2
@@ -626,7 +625,7 @@ _get_animation_pointer:; a = animation id -> hl = pointer
     ret
 
 ; hl = sprite map pointer, b = target row in ram, c = row index in sprite map, de = target base in ram
-_load_new_sprite_row: ; load a compressed tile row into vram
+_load_sprite_row: ; load a compressed tile row into vram
 
     ; adjust target pointer for target row
     ld      a,d 

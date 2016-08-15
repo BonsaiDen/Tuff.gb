@@ -111,7 +111,7 @@ map_load_room: ; b = x, c = y
     call    entity_reset
 
     ; force sprite unloads
-    call    new_sprite_update
+    call    sprite_update
 
     ; load room data into vram
     call    _map_load_room_data
@@ -123,7 +123,7 @@ map_load_room: ; b = x, c = y
     call    core_mem_set
 
     ; update all sprites
-    call    new_sprite_update
+    call    sprite_update
 
     pop     bc
     pop     de

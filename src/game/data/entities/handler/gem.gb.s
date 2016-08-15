@@ -1,7 +1,7 @@
 entity_handler_load_gem:; b = entity index, c = sprite index
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GEM
-    call    new_sprite_set_animation
+    call    sprite_set_animation
     inc     e; skip type
     ld      a,[de]; check collection flag
     ret
