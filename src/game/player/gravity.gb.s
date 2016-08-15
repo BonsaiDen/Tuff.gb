@@ -242,6 +242,11 @@ player_jump:
     cp      1
     jr      z,.jump
 
+    ; prevent jumping while in contact with the ceiling
+    call    player_collision_up
+    jr      c,.jump
+
+    ; set double jump flag
     ld      a,1
     ld      [playerDoubleJumped],a
 
