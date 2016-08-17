@@ -3,8 +3,8 @@ SECTION "EffectLogic",ROM0
 ; TODO remove this test code
 effect_init:
     ld      a,0
-    ld      b,120
-    ld      c,24
+    ld      b,110
+    ld      c,96
     call    effect_create
 
     ;ld      a,1
@@ -52,14 +52,13 @@ _effect_update: ; l = reset
     jr      c,.next
 
 .reset:
+    ; clear flags
+    ld      a,[de]
+    and     %0011_1111
+    ld      [de],a
     push    de
     call    _effect_reset
     pop     de
-
-    ; clear active flag
-    ld      a,[de]
-    and     %0111_1111
-    ld      [de],a
 
 .next:
     ld      a,e
@@ -142,10 +141,10 @@ _effect_create:; a = effect index, de = effect data pointer, b = ypos, c = xpos
     ; return early if we could not load the effect animation quad
     cp      $ff
     ret     z
-    
+
     ; load flags
     ld      a,[hli]
-    or      %1000_0000     
+    or      %1000_0000; set active flag
     ld      [de],a
     inc     e
 
@@ -169,7 +168,7 @@ _effect_create:; a = effect index, de = effect data pointer, b = ypos, c = xpos
     ld      [de],a
     inc     e
 
-    ; load animation delay 
+    ; load animation delay
     ld      a,[hli]
     ld      [de],a
     inc     e
@@ -195,7 +194,7 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
 
     ; store effect sprite index
     ld      a,h
-    add     a ; effect index * 4 
+    add     a ; effect index * 4
     add     a
 
     ; load sprite oam address
@@ -261,17 +260,44 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     ld      c,a
     inc     e
 
-    ; TODO check for tile col value
-    ; TODO how to configure water/air/blocked col handling?
-    ; TODO e.g. air bubbles collide with blocked and air and should stop then
+    ; check for water collision mode
+    ld      a,b
+    and     %0100_0000
+    cp      %0100_0000
+    jr      nz,.transparency
 
+    ; load xpos
+    push    bc
+    ld      a,[de]
+    add     4; horizonal center of sprite
+    ld      b,a
+
+    ; divide x by 8
+    srl     b
+    srl     b
+    srl     b
+
+    ; divide y by 8
+    ld      a,c
+    sub     18; top of sprite
+    srl     a
+    srl     a
+    srl     a
+    ld      c,a
+
+    ; check tile collision value for deep water
+    call    map_get_tile_collision
+    pop     bc
+    cp      MAP_COLLISION_WATER_DEEP
+    jr      nz,.disable
 
     ; check for transparency
+.transparency:
     ld      a,b
     and     %0010_0000
     cp      %0010_0000
     jr      nz,.update_x
-    
+
     ; move the sprite to y 0 on every other frame to emulate 50% transparency
     ld      a,[coreLoopCounter]
     and     %0000_0001
@@ -279,12 +305,12 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     xor     a
     ld      c,a
 
-    ; set ypos 
 .update_x:
-    ld      a,c; load updated ypos
+    ; load and set updated ypos
+    ld      a,c
     ld      [hli],a
 
-    ; load xpos
+    ; load and set xpos
     ld      a,[de]
     inc     e
     ld      [hli],a
@@ -324,6 +350,8 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
 
     ; update loops left
     ld      a,[de]
+    cp      $ff
+    jr      z,.update_index; endless looping with $ff
     dec     a
     cp      0; disable effect if no loops are left
     jr      z,.disable
@@ -397,15 +425,15 @@ _effect_reset:
     xor     a
     ld      [de],a
 
-    ; skip effect data until animation tile 
+    ; skip effect data until animation tile
     ld      a,e
     add     6
     ld      e,a
-    
+
     ; decrease effect quad usage
     ld      a,[de]; load quad index
     add     a; multiply by 2
-    ld      hl,effectQuadsUsed 
+    ld      hl,effectQuadsUsed
     add     l
     ld      l,a
     dec     [hl]; decrease usage
@@ -458,7 +486,7 @@ _effect_get_animation_quad: ; a = animation row index -> a loaded effect quad
 
     ; set quad animation row index
     ld      a,d
-    ld      [hl],a 
+    ld      [hl],a
 
     ; load animation row into target quad
     ld      b,c; setup target quad index
