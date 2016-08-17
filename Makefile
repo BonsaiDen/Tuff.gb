@@ -2,6 +2,8 @@
 rom: convert
 	@mkdir -p build
 	@gbasm -O -o build/game.gb -m stdout -s build/game.sym src/main.gb.s
+	@cp build/game.gb ~/.wine/drive_c/Program\ Files/bgb/game.gb
+	@cp build/game.sym ~/.wine/drive_c/Program\ Files/bgb/game.sym
 
 convert:
 	@mkdir -p src/data/bin
@@ -12,11 +14,10 @@ run: rom
 	gngb --fps -a --sound build/game.gb
 
 gambatte: rom
-	gambatte_sdl build/game.gb
+	gambatte_sdl -s 3 build/game.gb
 
 bgb: rom
-	wine ~/.local/bin/bgb.exe build/game.gb
-
+	wine ~/.wine/drive_c/Program\ Files/bgb/bgb.exe ~/.wine/drive_c/Program\ Files/bgb/game.gb
 
 # Others
 clean:
