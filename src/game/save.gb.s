@@ -2,12 +2,12 @@ SECTION "SaveLogic",ROM0
 
 ; SRAM Loading ----------------------------------------------------------------
 save_load_from_sram:
-    
+
     di
 
     ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
-    ld      hl,$0000 
-    ld      [hl],$0A 
+    ld      hl,$0000
+    ld      [hl],$0A
 
     ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
     ld      hl,$4000
@@ -19,7 +19,7 @@ save_load_from_sram:
     call    _crc16
 
     ; high byte
-    ld      hl,$A000 
+    ld      hl,$A000
     ld      a,[hli]
     cp      b
     jr      nz,.defaults
@@ -79,14 +79,14 @@ save_load_from_sram:
 
 .end:
     ; disable external RAM
-    ld      hl,$0000 
+    ld      hl,$0000
     ld      [hl],$00
 
     ei
     ret
 
 
-save_load_player: 
+save_load_player:
 
     ; Check if we should use the game defaults
     cp     1; a = 1
@@ -116,7 +116,7 @@ save_load_player:
     ld      [playerCanDoubleJump],a
 
 .init:
-    
+
     ld      a,[mapRoomX]
     ld      b,a
     ld      a,[mapRoomY]
@@ -124,9 +124,6 @@ save_load_player:
 
     call    map_load_room
     call    player_reset
-
-    ; TODO remove test code
-    call    effect_init
 
     ret
 
@@ -136,8 +133,8 @@ save_check_state: ; return 1 in a if a valid save state exists in sram
     di
 
     ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
-    ld      hl,$0000 
-    ld      [hl],$0A 
+    ld      hl,$0000
+    ld      [hl],$0A
 
     ; calculate checksum
     ld      bc,SAVE_COMPLETE_SIZE
@@ -145,7 +142,7 @@ save_check_state: ; return 1 in a if a valid save state exists in sram
     call    _crc16
 
     ; high byte
-    ld      hl,$A000 
+    ld      hl,$A000
     ld      a,[hli]
     cp      b
     jr      nz,.missing
@@ -169,7 +166,7 @@ save_check_state: ; return 1 in a if a valid save state exists in sram
 .done:
 
     ; disable external RAM
-    ld      hl,$0000 
+    ld      hl,$0000
     ld      [hl],$00
     ei
 
@@ -190,15 +187,15 @@ save_store_to_sram:
     call    entity_store
 
     ; writing $0A anywhere into the $0000-1FFFF range will enable external ram
-    ld      hl,$0000 
-    ld      [hl],$0A 
+    ld      hl,$0000
+    ld      [hl],$0A
 
     ; writing a byte into the $4000-$5FFF range will select corresponding ram bank
     ld      hl,$4000
     ld      [hl],SAVE_RAM_BANK
-    
+
     ; crc16 checksum of the save data bytes starting from $A002
-    ld      hl,$A000 
+    ld      hl,$A000
     ld      a,$00
     ld      [hli],a
     ld      [hli],a
@@ -237,7 +234,7 @@ save_store_to_sram:
     ; Entity Data
     ld      a,$E5
     ld      [hli],a
-    
+
     ; copy entity state to sram
     ld      bc,SAVE_ENTITY_DATA_SIZE
     ld      d,h
@@ -250,14 +247,14 @@ save_store_to_sram:
     ld      de,$A000 + SAVE_CHECKSUM_SIZE
     call    _crc16
 
-    ; write crc checksum 
-    ld      hl,$A000 
+    ; write crc checksum
+    ld      hl,$A000
     ld      a,b
     ld      [hli],a
     ld      [hl],c
 
     ; disable external RAM
-    ld      hl,$0000 
+    ld      hl,$0000
     ld      [hl],$00
 
     ei

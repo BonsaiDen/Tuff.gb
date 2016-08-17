@@ -750,7 +750,7 @@ _map_update_falling_block: ; b = index
 
 
 ; Helpers ---------------------------------------------------------------------
-map_get_tile_collision:
+map_get_tile_collision: ; b = tile x, c = tile y -> a = value
     push    hl
 
     ; get offset into collision table
@@ -765,7 +765,7 @@ map_get_tile_collision:
 
 map_get_tile_value: ; b = tile x, c = tile y -> a = value
     ; gets the tile value from the room data buffer (not VRAM!)
-    ; trashes hl and bc
+    ; thrashes hl and bc
 
     ld      a,b ; store x
 

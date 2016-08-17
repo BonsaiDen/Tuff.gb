@@ -11,11 +11,11 @@ game_init:
 
     ; set sprite palette 0
     ld      a,%00000000  ; 3 = black      2 = light gray  1 = white  0 = transparent
-    ld      [corePaletteSprite0],a 
+    ld      [corePaletteSprite0],a
 
     ; set sprite palette 1
     ld      a,%00000000  ; 3 = dark gray  2 = light gray  1 = white  0 = transparent
-    ld      [corePaletteSprite1],a 
+    ld      [corePaletteSprite1],a
 
     ; mark palettes as changed
     ld      a,$01
@@ -35,7 +35,7 @@ game_init:
     and     BUTTON_START | BUTTON_SELECT | BUTTON_UP
     cp      BUTTON_START | BUTTON_SELECT | BUTTON_UP
     jr      z,.debug
-    
+
     ; Debug More or Release Mode
     ld      a,GAME_DEBUG_MODE
     cp      1

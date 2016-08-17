@@ -7,10 +7,10 @@ sound_enable:
 
     ; enable both speakers and set to maximum volume
     ld      a,%11111111
-    ld      [$ff24],a 
+    ld      [$ff24],a
 
     ; output all channels to both speakers
-    ld      [$ff25],a 
+    ld      [$ff25],a
 
     ; reset wave pattern index
     ld      [Channel3LastSampleIndex],a
@@ -20,7 +20,7 @@ sound_enable:
 
     ; enable sound circuits
     ld      a,%10000000
-    ld      [$ff26],a 
+    ld      [$ff26],a
 
     ret
 
@@ -29,10 +29,10 @@ sound_disable:
 
     ; disable output of all channels
     xor     a
-    ld      [$ff25],a 
+    ld      [$ff25],a
 
     ; disable sound circuits
-    ld      [$ff26],a 
+    ld      [$ff26],a
 
     ; disable sound engine
     ld      [soundEnabled],a
@@ -84,15 +84,15 @@ _sound_load_track:; de = track data, b = track id, c = effect
     or      c
 
     ; set active flag
-    or      %10000000   
+    or      %10000000
     ld      [hli],a; store flag and tempo
-    
+
     ; reset initial tick count to tempo (lower 5 bits)
     ld      a,b
     and     %00011111; mask of flags
     or      %11100000; disable active channel (upper 3 bits all 1)
     ld      [hli],a
-    
+
     ; load pattern index value
     ld      a,[de]
 
@@ -147,7 +147,7 @@ sound_update:
     ; for all tracks
     ld      b,0
 .next_track:
-    
+
     ; get pointer to track data
     call    _track_get_pointer_hl
 
@@ -167,14 +167,14 @@ sound_update:
     and     %00011111; mask of channel active flag
     cp      c; check if tickcount === tempo
     jr      nz,.wait
-    
-    ; reload saved flags 
+
+    ; reload saved flags
     ld      c,e
 
     ; reset tick count to 0
     xor     a
     ld      [hli],a
-                
+
     ; update the track
     push    bc
     call    _update_track
@@ -206,11 +206,11 @@ sound_update:
     ; set sweep
     ld      a,[Channel1Sweep]
     ld      [$FF10],a
-    
+
     ; set length and duty
     ld      a,[Channel1LengthDuty]
     ld      [$FF11],a
-    
+
     ; Envelope
     ld      a,[Channel1Envelope]
     ld      [$FF12],a
@@ -218,7 +218,7 @@ sound_update:
     ; Low Frequency
     ld      a,[Channel1FreqLo]
     ld      [$FF13],a
-    
+
     ; High Frequency / Play again
     ld      a,[Channel1FlagsFreqHi]
     or      %10000000; set active flag
@@ -226,7 +226,7 @@ sound_update:
     ld      [$FF14],a
 
 .sound_update_channel_2:
-    
+
     ; check if channel 2 is active
     ld      a,[Channel2FlagsFreqHi]
     bit     7,a
@@ -239,7 +239,7 @@ sound_update:
     ; set length and duty
     ld      a,[Channel2LengthDuty]
     ld      [$FF16],a
-    
+
     ; Envelope
     ld      a,[Channel2Envelope]
     ld      [$FF17],a
@@ -247,7 +247,7 @@ sound_update:
     ; Low Frequency
     ld      a,[Channel2FreqLo]
     ld      [$FF18],a
-    
+
     ; High Frequency / Play again
     ld      a,[Channel2FlagsFreqHi]
     or      %10000000; set active flag
@@ -270,7 +270,7 @@ sound_update:
 
     ; update pattern index and data
     ld      [Channel3LastSampleIndex],a
-    
+
     ; setup pcm sample
     swap    a; x 16
 
@@ -304,7 +304,7 @@ sound_update:
     and     %01111111
     ld      [Channel3FlagsFreqHi],a
 
-    ; Length 
+    ; Length
     ld      a,[Channel3Length]
     ld      [$FF1B],a
 
@@ -333,10 +333,10 @@ sound_update:
     and     %01111111
     ld      [Channel4Flags],a
 
-    ; set length 
+    ; set length
     ld      a,[Channel4Length]
     ld      [$FF20],a
-    
+
     ; Envelope
     ld      a,[Channel4Envelope]
     ld      [$FF21],a
@@ -508,7 +508,7 @@ _update_track:; c = flags
     ; load channel id from instrument and multiply by 5
     ld      a,[hl]
     and     %00000011
-    ld      b,a; 
+    ld      b,a;
     add     a; x 2
     add     a; x 4
     add     b; x 5
@@ -533,7 +533,7 @@ _update_track:; c = flags
 
     ; add high frequency
     or      d
-    
+
     ; store channel flags and high frequency
     ld      [bc],a
     inc     bc
@@ -542,7 +542,7 @@ _update_track:; c = flags
     ld      a,e
     ld      [bc],a
     inc     bc
-    
+
     ; copy instrument data to channel
     ld      a,[hli]
     ld      [bc],a
@@ -561,9 +561,9 @@ _update_track:; c = flags
 _track_get_pointer_hl:; b = stream index
     ld      h,soundTracksData >> 8; load high byte from aligned track data ram
     ld      a,b
-    add     a; x 2 
-    add     a; x 4 
-    add     a; x 8 
+    add     a; x 2
+    add     a; x 4
+    add     a; x 8
     ld      l,a
     ret
 

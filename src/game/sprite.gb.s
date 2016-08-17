@@ -107,7 +107,7 @@ sprite_set_animation:; a = sprite id, b = animation id
     ; set animation id
     ld      [hl],b
     inc     l
-    
+
     ; reset animation index
     ld      [hli],a
 
@@ -140,7 +140,7 @@ sprite_set_mirrored:; a = sprite id
     pop     hl
     ret
 
-sprite_unset_mirrored:; a = sprite id 
+sprite_unset_mirrored:; a = sprite id
     push    hl
     call    _get_sprite_pointer
 
@@ -160,7 +160,7 @@ sprite_set_transparent:; a = sprite id
     pop     hl
     ret
 
-sprite_unset_transparent:; a = sprite id 
+sprite_unset_transparent:; a = sprite id
     push    hl
     call    _get_sprite_pointer
 
@@ -283,7 +283,7 @@ _sprite_update: ; hl = sprite data pointer
     ; check for stopped length
     cp      $ff
     jr      z,.halt_animation
-    
+
     ; load next animation frame data
     inc     l; skip frames left
 
@@ -305,16 +305,16 @@ _sprite_update: ; hl = sprite data pointer
     ld      [hli],a
     add     3; add initial offset for animation header
 
-    ; add offset to base pointer of animation 
+    ; add offset to base pointer of animation
     add     e
     ld      e,a
     adc     a,d
     sub     e
     ld      d,a
-    
+
     ; load frame value from animation
     ld      a,[de]
-    
+
     ; check for end marker
     cp      $ff
     jr      z,.stop_animation
@@ -347,7 +347,7 @@ _sprite_update: ; hl = sprite data pointer
 
     dec     l; go back to id
     dec     l; go back to frames left
-    
+
     ; add offset for animation frame data
     ld      a,14
     add     e
@@ -446,7 +446,7 @@ _sprite_update: ; hl = sprite data pointer
     pop     hl
 
     ; setup pointer to next sprite
-    ret     
+    ret
 
 .skip:
     ; skip to next sprite
@@ -458,7 +458,7 @@ _sprite_update: ; hl = sprite data pointer
 
 _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos, e = ypos
 
-    ; multiply sprite index by 8 to get the hardware offset 
+    ; multiply sprite index by 8 to get the hardware offset
     ; as uneven sprites are consumed by the 8x16 sprite mode
     ; and we need two of these 8x16 sprites to show a full 16x16 sprite
     add     a
@@ -474,7 +474,7 @@ _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos,
     ; check for transparency
     ld      a,c
     and     %0000_1000
-    cp      %0000_1000 
+    cp      %0000_1000
     jr      nz,.palette
 
     ; move the sprite to y 0 on every other frame to emulate 50% transparency
@@ -511,7 +511,7 @@ _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos,
     ; check if the sprite is mirrored
     bit     5,c
     jr      z,.first
-    
+
 .right:; mirrored direction, facing left, sprite tiles get switch
 
     ; add tile index offset for first sprite
@@ -558,14 +558,14 @@ _sprite_load_tiles:; a = animation id, b = tile row index
 
     ; load animation data address and row index
     call    _get_animation_pointer
-    
+
     ; load source tile row
     ld      a,[hli]
     ld      c,a
 
     ; load low byte of tile map address
     ld      a,[hli]
-    
+
     ; load high byte of tile map address
     ld      h,[hl]
     ld      l,a
@@ -579,7 +579,7 @@ _sprite_load_tiles:; a = animation id, b = tile row index
 
 _sprite_update_tile_rows:
 
-    ; go through all tile rows 
+    ; go through all tile rows
     ld      hl,spriteRowsUsed + SPRITE_MAX_TILE_ROWS - 1
     ld      c,SPRITE_MAX_TILE_ROWS; loop counter / row index
     ld      b,$ff; tmp var holding the last unused row
@@ -592,7 +592,7 @@ _sprite_update_tile_rows:
     ; check if the row was until the the previous frame and reset it for the next frame
     cp      2
     jr      z,.was_used
-    
+
     ; check if the row is currently used
     cp      1
     jr      z,.next
@@ -667,7 +667,7 @@ _get_animation_pointer:; a = animation id -> hl = pointer
 _load_sprite_row: ; load a compressed tile row into vram
 
     ; adjust target pointer for target row
-    ld      a,d 
+    ld      a,d
     add     b
     ld      d,a
 

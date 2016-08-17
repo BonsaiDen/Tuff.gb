@@ -59,7 +59,7 @@ entity_update:
     inc     e; skip flags
     inc     e; skip direction
 
-    ld      h,c; 
+    ld      h,c;
     ld      a,[de] ; y position
     ld      c,a
     inc     e
@@ -131,7 +131,7 @@ entity_load:
     ld      [de],a
     inc     e
 
-    ; set default direction 
+    ; set default direction
     ld      a,c
     and     %11000000 ; mask type bits
     swap    a
@@ -161,7 +161,7 @@ entity_load:
     ; get screen entity offset
     call    _entity_screen_offset_de
 
-    ; store entity and sprite index 
+    ; store entity and sprite index
     push    bc
 
     ; enable sprite
@@ -243,7 +243,7 @@ entity_load:
 ; Load a single Entity's state ------------------------------------------------
 _entity_load:
 
-    ; check if an existing bucket that stores this entity 
+    ; check if an existing bucket that stores this entity
     push    hl
     push    de
     push    bc
@@ -252,7 +252,7 @@ _entity_load:
     jr      nc,.load_defaults
 
 .load_stored:
-    
+
     inc     hl; skip room id
 
     ; get entity screen offset for b into de
@@ -281,7 +281,7 @@ _entity_load:
     ld      a,[hli]
     ld      [de],a
     inc     e
-    
+
     ; load x position
     ld      a,[hl]
     ld      [de],a
@@ -305,7 +305,7 @@ _entity_load:
     ; push loop indicies
     push    hl
     push    de
-    
+
     ; get entity screen offset for b into de
     call    _entity_screen_offset_de
     inc     e ; skip type
@@ -362,11 +362,11 @@ entity_store:
     ld      [hli],a ; store room id
 
     inc     e ; skip type [0]
-    
+
     ; combine flags, entity id and direction
     ; FFFFDDII
     ld      a,[de]; load flags
-    inc     e 
+    inc     e
     swap    a
     and     %11110000
     or      b; merge with id
@@ -378,16 +378,16 @@ entity_store:
     add     a
     and     %00001100
     or      b; merge with id and flags
-    ld      [hli],a 
+    ld      [hli],a
 
     ; y position
     ld      a,[de]
     inc     e
-    ld      [hli],a 
+    ld      [hli],a
 
     ; x position
     ld      a,[de]
-    ld      [hl],a 
+    ld      [hl],a
 
     ; skip x, tileslot, custom and custom
     inc     e
@@ -420,7 +420,7 @@ entity_reset:
     cp      0
     jr      z,.skip; not loaded
 
-    ; disable sprite 
+    ; disable sprite
     ld      a,b
     add     ENTITY_SPRITE_OFFSET
     call    sprite_disable
@@ -470,7 +470,7 @@ entity_col_up:; b = x, c = y
 .done:
     pop     bc
     ret
-    
+
 
 entity_col_down:; b = x, c = y
     push    bc
@@ -495,7 +495,7 @@ entity_col_down:; b = x, c = y
 .done:
     pop     bc
     ret
-    
+
 
 entity_col_left:; b = x, c = y
     push    bc
@@ -526,7 +526,7 @@ entity_col_left:; b = x, c = y
 .done:
     pop     bc
     ret
-    
+
 
 entity_col_right:; b = x, c = y
     push    bc
@@ -560,7 +560,7 @@ entity_col_right:; b = x, c = y
 
 entity_col_player:; scf -> collision
 
-    ; check player x > powerup x - 16 and player x < powerup y 
+    ; check player x > powerup x - 16 and player x < powerup y
 
     ; check bottom edge
     ld      a,[de] ; y
@@ -583,7 +583,7 @@ entity_col_player:; scf -> collision
 
     ; check right edge
     ld      a,[de] ; x
-    add     7 
+    add     7
     ld      l,a
     ld      a,[playerX]
     cp      l
@@ -591,7 +591,7 @@ entity_col_player:; scf -> collision
 
     ; check left edge
     ld      a,[de] ; x
-    sub     6 
+    sub     6
     ld      l,a
     ld      a,[playerX]
     cp      l
@@ -684,7 +684,7 @@ _entity_get_current_room_id: ; c -> room id
     ld      e,a
 
     ; get room number index into hl
-    call    math_mul8b ; hl = h * e 
+    call    math_mul8b ; hl = h * e
     ld      c,l
 
     ret
@@ -702,7 +702,7 @@ _entity_get_last_room_id: ; c -> room id
     ld      e,a
 
     ; get room number index into hl
-    call    math_mul8b ; hl = h * e 
+    call    math_mul8b ; hl = h * e
     ld      c,l
 
     ret
@@ -716,7 +716,7 @@ _entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> scf = fo
     call    nc,_entity_find_free_bucket
     pop     bc
     ret
-    
+
 
 
 _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
@@ -762,9 +762,9 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
     jr      z,.not_found
-        
+
     jr      .loop
-    
+
 .not_found:
     and     a
     ret
@@ -802,9 +802,9 @@ _entity_find_free_bucket:
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
     jr      z,.not_found
-        
+
     jr      .loop
-    
+
 .not_found:
     and     a
     ret

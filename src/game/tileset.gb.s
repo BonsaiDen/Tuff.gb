@@ -6,7 +6,7 @@ tileset_load_sprite_row: ; load a compressed sprite row into vram
     push    bc
 
     ; adjust target pointer for target row
-    ld      a,d 
+    ld      a,d
     add     b
     ld      d,a
 
@@ -59,7 +59,7 @@ tileset_draw_image:; hl = image source
     ld      de,mapRoomTileBuffer
 
     ; screen tile base pointer
-    ld      hl,$9800 
+    ld      hl,$9800
 
     ld      b,18
 .loop_y:
@@ -86,7 +86,7 @@ tileset_draw_image:; hl = image source
     adc     a,h
     sub     l
     ld      h,a
-    
+
     ; loop y
     dec     b
     jr      nz,.loop_y

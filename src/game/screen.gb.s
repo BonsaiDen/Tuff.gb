@@ -76,7 +76,7 @@ screen_animate:; a = animation type
     ld      [screenAnimation],a
     call    _screen_animate_palette
     ret
-            
+
 
 ; Color Mixing ----------------------------------------------------------------
 _screen_animate_palette:
@@ -127,17 +127,17 @@ _screen_animate_palette:
 
 .dark:
     ld      b,0; offset into darker color table
-    
+
 .update:
 
     ; load animation index
     ld      a,[screenAnimationIndex]
-    
+
     ; add to table
     ld      d,0
     ld      e,a
     add     hl,de
-    
+
     ; next index
     inc     a
     ld      [screenAnimationIndex],a
@@ -204,7 +204,7 @@ _color_from_palette_dmg:; hl = palette pointer; d = offset
     ret
 
 _screen_mix_color_dmg:; hl = color pointer, a = current color, d = brigthness to mix with
-    
+
     ; store current color value
     ld      e,a
 
@@ -245,19 +245,19 @@ _screen_fade_in_map:
 _screen_fade_table_dmg:
     ; darker
     ; black, dark, light, white
-    DB      %11_10_01_00 
-    DB      %11_10_01_01 
-    DB      %11_10_10_10 
-    DB      %11_11_10_10 
-    DB      %11_11_11_11 
-                         
-    ; lighter            
+    DB      %11_10_01_00
+    DB      %11_10_01_01
+    DB      %11_10_10_10
+    DB      %11_11_10_10
+    DB      %11_11_11_11
+
+    ; lighter
     ; black, dark, light, white
-    DB      %11_10_01_00 
-    DB      %11_10_01_00 
-    DB      %10_01_00_00 
-    DB      %01_00_00_00 
-    DB      %00_00_00_00 
+    DB      %11_10_01_00
+    DB      %11_10_01_00
+    DB      %10_01_00_00
+    DB      %01_00_00_00
+    DB      %00_00_00_00
 
 _screen_palette_bg:
     ;       mask, shift
@@ -271,14 +271,14 @@ _screen_palette_sprite0:
     DB      %11000000,0
     DB      %00001100,2
     DB      %00000011,2
-    DB      %00000011,0; not used, always transparent 
+    DB      %00000011,0; not used, always transparent
 
 _screen_palette_sprite1:
     ;       mask, shift
     DB      %00110000,2
     DB      %00001100,2
     DB      %00000011,2
-    DB      %00000011,0; not used, always transparent 
+    DB      %00000011,0; not used, always transparent
 
 
 ; Gameboy Color Palette Handling ----------------------------------------------

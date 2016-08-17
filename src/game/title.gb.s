@@ -131,13 +131,13 @@ title_update:
     ; handle selection of options
     call    title_select_option
     call    title_handle_button
-    
+
     ; disable inputs
     xor     a
     ld      [coreInput],a
     ld      [coreInputOn],a
     ld      [coreInputOff],a
-    
+
     ; move the player character around
     call    title_screen_movement
 
@@ -373,7 +373,7 @@ title_animate_logo:
     and     %00000011
     cp      %00000011
     ret     nz
-        
+
     ; update sine table index
     ld      a,[titleSpriteOffsetIndex]
     inc     a

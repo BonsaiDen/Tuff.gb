@@ -34,7 +34,7 @@ DB $FF; Unused
 DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 DB $0B,$0D,$0B,$0D, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 
-; Jumping 
+; Jumping
 DB $02; Image Row Index
 DW DataPlayerImg ; Image Data Pointer
 DB $FF; Unused
@@ -61,8 +61,8 @@ DW DataPlayerImg ; Image Data Pointer
 DB $FF; Unused
 DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 DB $06,$0B,$06,$0B, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
-    
-; Dissolving 
+
+; Dissolving
 DB $07; Image Row Index
 DW DataPlayerImg ; Image Data Pointer
 DB $FF; Unused
@@ -104,7 +104,7 @@ DB $FF; Unused
 DB $00,$01,$02,$03, $ff,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 DB $09,$05,$04,$03, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 
-; Double Jumping 
+; Double Jumping
 DB $02; Image Row Index
 DW DataPlayerImg ; Image Data Pointer
 DB $FF; Unused

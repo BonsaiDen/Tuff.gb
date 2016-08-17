@@ -34,11 +34,11 @@ cutscene_init:; a = cutsceneNumber
 
 cutscene_timer:
 
-    ; do nothing if there's no active cutscene 
+    ; do nothing if there's no active cutscene
     ld      a,[cutsceneNumber]
     cp      0
     ret     z
-    
+
     ; load the current cutscene handler's address
     ld      a,[cutsceneOffset]
     ld      h,a

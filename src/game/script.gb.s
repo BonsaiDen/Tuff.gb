@@ -31,8 +31,8 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
     ld      b,SCRIPT_TABLE_ENTRIES
     ld      hl,scriptHandlerTable
 .loop:
-    
-    ; compare room coordinates 
+
+    ; compare room coordinates
     ld      a,[hli]
     cp      c
     jr      nz,.skip_coordinates
@@ -41,17 +41,17 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
     ld      a,[hli]
     ld      c,a; store raw flags into c
 
-    ; compare script flags with the requested trigger flag 
+    ; compare script flags with the requested trigger flag
     ; to see whether we should execute the script upon leaving or entering the room
     and     %00000001; mask off other flags
     cp      e; compare with argument
     jr      nz,.skip_address
-        
+
     ; now load the script's stored flags from memory
     push    hl
     ld      hl,scriptTableStatus
 
-    ; add current script index 
+    ; add current script index
     ; script handler table MUST be at a XX00 offset(!)
     ld      a,l
     add     b
@@ -60,7 +60,7 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
     ; load stored script flags
     ld      a,[hl]
     pop     hl
-            
+
     ; check if the script was already triggered
     ; and if so, prevent it from running
     and     SCRIPT_FLAG_TRIGGERED
@@ -68,13 +68,13 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
 
     ; run script address handler
 .run_script:
-    
+
     ; load script address
     ld      a,[hli]
     ld      e,a
     ld      a,[hli]
     ld      d,a
-    
+
     ; setup script jump
     push    hl
     push    bc
@@ -125,7 +125,7 @@ script_execute:; a = trigger flag (LEAVE / ENTER)
 
 _script_handler:
     jp      [hl]
-    
+
 
 scriptRoomTest:
     ld      a,10
