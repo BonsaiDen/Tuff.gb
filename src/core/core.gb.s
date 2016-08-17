@@ -21,6 +21,7 @@ coreTimerToggle:    DB
 coreScrollX:        DB
 coreScrollY:        DB
 coreSpriteRow:      DB
+coreTmp:            DB
 coreDecodeAddress:  DS 2
 
 

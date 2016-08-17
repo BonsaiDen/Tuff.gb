@@ -3,8 +3,8 @@ SECTION "EntityRam",WRAM0[$CD00]; must be aligned at 256 bytes for screenState
 ; Constants -------------------------------------------------------------------
 ENTITY_PER_ROOM               EQU 4
 ENTITY_SPRITE_OFFSET          EQU 1
-ENTITY_BG_SPRITE_INDEX        EQU 5; start indexes to use for entity sprites that are in the background
-ENTITY_FG_SPRITE_INDEX        EQU 0; start indexes to use for entity sprites that are in the foreground
+ENTITY_BG_SPRITE_INDEX        EQU 9; start indexes to use for entity sprites that are in the background
+ENTITY_FG_SPRITE_INDEX        EQU 4; start indexes to use for entity sprites that are in the foreground
 
 ENTITY_ANIMATION_OFFSET       EQU PLAYER_ANIMATION_COUNT
 ENTITY_ANIMATION_SAVE_LIGHT   EQU 0

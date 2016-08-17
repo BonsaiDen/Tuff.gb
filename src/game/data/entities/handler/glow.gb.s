@@ -1,9 +1,9 @@
 entity_handler_load_glow:
-    ; TODO set hardware sprite indexes for entity sprites!
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_GLOW
     call    sprite_set_animation
-    ;call    sprite_animation_start
+    ld      a,c
+    call    sprite_set_transparent
     xor     a; 
     ret
     

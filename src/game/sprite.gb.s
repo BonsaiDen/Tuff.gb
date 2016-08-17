@@ -38,6 +38,12 @@ sprite_enable: ; a = sprite id
     ; unset wasEnabled
     res     6,[hl]
 
+    ; unset mirrored
+    res     5,[hl]
+
+    ; unset transparency
+    res     3,[hl]
+
     ; skip flags
     inc     l
 
@@ -144,6 +150,26 @@ sprite_unset_mirrored:; a = sprite id
     pop     hl
     ret
 
+sprite_set_transparent:; a = sprite id
+    push    hl
+    call    _get_sprite_pointer
+
+    ; set transparency flag
+    set     3,[hl]
+
+    pop     hl
+    ret
+
+sprite_unset_transparent:; a = sprite id 
+    push    hl
+    call    _get_sprite_pointer
+
+    ; unset transparency flag
+    res     3,[hl]
+
+    pop     hl
+    ret
+
 sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
     push    hl
     call    _get_sprite_pointer
@@ -157,7 +183,6 @@ sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
 sprite_set_position:; a = sprite id, b = x, c = y
     push    hl
     call    _get_sprite_pointer
-    set     3,[hl]
     ld      a,l
     add     6
     ld      l,a
@@ -446,6 +471,21 @@ _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos,
     ; load the high byte of the first hardware sprite's address
     ld      h,spriteOam >> 8
 
+    ; check for transparency
+    ld      a,c
+    and     %0000_1000
+    cp      %0000_1000 
+    jr      nz,.palette
+
+    ; move the sprite to y 0 on every other frame to emulate 50% transparency
+    ld      a,[coreLoopCounter]
+    and     %0000_0001
+    jr      nz,.palette
+    xor     a
+    ld      e,a
+
+.palette:
+
     ; adjust palette bits
     ld      a,[coreColorEnabled]
     cp      1
@@ -512,7 +552,6 @@ _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos,
     ld      [hl],c
 
     ret
-
 
 ; Tile Row Management ---------------------------------------------------------
 _sprite_load_tiles:; a = animation id, b = tile row index

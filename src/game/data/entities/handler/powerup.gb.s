@@ -1,5 +1,4 @@
 entity_handler_load_powerup:
-    ; TODO set hardware sprite indexes for entity sprites!
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_POWERUP
     call    sprite_set_animation

@@ -27,7 +27,7 @@ player_init:
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_enable
     ld      a,PLAYER_SPRITE_INDEX
-    ld      b,4
+    ld      b,PLAYER_HARDWARE_SPRITE_INDEX
     call    sprite_set_hardware_index
 
     ret

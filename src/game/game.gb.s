@@ -116,6 +116,7 @@ game_loop:
     call    player_update
     call    entity_update
     call    sprite_update
+    call    effect_update
     call    map_check_fallable_blocks
     call    sound_update
     ret

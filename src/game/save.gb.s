@@ -125,6 +125,9 @@ save_load_player:
     call    map_load_room
     call    player_reset
 
+    ; TODO remove test code
+    call    effect_init
+
     ret
 
 

@@ -464,6 +464,36 @@ var Parse = {
 
     },
 
+    /** Encode a image of 8x16px tiles into a mapping of rows along with a index header. */
+    effectRowMapFromImage: function(palette, columns, img) {
+
+        var rowOffsets = [],
+            rowBytes = [];
+
+        // Split img into rows
+        var bytesPerRow = 8 * 16 * 4 * columns, // 8x16 pixel, 4 channels (RGBA)
+            rowCount = img.height / 16;
+
+        for(var y = 0; y < rowCount; y++) {
+
+            var subImage = {
+                width: img.width,
+                height: 16,
+                data: img.data.slice(y * bytesPerRow, y * bytesPerRow + bytesPerRow)
+            };
+
+            var tileBytes = Parse.tilesFromImage(palette, true, subImage),
+                rowOffset = ((rowCount * 2) - ((y + 1) * 2)) + rowBytes.length;
+
+            rowOffsets.push((rowOffset >> 8), rowOffset & 0xff);
+            rowBytes.push.apply(rowBytes, Pack.encode(tileBytes, true));
+
+        }
+
+        return rowOffsets.concat(rowBytes);
+
+    },
+
     /** Convert a 8x8 image block into the Gameboy Tile Format. */
     tileFromImageBlock: function(img, palette, blockX, blockY) {
 
@@ -898,6 +928,26 @@ var Convert = {
         });
 
     },
+
+    EffectRowMap: function(file) {
+
+        console.log('[tilerowmap] Converting effectrowmap "%s"...', file);
+
+        return IO.load(file).then(function(img) {
+            return Parse.effectRowMapFromImage(Palette.Sprite, 4, img, file);
+
+        }).then(function(data) {
+            return IO.saveAs('bin', file, data);
+
+        }).then().then(function() {
+            console.log('[tilerowmap] Done!');
+
+        }).error(function(err) {
+            console.error(('[tilerowmap] Error: ' + err).red);
+        });
+
+    },
+
 
     Tileset: function(file, r8x16) {
 
@@ -1541,6 +1591,7 @@ if (process.argv[4] === '-reverse') {
         Convert.Tileset('title.bg.png'),
         Convert.Tileset('animation.bg.png'),
         Convert.TileRowMap('player.ch.png'),
+        Convert.EffectRowMap('effect.ch.png'),
         Convert.TileRowMap('entities.ch.png'),
         Convert.Tileset('title.ch.png', true),
         Convert.Collision('tiles.col.png'),

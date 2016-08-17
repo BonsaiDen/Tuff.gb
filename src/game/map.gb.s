@@ -110,6 +110,9 @@ map_load_room: ; b = x, c = y
     call    entity_store ; first store them
     call    entity_reset
 
+    ; unload effects
+    call    effect_reset
+
     ; force sprite unloads
     call    sprite_update
 

@@ -13,7 +13,7 @@ SPRITE_MAX           EQU 7
 spriteData:     DS SPRITE_MAX * 9
 spriteRowsUsed: DS SPRITE_MAX_TILE_ROWS 
 
-; 0: flags 7:enabled, 6:wasEnabled, 5:mirrored, 4:animationChanged, 3:unused, 2-0:palette
+; 0: flags 7:enabled, 6:wasEnabled, 5:mirrored, 4:animationChanged, 3:transparent, 2-0:palette
 ; 1: tileRow
 ; 2: animationFramesLeft
 ; 3: animationId
