@@ -110,7 +110,7 @@ player_water_update:
     ld      a,[playerWaterHitDone]
     cp      1
     jr      z,.animate_water
-    
+
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]
     cp      PLAYER_WATER_OFFSET_MAX; check if we're done
@@ -148,7 +148,7 @@ player_water_update:
 
     ; apply
 .fast:
-    ld      a,[playerY] 
+    ld      a,[playerY]
     add     b
     ld      [playerYOffset],a
     ret
@@ -158,7 +158,7 @@ player_water_update:
     ld      [playerWaterHitDone],a
     ld      a,7; set the value so the first movement after the splash is up
     ld      [playerWaterTick],a
-    ret 
+    ret
 
 
     ; swimming offset
@@ -177,7 +177,7 @@ player_water_update:
     jr      c,.move_down ; if 4 is greater than the tick, move the player down (0, 1, 2, 3)
 
 .move_up: ; move the player up, 4, 5, 6, 7
-    ld      a,[playerY] 
+    ld      a,[playerY]
     sub     b
     ld      [playerYOffset],a
     ret
@@ -199,9 +199,9 @@ player_water_timer:
     ; check if we've finished the initial splash offseting
     ld      a,[playerWaterHitDone]
     cp      0
-    ret     z
+    jr      z,.bubble
 
-    ; update offset tick 
+    ; update offset tick
 .tick:
     ld      a,[playerWaterTick]
     inc     a
@@ -212,5 +212,52 @@ player_water_timer:
 
 .done:
     ld      [playerWaterTick],a
+
+.bubble:
+
+    ; check if we're under water
+    ld      a,[playerUnderWater]
+    cp      0
+    ret     z
+
+    ; check if effect counter reached 0
+    ld      a,[playerEffectCounter]
+    cp      0
+    jr      nz,.decrease_counter
+
+    ; reset counter
+    call    math_random
+    and     %0000_0011
+    add     PLAYER_AIR_BUBBLE_INTERVAL
+    ld      [playerEffectCounter],a
+
+    ; create air bubble effect above player
+    ld      a,[playerYOffset]
+    sub     PLAYER_HEIGHT
+    add     6
+    ld      b,a
+
+    ld      a,[playerDirection]
+    cp      PLAYER_DIRECTION_LEFT
+    jr      z,.bubble_left
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH
+    jr      .bubble_effect
+
+.bubble_left:
+    ld      a,[playerX]
+    add     2
+
+.bubble_effect:
+    ld      c,a
+    ld      a,0
+    call    effect_create
+    ret
+
+
+.decrease_counter:
+    dec     a
+    ld      [playerEffectCounter],a
     ret
 

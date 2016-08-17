@@ -6,7 +6,7 @@
 ; - animation loop count (TODO $FF=endless loop)
 
 ; Oxygen Bubble
-DB $00, %0101_0000, $85,$15, $01,$FF, $FF,$FF
+DB $00, %0101_0000, $85,$13, $01,$FF, $FF,$FF
 
 ; Test
 DB $01, %0001_0001, $00,$19, $01,$FF, $FF,$FF

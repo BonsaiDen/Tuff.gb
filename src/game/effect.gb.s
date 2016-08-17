@@ -1,23 +1,5 @@
 SECTION "EffectLogic",ROM0
 
-; TODO remove this test code
-effect_init:
-    ld      a,0
-    ld      b,110
-    ld      c,96
-    call    effect_create
-
-    ;ld      a,1
-    ;ld      b,64
-    ;ld      c,96
-    ;call    effect_create
-
-    ;ld      a,1
-    ;ld      b,64
-    ;ld      c,122
-    ;call    effect_create
-    ret
-
 
 ; Update all active Effects ---------------------------------------------------
 effect_update:
@@ -87,6 +69,7 @@ effect_create:; a = effect type, b = ypos, c = xpos
 .loop:
     ; load type / active
     ld      a,[de]
+    and     %1000_0000
     cp      0
     jr      nz,.skip; active, skip
     ld      a,l; restore effect index
@@ -269,7 +252,7 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     ; load xpos
     push    bc
     ld      a,[de]
-    add     4; horizonal center of sprite
+    sub     4; horizonal center of sprite
     ld      b,a
 
     ; divide x by 8
@@ -279,7 +262,7 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
 
     ; divide y by 8
     ld      a,c
-    sub     18; top of sprite
+    sub     4;
     srl     a
     srl     a
     srl     a
@@ -457,7 +440,7 @@ _effect_get_animation_quad: ; a = animation row index -> a loaded effect quad
 
     ; go through all available effect quads
     ld      c,EFFECT_MAX_TILE_QUADS - 1
-    ld      hl,effectQuadsUsed + EFFECT_MAX_TILE_QUADS * 2 - 2
+    ld      hl,effectQuadsUsed + EFFECT_MAX_TILE_QUADS * 2 - 1
 
 .loop:
 

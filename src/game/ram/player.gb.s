@@ -18,7 +18,7 @@ PLAYER_DOUBLE_JUMP_THRESHOLD  EQU $13; max jump frames are $1C
 PLAYER_RUNNING_DELAY          EQU 50; frames to be on ground and hold B before running mode sets in
 PLAYER_RUNNING_DELAY_FULL     EQU 120; frames before full running speed
 
-PLAYER_BOUNCE_FRAMES          EQU 30; number of frames without control after bouncing into a wall during running 
+PLAYER_BOUNCE_FRAMES          EQU 30; number of frames without control after bouncing into a wall during running
 PLAYER_DECELERATE_FRAMES      EQU 10
 
 PLAYER_GRAVITY_INTERVAL       EQU 10
@@ -59,10 +59,12 @@ PLAYER_POUND_DELAY_START      EQU 45; delay in frames for pound start
 PLAYER_POUND_DELAY_END        EQU 37; delay in frames for pound end
 PLAYER_POUND_ALIGN_BORDER     EQU 4 ; number of x pixels in which players gets aligned with nearest breakable block
 
+PLAYER_AIR_BUBBLE_INTERVAL    EQU 9; X * 60ms
+
 
 ; Player Variables for Save State ---------------------------------------------
-playerX:                   DB 
-playerY:                   DB 
+playerX:                   DB
+playerY:                   DB
 playerDirection:           DB
 
 ; Power Up States
@@ -78,8 +80,8 @@ playerCanDoubleJump:       DB
 ; Variables -------------------------------------------------------------------
 playerHasControl:          DB
 playerYOffset:             DB ; y offset the player is rendered at, only visual
-playerSpeedRight:          DB 
-playerSpeedLeft:           DB 
+playerSpeedRight:          DB
+playerSpeedLeft:           DB
 playerRunningTick:         DB
 playerMoveTick:            DB
 playerMovementDelay:       DB
@@ -119,7 +121,7 @@ playerWallJumpDir:         DB ; direction of the wall from which the player jump
 playerWallJumpTick:        DB ; ticks left during which the player movement will be forced into the direction of the wall jump
 playerWallJumpPressed:     DB
 
-; Gravity and Jumping      
+; Gravity and Jumping
 playerFallSpeed:           DB ; current fall speed per frame
 playerFallFrames:          DB ; number of frames the player is falling (max 255)
 playerLandingFrames:       DB ; number of frames for which the controls should be delayed after landing on ground
@@ -144,4 +146,7 @@ playerWaterHitDepth:       DB ; value to check how deep the player should splash
 
 ; Dissolving
 playerDissolveTick:        DB ; tick for when the player is dissolving
+
+; Effects
+playerEffectCounter:       DB ; counter used for periodic effects (air bubbles)
 

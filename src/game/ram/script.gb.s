@@ -1,4 +1,4 @@
-SECTION "ScriptRam",WRAM0[$CC9F]
+SECTION "ScriptRam",WRAM0[$CCBF]
 
 
 ; Scripting Triggers ----------------------------------------------------------
@@ -12,7 +12,7 @@ SCRIPT_FLAG_TRIGGERED       EQU 1
 
 ; Script State ----------------------------------------------------------------
 scriptTableStatus:      DS SCRIPT_TABLE_MAX_ENTRIES
-                        
+
 
 ; Script Macros ---------------------------------------------------------------
 MACRO scriptTableEntry(@x, @y, @flags, @address)

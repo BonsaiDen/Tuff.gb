@@ -58,6 +58,7 @@ player_reset:
     ld      [playerBreakDelayed],a
     ld      [playerJumpHold],a
     ld      [playerBreakContinue],a
+    ld      [playerEffectCounter],a
 
     ld      a,1
     ld      [playerOnGround],a

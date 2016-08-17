@@ -39,7 +39,7 @@ player_update:
     ld      [playerDissolveTick],a
 
     call    save_load_from_sram
-    
+
     ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
     call    sound_play_effect_one
     ret
@@ -47,7 +47,7 @@ player_update:
 
     ; control / animation
 .control:
-    
+
     ; ignore when controls are disabled
     ld      a,[playerHasControl]
     cp      0
@@ -155,7 +155,6 @@ player_update:
     ld      a,1
     ld      [playerUnderWater],a
     ld      [playerWasUnderWater],a
-    jr      .water
 
 .water:
 
