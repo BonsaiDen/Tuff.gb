@@ -28,6 +28,9 @@ player_water_update:
     xor     a
     ld      [playerFallFrames],a
 
+    ; gfx
+    call    player_effect_water_splash
+
     ; play sound
     ld      a,[playerWasUnderWater]
     cp      1

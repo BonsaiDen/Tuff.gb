@@ -10,7 +10,7 @@ player_pound:
     ld      a,[playerIsPounding]
     cp      0
     jp      nz,.delay
-    
+
     ; check if on ground
     ld      a,[playerOnGround]
     cp      1
@@ -41,7 +41,7 @@ player_pound:
     ld      a,PLAYER_POUND_DELAY_START
     ld      [playerPoundTick],a
 
-    ; reset movement 
+    ; reset movement
     xor     a
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
@@ -69,7 +69,7 @@ player_pound:
 
     ; difference of x block to current player xpos
     and     %11110000; modulo 16
-    or      %00001000 
+    or      %00001000
     sub     b
     cp      128
     jr      c,.positive
@@ -81,7 +81,7 @@ player_pound:
     inc     a
 
 .positive:
-    
+
     ; check if difference < 3, otherwise exit
     cp      PLAYER_POUND_ALIGN_BORDER
     ret     nc
@@ -110,7 +110,7 @@ player_pound:
     ld      a,MAP_COLLISION_BLOCK
     ld      [mapCollisionFlag],a
     ret;    something other block, exit
-    
+
     ; go to next block
 .next:
     ld      a,c
@@ -124,8 +124,8 @@ player_pound:
 .found:
     ld      a,1
     ld      [playerPoundCenterX],a
-    ret     
-    
+    ret
+
 
     ; delay the start / stop animation
 .delay:
@@ -253,7 +253,7 @@ player_pound:
 
 
 .pounding:
-    
+
     ld      a,[playerIsPounding]
     cp      2
     jp      z,.end
@@ -286,6 +286,24 @@ player_pound:
 
     ld      a,PLAYER_ANIMATION_POUND_END
     ld      [playerAnimation],a
+
+    ; create effects
+    ld      a,[playerX]
+    ld      c,a
+    ld      a,[playerY]
+    add     2
+    ld      b,a
+    ld      a,EFFECT_DUST_CLOUD
+    call    effect_create
+
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH + 1
+    ld      c,a
+    ld      a,[playerY]
+    add     2
+    ld      b,a
+    ld      a,EFFECT_DUST_CLOUD
+    call    effect_create
 
     ; no more falling
     xor     a
@@ -327,7 +345,7 @@ player_pound:
 
 .water_end:
 
-    ; skip water offset 
+    ; skip water offset
     ld      a,[playerUnderWater]
     cp      1
     jr      z,.under_water
@@ -359,7 +377,7 @@ player_pound:
     ret
 
 .end:
-    
+
     ; unset pound
     xor     a
     ld      [playerIsPounding],a
@@ -380,7 +398,7 @@ player_pounding_collision:
     ld      [playerBreakBlockM],a
     ld      [playerBreakBlockR],a
     ld      [playerBreakBlockL],a
-    
+
     ; middle of player
     ld      a,[playerY]
     ld      c,a

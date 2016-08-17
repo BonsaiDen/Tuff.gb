@@ -26,7 +26,7 @@ player_gravity:
     ; reset ticker
     ld      a,PLAYER_GRAVITY_INTERVAL
     ld      [playerGravityTick],a
-            
+
 .no_tick:
 
     ; if under water half movement speed by 2
@@ -61,7 +61,7 @@ player_gravity:
 .double_jump:
     ld      a,PLAYER_ANIMATION_DOUBLE_JUMP
     ld      [playerAnimation],a
-    ret     
+    ret
 
 .no_jump:
 
@@ -118,7 +118,7 @@ player_jump:
     ld      a,[coreInput]
     and     BUTTON_A
     cp      BUTTON_A
-    jr      nz,.not_pressed
+    jp      nz,.not_pressed
 
     ; check if the player is continuosly pressing the button
     ld      a,[playerJumpPressed]
@@ -153,7 +153,7 @@ player_jump:
     ld      a,[playerInWater]
     cp      0
     jr      z,.no_sound
-    
+
     ld      a,[playerUnderWater]
     cp      1
     jr      z,.no_sound
@@ -181,7 +181,7 @@ player_jump:
     cp      1
     jr      nz,.check_double; if not check for double jump
 
-    ; land jump force 
+    ; land jump force
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     ld      a,PLAYER_GRAVITY_INTERVAL
@@ -189,6 +189,8 @@ player_jump:
 
     ; water jump force
 .jump_water:
+    ld      b,8; offset gfx
+    call    player_effect_dust_small
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
     xor     a; unset under water flag when jumping out of water
@@ -217,7 +219,7 @@ player_jump:
     jr      .jump
 
 .check_double:
-    
+
     ; don't allow any sort of double jump during wall sliding / jumping
     ld      a,[playerDirectionWall]
     cp      0
@@ -294,14 +296,14 @@ player_jump:
 
     ; move player upwards
 .apply_force:
-    
+
     ; reset on ground flag
     xor     a
     ld      [playerOnGround],a
 
     ; move player upwards
     ld      a,[playerY]
-    
+
     ; check collision at current top pixel
     call    player_collision_up
     jr      c,.collision
@@ -325,8 +327,8 @@ player_jump:
 
     ; loop until stored jump force reaches 0
     dec     d
-    jr      nz,.apply_force 
-    ret      
+    jr      nz,.apply_force
+    ret
 
 .collision:
     xor     a
@@ -336,7 +338,7 @@ player_jump:
     srl     a
     srl     a
     ld      [playerJumpForce],a
-    ret 
+    ret
 
 
 player_decrease_jump:
@@ -394,12 +396,12 @@ player_fall:
     ; reset ground state
     xor     a
     ld      [playerOnGround],a
-    
+
     ; increase player position
     ld      a,[playerY]
     inc     a
     ld      [playerY],a
-        
+
     ; loop until stored fall speed reaches 0
     dec     d
     jr      nz,.fall
@@ -412,6 +414,11 @@ player_fall:
     ld      [playerFallSpeed],a
 
     ld      a,[playerOnGround]
+    cp      1
+    ret     z
+
+    ; don't allow landing while underwater
+    ld      a,[playerInWater]
     cp      1
     ret     z
 
@@ -437,6 +444,10 @@ player_fall:
 
     ld      a,SOUND_EFFECT_PLAYER_LAND_HARD
     call    sound_play_effect_two
+
+    ; Dust Effect
+    ld      b,0
+    call    player_effect_dust_small
 
     ; skip landing animation if pounding
     ld      a,[playerIsPounding]

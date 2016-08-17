@@ -96,7 +96,6 @@ effect_reset:
     ret
 
 
-
 _effect_create:; a = effect index, de = effect data pointer, b = ypos, c = xpos
 
     ; multiply effect animation index by 8
@@ -105,9 +104,12 @@ _effect_create:; a = effect index, de = effect data pointer, b = ypos, c = xpos
     add     a
 
     ; setup effect data index
+    push    bc
     ld      hl,DataEffectAnimation
-    add     l
-    ld      l,a
+    ld      b,0
+    ld      c,a
+    add     hl,bc
+    pop     bc
 
     ; load effect animation row
     ld      a,[hli]
@@ -186,7 +188,6 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
 
     ; load effect flags
     ld      a,[de]
-    and     %0111_1111; mask of active bit
     ld      b,a; store flags
     inc     e
 
@@ -289,12 +290,27 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     ld      c,a
 
 .update_x:
+
     ; load and set updated ypos
+    ld      a,b
+    and     %1000_0000
+    cp      %1000_0000
+    jr      nz,.not_active
+
+    ; only add scroll offset for active effects to avoid hiding issues
+    ld      a,[coreScrollY]
+    add     c
+    ld      c,a
+
+.not_active:
     ld      a,c
     ld      [hli],a
 
     ; load and set xpos
     ld      a,[de]
+    ld      c,a
+    ld      a,[coreScrollX]
+    add     c
     inc     e
     ld      [hli],a
 

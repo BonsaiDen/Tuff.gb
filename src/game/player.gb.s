@@ -12,4 +12,5 @@ INCLUDE     "player/breaking.gb.s"
 INCLUDE     "player/water.gb.s"
 INCLUDE     "player/wall.gb.s"
 INCLUDE     "player/sleep.gb.s"
+INCLUDE     "player/effect.gb.s"
 
