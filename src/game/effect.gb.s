@@ -46,12 +46,10 @@ _effect_update: ; l = reset
     pop     de
 
 .next:
+    inc     h
     ld      a,e
     add     EFFECT_BYTES
     ld      e,a
-
-    inc     h
-    ld      a,e
     cp      (effectScreenState + EFFECT_MAX_COUNT * EFFECT_BYTES) & $ff
     jr      nz,.loop
     ret
@@ -80,13 +78,10 @@ effect_create:; a = effect type, b = ypos, c = xpos
     ret
 
 .skip:
+    inc     h
     ld      a,e
     add     EFFECT_BYTES
     ld      e,a
-
-.next:
-    inc     h
-    ld      a,e
     cp      (effectScreenState + EFFECT_MAX_COUNT * EFFECT_BYTES) & $ff
     jr      nz,.loop
     ret
