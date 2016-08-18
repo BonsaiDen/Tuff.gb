@@ -442,17 +442,17 @@ player_fall:
     ld      a,16
     ld      [playerLandingFrames],a
 
+    ; skip landing animation if pounding
+    ld      a,[playerIsPounding]
+    cp      0
+    jr      nz,.done
+
     ld      a,SOUND_EFFECT_PLAYER_LAND_HARD
     call    sound_play_effect_two
 
     ; Dust Effect
     ld      b,0
     call    player_effect_dust_small
-
-    ; skip landing animation if pounding
-    ld      a,[playerIsPounding]
-    cp      0
-    jr      nz,.done
 
     ; play landing animation
     ld      a,PLAYER_ANIMATION_LANDING
