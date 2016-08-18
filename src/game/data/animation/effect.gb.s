@@ -1,6 +1,6 @@
 ; animations
 ; - animation row
-; - flags: [active][water collision][transparent][fg/bg] [color palette]
+; - flags: [active][water collision][transparent][bg/fg] [color palette]
 ; - dy: 0-7, > 80 = negative movement
 ; - animation delay in frames
 ; - animation loop count ($FF=endless loop)
@@ -22,4 +22,7 @@ DB $04, %0001_0001, $00,$05, $01,$FF, $FF,$FF
 
 ; Water Splash Right
 DB $05, %0001_0001, $00,$05, $01,$FF, $FF,$FF
+
+; Dust Cloud Fast
+DB $02, %0001_0001, $00,$03, $01,$FF, $FF,$FF
 

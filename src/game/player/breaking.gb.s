@@ -311,6 +311,32 @@ _destroy_breakable_block:; a = block group to break
     add     c
     ld      c,a
 
+    ; block destroy gfx
+    push    hl
+    push    de
+    push    bc
+
+    inc     b
+    sla     b
+    sla     b
+    sla     b
+
+    inc     c
+    sla     c
+    sla     c
+    sla     c
+
+    ; switch ypos / xpos
+    ld      a,c
+    ld      c,b
+    ld      b,a
+    ld      a,EFFECT_DUST_CLOUD_FAST
+    call    effect_create
+
+    pop     bc
+    pop     de
+    pop     hl
+
     ; check the desired background color of the breakable block
     ; if the background is dark we need to load the base dark tile value
     ld      a,e

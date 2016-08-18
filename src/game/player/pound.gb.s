@@ -287,7 +287,7 @@ player_pound:
     ld      a,PLAYER_ANIMATION_POUND_END
     ld      [playerAnimation],a
 
-    ; create effects
+    ; create dust gfx
     ld      c,0
     ld      b,2
     call    player_effect_dust

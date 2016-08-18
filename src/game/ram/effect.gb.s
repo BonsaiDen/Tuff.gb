@@ -12,6 +12,7 @@ EFFECT_DUST_CLOUD             EQU 2
 EFFECT_DUST_CLOUD_SMALL       EQU 3
 EFFECT_WATER_SPLASH_LEFT      EQU 4
 EFFECT_WATER_SPLASH_RIGHT     EQU 5
+EFFECT_DUST_CLOUD_FAST        EQU 6
 
 
 ; RAM storage for effect positions / states -----------------------------------
