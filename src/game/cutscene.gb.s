@@ -1,3 +1,5 @@
+SECTION "CutsceneLogic",ROM0
+
 ; Cutscene Functions ----------------------------------------------------------
 cutscene_init:; a = cutsceneNumber
 
