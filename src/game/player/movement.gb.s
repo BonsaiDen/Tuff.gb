@@ -34,7 +34,7 @@ player_move:
     ld      a,PLAYER_ANIMATION_WALKING
     ld      [playerAnimation],a
     jr      .not_on_ground
-    
+
 .running_half:
     ld      a,PLAYER_ANIMATION_RUNNING_HALF
     ld      [playerAnimation],a
@@ -190,7 +190,7 @@ player_move:
     ld      [playerX],a
     ret     z
 
-.stopped: 
+.stopped:
 
     ; reset wall flag when no direction is pressed
     ld      a,[coreInput]
@@ -315,12 +315,12 @@ player_accelerate:
     ld      [playerRunningTick],a
 
 .check_running_end:
-    
+
     ; check if we should disabled the running flag
     ; this happens once we loose the running conditions
     ; and touch ground or enter water
     ld      a,[playerRunningTick]
-    cp      PLAYER_RUNNING_DELAY; >= 
+    cp      PLAYER_RUNNING_DELAY; >=
     jr      nc,.check_direction
 
     ; check for matching direction button
@@ -346,10 +346,10 @@ player_accelerate:
     ld      a,[playerOnGround]
     ld      b,a
     ld      a,[playerInWater]
-    or      b; 
-    or      c; 
+    or      b;
+    or      c;
     jr      z,.check_direction; if both are false keep running
-    
+
     ; if either is true reset running mode
 .stop_running:
     xor     a
@@ -402,7 +402,7 @@ player_accelerate:
     ld      b,PLAYER_SPEED_FULL
     jr      .increase
 
-    ; load speed from corresponding direction variable 
+    ; load speed from corresponding direction variable
 .increase:
     ld      a,[hl]
     cp      b; >= max speed
@@ -430,8 +430,8 @@ player_decelerate:
     cp      PLAYER_BOUNCE_FRAMES - PLAYER_DECELERATE_FRAMES
     ret     nc
 
-    ; Never decrease speed while running, otherwise there will be one frame 
-    ; every 10 frames where we'll bounce of during wall hits even though we 
+    ; Never decrease speed while running, otherwise there will be one frame
+    ; every 10 frames where we'll bounce of during wall hits even though we
     ; should break them
     ld      a,[playerIsRunning]
     cp      0
@@ -593,6 +593,11 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     xor     a
     ld      [playerJumpFrames],a
 
+    ; gfx
+    ld      c,0
+    ld      b,0
+    call    player_effect_dust
+
     ; check direction
     ld      a,[playerDirection]
     cp      PLAYER_DIRECTION_RIGHT
@@ -634,7 +639,7 @@ _player_check_wall_break:
     ld      [playerBreakBlockM],a; middle
     ld      [playerBreakBlockR],a; bottom
     ld      [playerBreakBlockL],a; top
-    
+
     ; middle of player
     ld      a,[playerY]
     sub     7
@@ -704,7 +709,7 @@ _player_check_wall_break:
     ld      [playerBreakBlockL],a
 
 .check_blocks:
-    
+
     ; setup x block based on current player direction
     ld      a,[playerX]; divide by 16 to get X tile
     add     h

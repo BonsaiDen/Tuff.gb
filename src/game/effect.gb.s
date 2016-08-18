@@ -1,5 +1,8 @@
 SECTION "EffectLogic",ROM0
 
+effect_init:
+    ret
+
 
 ; Update all active Effects ---------------------------------------------------
 effect_update:

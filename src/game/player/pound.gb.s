@@ -288,22 +288,13 @@ player_pound:
     ld      [playerAnimation],a
 
     ; create effects
-    ld      a,[playerX]
-    ld      c,a
-    ld      a,[playerY]
-    add     2
-    ld      b,a
-    ld      a,EFFECT_DUST_CLOUD
-    call    effect_create
+    ld      c,0
+    ld      b,2
+    call    player_effect_dust
 
-    ld      a,[playerX]
-    add     PLAYER_HALF_WIDTH + 1
-    ld      c,a
-    ld      a,[playerY]
-    add     2
-    ld      b,a
-    ld      a,EFFECT_DUST_CLOUD
-    call    effect_create
+    ld      c,PLAYER_HALF_WIDTH + 1
+    ld      b,2
+    call    player_effect_dust
 
     ; no more falling
     xor     a
