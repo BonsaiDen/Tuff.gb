@@ -310,10 +310,14 @@ player_pound:
     cp      1
     jr      z,.can_dive
 
+    ; reset water entry if we cannot swim
+    xor     a
+    ld      [playerFallSpeed],a
+
     ; if the player cant dive we exit early
     ld      a,[playerInWater]
     cp      1
-    jr      z,.water_end ; TODO fix y offset
+    jr      z,.water_end
     jr      .water_slow
 
 .can_dive:

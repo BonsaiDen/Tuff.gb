@@ -18,6 +18,12 @@ player_water_update:
     xor     a
     ld      [playerBounceFrames],a
 
+    ; correct player y for water line
+    ld      a,[playerY]
+    and     %1111_0000
+    or      $0E
+    ld      [playerY],a
+
     ; save speed
     ld      a,[playerFallFrames]
     ld      [playerWaterHitDepth],a
@@ -67,12 +73,6 @@ player_water_update:
     ld      [playerWasUnderWater],a
     ld      [playerUnderWater],a
     ld      [playerJumpForce],a
-
-    ; correct y position
-    ld      a,[playerY]
-    and     %11111000
-    add     5
-    ld      [playerY],a
 
 .not_initial:
 
@@ -153,7 +153,7 @@ player_water_update:
     ld      a,[playerWaterHitDepth]
     cp      15
     jr      nc,.fast
-    srl     b; divice depth by 2 if speed was low
+    srl     b; divide depth by 2 if speed was low
 
     ; apply
 .fast:
