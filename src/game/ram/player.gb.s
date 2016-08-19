@@ -15,6 +15,7 @@ PLAYER_GRAVITY_MAX            EQU 2
 PLAYER_GRAVITY_MAX_POUND      EQU 3
 PLAYER_JUMP_SWIM              EQU 1
 PLAYER_DOUBLE_JUMP_THRESHOLD  EQU $13; max jump frames are $1C
+PLAYER_DOUBLE_JUMP_WATER_THRESHOLD  EQU $0B; max jump frames are $1C
 PLAYER_RUNNING_DELAY          EQU 50; frames to be on ground and hold B before running mode sets in
 PLAYER_RUNNING_DELAY_FULL     EQU 120; frames before full running speed
 
@@ -135,6 +136,7 @@ playerJumpForce:           DB ; current jump force per frame
 playerJumpFrames:          DB ; number of frames the current jump is active
 playerDoubleJumped:        DB ; wether the double jump was performed since the last wall touch / on ground
 playerJumpHold:            DB ; number of frames the jump button was hold down
+playerDoubleJumpThreshold: DB
 
 ; Water and Swimming
 playerInWater:             DB ; is the player in water?

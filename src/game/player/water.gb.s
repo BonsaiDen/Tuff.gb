@@ -83,6 +83,7 @@ player_water_update:
 
     ; prevent sleep and reset fall speed
     xor     a
+    ld      [playerDoubleJumped],a
     ld      [playerSleepTick],a
 
     ; check if water hit done

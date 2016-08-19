@@ -181,6 +181,10 @@ player_jump:
     cp      1
     jr      nz,.check_double; if not check for double jump
 
+    ; set normal double jump threshold
+    ld      a,PLAYER_DOUBLE_JUMP_THRESHOLD
+    ld      [playerDoubleJumpThreshold],a
+
     ; land jump force
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
@@ -189,11 +193,19 @@ player_jump:
 
     ; water jump force
 .jump_water:
-    ld      b,8; offset gfx
+
+    ; gfx
+    ld      b,8
     call    player_effect_dust_small
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
-    xor     a; unset under water flag when jumping out of water
+
+    ; setup reduce water double jump threshold
+    ld      a,PLAYER_DOUBLE_JUMP_WATER_THRESHOLD
+    ld      [playerDoubleJumpThreshold],a
+
+    ; unset under water flag when jumping out of water
+    xor     a
     ld      [playerWasUnderWater],a
     ld      a,6 ; setup gravity tick delay so we do not jump as high as normally
     jr      .init_jump
@@ -248,20 +260,30 @@ player_jump:
     call    player_collision_up
     jr      c,.jump
 
+    ; check if above threshold for double jump
+    ld      a,[playerDoubleJumpThreshold]
+    ld      b,a
+    ld      a,[playerJumpFrames]
+    cp      b; PLAYER_DOUBLE_JUMP_THRESHOLD
+    jr      c,.jump; if playerJumpFrames - threshold < 0 don't jump
+
     ; set double jump flag
     ld      a,1
     ld      [playerDoubleJumped],a
 
-    ; check if above threshold for double jump
-    ; TODO this threshold does not work when jumping out of water
-    ; since the jump height is smaller
-    ld      a,[playerJumpFrames]
-    cp      PLAYER_DOUBLE_JUMP_THRESHOLD
-    jr      c,.jump; if playerJumpFrames - threshold < 0 don't jump
-
     ; set up double jump
     ld      a,SOUND_EFFECT_PLAYER_JUMP_DOUBLE
     call    sound_play_effect_one
+
+    ; cloud gfx
+    ld      a,[playerY]
+    add     PLAYER_HEIGHT / 2
+    ld      b,a
+    ld      a,[playerX]
+    add     4
+    ld      c,a
+    ld      a,EFFECT_PUFF_CLOUD
+    call    effect_create
 
     xor     a
     ld      [playerFallSpeed],a

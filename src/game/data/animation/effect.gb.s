@@ -38,3 +38,6 @@ DB $05, %0001_0001, $00,$03, $01,$FF, $FF,$FF
 ; Wall Dust Right
 DB $05, %0001_0011, $00,$03, $01,$FF, $FF,$FF
 
+; Double Jump Cloud
+DB $06, %0001_0001, $00,$06, $01,$FF, $FF,$FF
+

@@ -73,6 +73,10 @@ player_reset:
     ld      [playerWaterTick],a
     ld      [playerRunningTick],a
 
+    ; Jumping
+    ld      a,PLAYER_DOUBLE_JUMP_THRESHOLD
+    ld      [playerDoubleJumpThreshold],a
+
     ; Sliding
     xor     a
     ld      [playerDirectionWall],a
