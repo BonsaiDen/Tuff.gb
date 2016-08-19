@@ -525,10 +525,10 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     cp      0
     jr      nz,.done; normal collision
 
-    ; exit if we are already bouncing and exit
+    ; cancel any existing previous bounce
     ld      a,[playerBounceFrames]
     cp      0
-    jr      nz,.done; normal collision
+    jr      nz,.cancel_bounce; normal collision
 
     ; check player movement speed
     call    player_is_running
@@ -546,6 +546,15 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     jr      nz,.bounce; no breakable wall in our way
 
     ld      a,1; indicate that we do not want to be stopped by the wall
+    ret
+
+.cancel_bounce:
+    ld      a,$01
+    ld      [playerGravityTick],a
+    xor     a
+    ld      [playerBounceFrames],a
+    ld      [playerSpeedLeft],a
+    ld      [playerSpeedRight],a
     ret
 
 .done:
