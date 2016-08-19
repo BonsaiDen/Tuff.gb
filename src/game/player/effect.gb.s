@@ -1,3 +1,18 @@
+player_effect_dust:
+    push    de
+    push    hl
+    ld      a,[playerX]
+    add     c
+    ld      c,a
+    ld      a,[playerY]
+    add     b
+    ld      b,a
+    ld      a,EFFECT_DUST_CLOUD
+    call    effect_create
+    pop     hl
+    pop     de
+    ret
+
 player_effect_dust_small:
     ld      a,[playerY]
     add     2
@@ -37,18 +52,3 @@ player_effect_water_splash:; d = Water effect offset
     call    effect_create
     ret
 
-
-player_effect_dust:
-    push    de
-    push    hl
-    ld      a,[playerX]
-    add     c
-    ld      c,a
-    ld      a,[playerY]
-    add     b
-    ld      b,a
-    ld      a,EFFECT_DUST_CLOUD
-    call    effect_create
-    pop     hl
-    pop     de
-    ret

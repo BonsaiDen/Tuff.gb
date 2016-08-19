@@ -32,3 +32,9 @@ DB $04, %0001_0111, $00,$05, $01,$FF, $FF,$FF
 ; Water Splash Out Right
 DB $04, %0001_0101, $00,$05, $01,$FF, $FF,$FF
 
+; Wall Dust Left
+DB $05, %0001_0001, $00,$03, $01,$FF, $FF,$FF
+
+; Wall Dust Right
+DB $05, %0001_0011, $00,$03, $01,$FF, $FF,$FF
+

@@ -15,9 +15,12 @@ EFFECT_WATER_SPLASH_IN_RIGHT  EQU 5
 EFFECT_DUST_CLOUD_FAST        EQU 6
 EFFECT_WATER_SPLASH_OUT_LEFT  EQU 7
 EFFECT_WATER_SPLASH_OUT_RIGHT EQU 8
+EFFECT_DUST_SIDE_LEFT         EQU 9
+EFFECT_DUST_SIDE_RIGHT        EQU 10
 
 EFFECT_WATER_IN_OFFSET        EQU 0
 EFFECT_WATER_OUT_OFFSET       EQU 3
+
 
 ; RAM storage for effect positions / states -----------------------------------
 effectScreenState:      DS  EFFECT_MAX_COUNT * EFFECT_BYTES ; 9 bytes per effect

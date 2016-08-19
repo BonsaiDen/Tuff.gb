@@ -16,13 +16,13 @@ player_slide_wall:
     ld      a,[playerWallJumpTick]
     cp      0
     jp      nz,.wall_jump_speed
-            
-    
+
+
     ; check if on ground / in water
     ld      a,[playerOnGround]
     cp      1
     jp      z,.on_ground
-    
+
     ; check if on ground
     ld      a,[playerInWater]
     cp      1
@@ -36,7 +36,7 @@ player_slide_wall:
     ; check if pressing against a wall
     ld      a,[playerDirectionWall]
     cp      0
-    jr      z,.not_pressing_wall 
+    jr      z,.not_pressing_wall
 
     ; check if player is pressing joypad in wall direction
     ld      b,a
@@ -52,7 +52,7 @@ player_slide_wall:
     cp      0 ; check if not sliding
     jr      nz,.sliding
 
-    ; if pressing against a wall and not sliding and 
+    ; if pressing against a wall and not sliding and
     ; directionWall != slideDirection init slide
     ; only allow slide if dir = 0 or after wall jump
     ; in case of wall jump, still do not allow the same wall to be used again
@@ -115,7 +115,7 @@ player_slide_wall:
 
     ; if sliding and no longer pressing, end slide
     ld      a,[playerWallSlideTick]
-    cp      0 
+    cp      0
     ret     z ; if not sliding, do nothing
 
     ; otherwise stop the slide and set the correct direction
@@ -126,7 +126,7 @@ player_slide_wall:
     ; button at the same time
     ld      a,PLAYER_WALL_JUMP_WINDOW
     ld      [playerWallJumpWindow],a
-            
+
     ret
 
 
@@ -214,11 +214,34 @@ player_slide_wall:
     ld      a,SOUND_EFFECT_PLAYER_WALL_JUMP
     call    sound_play_effect_one
 
+    ; dust gfx
+    ld      a,[playerY]
+    ld      b,a
+
+    ld      a,[playerWallJumpDir]
+    cp      1
+    jr      nz,.effect_left
+
+.effect_right:
+    ld      a,[playerX]
+    sub     2
+    ld      c,a
+    ld      a,EFFECT_DUST_SIDE_RIGHT
+    jr      .effect
+
+.effect_left:
+    ld      a,[playerX]
+    add     PLAYER_HALF_WIDTH + 4
+    ld      c,a
+    ld      a,EFFECT_DUST_SIDE_LEFT
+
+.effect:
+    call    effect_create
     ret
 
 
 .wall_jump_speed:
-    
+
     ; decrease ticks left for wall jump speed boost
     ld      a,[playerWallJumpTick]
     dec     a
