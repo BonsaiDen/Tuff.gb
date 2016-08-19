@@ -235,7 +235,7 @@ player_water_timer:
 
     ; reset counter
     call    math_random
-    and     %0000_0011
+    and     %0000_0111
     add     PLAYER_AIR_BUBBLE_INTERVAL
     ld      [playerEffectCounter],a
 
