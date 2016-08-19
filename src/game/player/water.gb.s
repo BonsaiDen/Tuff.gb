@@ -28,18 +28,23 @@ player_water_update:
     xor     a
     ld      [playerFallFrames],a
 
-    ; gfx
-    call    player_effect_water_splash
-
     ; play sound
     ld      a,[playerWasUnderWater]
     cp      1
     jr      z,.sound_surface
 
+    ; water in gfx
+    ld      d,EFFECT_WATER_IN_OFFSET
+    call    player_effect_water_splash
+
     ld      a,SOUND_EFFECT_PLAYER_WATER_ENTER
     jr      .sound
 
 .sound_surface:
+    ; water out gfx
+    ld      d,EFFECT_WATER_OUT_OFFSET
+    call    player_effect_water_splash
+
     ld      a,SOUND_EFFECT_PLAYER_WATER_LEAVE
 
 .sound:

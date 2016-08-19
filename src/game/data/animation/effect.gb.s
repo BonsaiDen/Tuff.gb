@@ -1,6 +1,6 @@
 ; animations
 ; - animation row
-; - flags: [active][water collision][transparent][bg/fg] [color palette]
+; - flags: [active][water collision][transparent][bg/fg] [x][flip_y][flip_x][color palette]
 ; - dy: 0-7, > 80 = negative movement
 ; - animation delay in frames
 ; - animation loop count ($FF=endless loop)
@@ -17,12 +17,18 @@ DB $02, %0001_0001, $00,$07, $01,$FF, $FF,$FF
 ; Small Dust Cloud
 DB $03, %0001_0001, $00,$05, $01,$FF, $FF,$FF
 
-; Water Splash Left
-DB $04, %0001_0001, $00,$05, $01,$FF, $FF,$FF
+; Water Splash In Left
+DB $04, %0001_0011, $00,$05, $01,$FF, $FF,$FF
 
-; Water Splash Right
-DB $05, %0001_0001, $00,$05, $01,$FF, $FF,$FF
+; Water Splash In Right
+DB $04, %0001_0001, $00,$05, $01,$FF, $FF,$FF
 
 ; Dust Cloud Fast
 DB $02, %0001_0001, $00,$03, $01,$FF, $FF,$FF
+
+; Water Splash Out Left
+DB $04, %0001_0111, $00,$05, $01,$FF, $FF,$FF
+
+; Water Splash Out Right
+DB $04, %0001_0101, $00,$05, $01,$FF, $FF,$FF
 

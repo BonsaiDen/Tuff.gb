@@ -10,15 +10,19 @@ player_effect_dust_small:
     call    effect_create
     ret
 
-player_effect_water_splash:
+player_effect_water_splash:; d = Water effect offset
     ; Left
     ld      a,[playerX]
     ld      c,a
     ld      a,[playerY]
     add     2
+    add     d
     ld      b,a
-    ld      a,EFFECT_WATER_SPLASH_LEFT
+    ld      a,EFFECT_WATER_SPLASH_IN_LEFT
+    add     d
+    push    de
     call    effect_create
+    pop     de
 
     ; Right
     ld      a,[playerX]
@@ -26,8 +30,10 @@ player_effect_water_splash:
     ld      c,a
     ld      a,[playerY]
     add     2
+    add     d
     ld      b,a
-    ld      a,EFFECT_WATER_SPLASH_RIGHT
+    ld      a,EFFECT_WATER_SPLASH_IN_RIGHT
+    add     d
     call    effect_create
     ret
 

@@ -383,17 +383,26 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     cp      1
     jr      z,.color
 
-    ; adjust palette for DMG
+    ; adjust palette and flags for DMG
     ld      a,b
-    and     %0000_0001
+    and     %0000_0111
     swap    a
     ld      b,a
+    jr      .palette
 
 .color:
 
-    ; mask of unused sprite flags
+    ; adjust palette and and flags for GBC
     ld      a,b
-    and     %0001_0111
+    and     %0000_0111
+    ld      b,a
+    swap    a
+    or      b
+    and     %0110_0001; only use the first palette index bit
+    ld      b,a
+
+.palette:
+    ld      a,b
     ld      [hl],a
 
     ; mark as active
