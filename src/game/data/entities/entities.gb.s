@@ -1,5 +1,5 @@
 _DataEntityDefinitions:
-    ;       0[BG/FG] 1[PALETTE] 2-7[TILEROW] 
+    ;       0[BG/FG] 1[PALETTE] 2-7[TILEROW]
     DB      %00000000,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Light
     DB      %01000001,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Dark
     DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
@@ -9,37 +9,18 @@ _DataEntityDefinitions:
 
 ; Entity Handler Table --------------------------------------------------------
 DataEntityLoadHandlerTable:
-    jp      entity_handler_load_save_light ; 3 byte
-    nop     ; alignment
+    DW      entity_handler_load_save_light
+    DW      entity_handler_load_save_dark
+    DW      entity_handler_load_glow
+    DW      entity_handler_load_powerup
+    DW      entity_handler_load_gem
 
-    jp      entity_handler_load_save_dark
-    nop
-
-    jp      entity_handler_load_glow
-    nop
-
-    jp      entity_handler_load_powerup
-    nop
-
-    jp      entity_handler_load_gem
-    nop
-
-            
 DataEntityUpdateHandlerTable:
-    jp      entity_handler_update_save
-    nop
-
-    jp      entity_handler_update_save
-    nop
-
-    jp      entity_handler_update_glow
-    nop
-
-    jp      entity_handler_update_powerup
-    nop
-
-    jp      entity_handler_update_gem
-    nop
+    DW      entity_handler_update_save
+    DW      entity_handler_update_save
+    DW      entity_handler_update_glow
+    DW      entity_handler_update_powerup
+    DW      entity_handler_update_gem
 
 
 ; Entity Logic Code Includes --------------------------------------------------

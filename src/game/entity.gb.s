@@ -34,19 +34,11 @@ entity_update:
     ld      a,l
     dec     a; convert into 0 based offset
 
-    ld      hl,DataEntityUpdateHandlerTable
-    add     a,a ; multiply entity type by 4
-    add     a,a
-    add     a,l ; add a to hl
-    ld      l,a
-    adc     a,h
-    sub     l
-    ld      h,a
-
-    ; store counter, screen state address and indecies
+    ; store counter, screen state address and indicies
     push    de
     push    bc
-    call    _entity_handler_jump
+    ld      hl,DataEntityUpdateHandlerTable
+    call    _entity_call_handler
     pop     bc
     pop     de
 
@@ -184,18 +176,9 @@ entity_load:
     ; call custom load handler
     ld      a,l
     dec     a; convert into 0 based offset
-    ld      hl,DataEntityLoadHandlerTable
-    add     a,a  ; multiply entity type by 4
-    add     a,a
-    add     a,l ; add a to hl
-    ld      l,a
-    adc     a,h
-    sub     l
-    ld      h,a
-
-    ; call the load handler
     push    de
-    call    _entity_handler_jump
+    ld      hl,DataEntityLoadHandlerTable
+    call    _entity_call_handler
     pop     de
     cp      1
     jr      z,.ignore_load
@@ -607,13 +590,6 @@ entity_col_player:; scf -> collision
     ret
 
 
-
-; Trampolin for entity logic handler ------------------------------------------
-; -----------------------------------------------------------------------------
-_entity_handler_jump:
-    jp      [hl]
-
-
 ; Entity Sprite Handling ------------------------------------------------------
 ; -----------------------------------------------------------------------------
 _entity_sprite_offset: ; a = sprite type -> a = background offset
@@ -630,6 +606,25 @@ _entity_sprite_offset: ; a = sprite type -> a = background offset
 
 
 ; Helper ----------------------------------------------------------------------
+_entity_call_handler: ; hl = handler table base, a = entity index
+    add     a,a  ; multiply entity type by 2
+
+    ; 16 bit addition of a to hl
+    add     a,l
+    ld      l,a
+    adc     a,h
+    sub     l
+    ld      h,a
+
+    ; load handler address
+    ld      a,[hli]; load high byte
+    ld      h,[hl]
+    ld      l,a
+
+    ; the inner return will use the return address from the call to this function
+    jp      [hl]
+
+
 _entity_screen_offset_hl: ; b = entity index
     ld      h,entityScreenState >> 8; high byte, needs to be aligned at 256 bytes
     ld      l,b
