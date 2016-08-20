@@ -130,6 +130,11 @@ player_update:
     ld      [playerInWater],a
     jr      .water
 
+.dissolve_water:
+    ld      a,[playerWaterTick]
+    cp      6
+    jr      nz,.water_update
+
 .dissolve:
     jp      z,player_dissolve
 
@@ -161,8 +166,9 @@ player_update:
     ; check ability
     ld      a,[playerCanSwim]
     cp      0
-    jr      z,.dissolve
+    jr      z,.dissolve_water
 
+.water_update:
     call    player_water_update
 
     ; swim animation
