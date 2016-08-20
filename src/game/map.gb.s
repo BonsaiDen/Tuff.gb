@@ -74,8 +74,8 @@ map_load_room: ; b = x, c = y
 
     ; bank switch
     di
-    ld      hl,$2000
-    ld      [hl],MAP_ROOM_DATA_BANK
+    ld      a,MAP_ROOM_DATA_BANK
+    ld      [$2000],a
 
     ; get room pointer offset into bc
     call    _map_load_room_pointer
@@ -99,8 +99,8 @@ map_load_room: ; b = x, c = y
     call    core_decode_eom
 
     ; bank switch
-    ld      hl,$2000
-    ld      [hl],$01
+    ld      a,$01
+    ld      [$2000],a
     ei
 
     ; setup block definitions
