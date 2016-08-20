@@ -576,8 +576,7 @@ map_check_fallable_blocks:
 
     ; load block y coordinate
 .found_x:
-    ld      a,[hl]
-    ld      c,a
+    ld      c,[hl]
 
     ; check the block 2 pixel under the player
     ; TODO check if in upper half of block only ?

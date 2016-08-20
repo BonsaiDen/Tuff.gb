@@ -361,8 +361,7 @@ _update_track:; c = flags
     ; load PatternPointer into DE
     ld      a,[hli]
     ld      e,a
-    ld      a,[hl]
-    ld      d,a
+    ld      d,[hl]
 
     ; load high byte of data located at PatternPointer
     ld      a,[de]
@@ -379,8 +378,7 @@ _update_track:; c = flags
     ld      a,[hli]
     ld      d,a
     inc     hl; skip high byte of interleaved data pointer
-    ld      a,[hl]
-    ld      e,a
+    ld      e,[hl]
 
     ; increase index pointer and store back
     inc     de
@@ -446,8 +444,7 @@ _update_track:; c = flags
     ld      a,[hli]
     ld      e,a
 
-    ld      a,[hl]
-    ld      d,a ; de is now the pointer to the pattern
+    ld      d,[hl] ; de is now the pointer to the pattern
 
     ; restore pattern offset and go back to low byte
     pop     hl
@@ -494,8 +491,7 @@ _update_track:; c = flags
     ; load frequency into DE
     ld      a,[hli]
     ld      e,a
-    ld      a,[hl]
-    ld      d,a
+    ld      d,[hl]
 
     ; load instrument pointer into HL
     ld      hl,SoundInstrumentTable
