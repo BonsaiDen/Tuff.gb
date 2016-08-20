@@ -353,7 +353,7 @@ entity_store:
     call    _entity_get_store_bucket
     pop     de
 
-    ; did we find a bucket?
+    ; if we didn't find a bucket skip saving the entity state
     jr      nc,.next
 
     ; store into bucket
@@ -365,6 +365,7 @@ entity_store:
 
     ; combine flags, entity id and direction
     ; FFFFDDII
+    push    bc
     ld      a,[de]; load flags
     inc     e
     swap    a
@@ -379,6 +380,7 @@ entity_store:
     and     %00001100
     or      b; merge with id and flags
     ld      [hli],a
+    pop     bc
 
     ; y position
     ld      a,[de]
@@ -762,7 +764,6 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
     jr      z,.not_found
-
     jr      .loop
 
 .not_found:
@@ -786,7 +787,7 @@ _entity_find_free_bucket:
     cp      0
     jr      nz,.used; skip used buckets
 
-    ; found a free spot, return the pointer
+    ; found a free spot, return the pointer and set carry flag
     scf
     ret
 
@@ -802,7 +803,6 @@ _entity_find_free_bucket:
     ld      a,e
     cp      ENTITY_MAX_STORE_BUCKETS
     jr      z,.not_found
-
     jr      .loop
 
 .not_found:
