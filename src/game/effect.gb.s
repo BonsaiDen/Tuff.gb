@@ -55,7 +55,7 @@ _effect_update: ; l = reset
     add     EFFECT_BYTES
     ld      e,a
     cp      (effectScreenState + EFFECT_MAX_COUNT * EFFECT_BYTES) & $ff
-    jr      nz,.loop
+    jp      nz,.loop
     ret
 
 
@@ -87,7 +87,7 @@ effect_create:; a = effect type, b = ypos, c = xpos
     add     EFFECT_BYTES
     ld      e,a
     cp      (effectScreenState + EFFECT_MAX_COUNT * EFFECT_BYTES) & $ff
-    jr      nz,.loop
+    jp      nz,.loop
     ret
 
 
@@ -511,7 +511,7 @@ _effect_get_animation_quad: ; a = animation row index -> a loaded effect quad
 .next:
     dec     hl; skip usage count
     dec     c
-    jr      nz,.loop
+    jp      nz,.loop
 
     ; return the quad
 .done:
