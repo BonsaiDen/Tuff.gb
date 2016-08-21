@@ -1,40 +1,49 @@
+# Rework lava death animation
+
+- Fall deeper into lava (slowly move in?)
+- Fire effects
+
+
+# GFX 
+
+- GFX when running fast?
+
+# Scripts
+
+- Save script state / check if script was run
+
+# Gems
+
+- Gem Entity, save collected flag and increase gem counter
+
+
+# Drowning
+
+- Slowly fade out screen while under water until tuff drowns
+
+
+# Graphics
+
+- super gameboy border support
+    - support gameboy color support?
+
+- colorize water and lava on gameboy color etc.
+
+
+# Outdated --------------------------------------------------------------------
+
+
 
 # Additions
 
 - Conveyor Belts
-- Moving Spikes
+- Moving Spikes (In and out of blocks)
 - Wind Gusts
-- Gameboy Color Support
 - Super Gameboy Border
-
-
-# Fixes
-
-- Finish horizontal block breaking
-
-    - sound effects
-    - screen shaking
-    - movement delay
-    - force running mode for a few more frames after each destroyed block
-
-
-# Current Updates
-
-- Switch Effects to Table based indexing
-- Make patterns end not based on a $FF but by setting the highbyte of the second to last note index value
-- Double Speed Mode
-
+- Falling Blocks from above when walking underneath
 
 
 # Gameplay
-
-## Player
-
-- Run ability (twice the running speed) (hold b for some time during running)
-
-    - Breaks blocks horizontally
-    - bounces off when hitting a non-breakable wall
-    - when active, trigger dissappearing blocks delayed
 
 ## World
 
@@ -49,8 +58,6 @@
     - Needs some sort of visual indicator
     - Needs additional x/y speed variables and acceleration
 
-- Blocks which dissolve when standing on them
-
 - Colletible stuff for end percentage
 - Special ending based on percentage and save count
 
@@ -64,17 +71,13 @@
 
 - Keys and other collectables
 
-    - Use entity flags to save state
-
 
 # Design
 
 ## Sound
 
-- Underwater sound effects (splash, swim, dive, jump out of water, pound into water)
 - Background sounds (Waterfall, lava) (using sound channel 3 samples?)
 - Different sounds for each hazard type (lava, spikes, electricity, water)
-- Improve block breaking sound
 - Running sound
 - Bounce Sound
 - Speed up falling block sound for better effect when running over the blocks
@@ -90,13 +93,6 @@
 
 # Engine
 
-## Script System
-
-- Scripts bound to rooms
-
-    - Run while in the room / or once on entry?
-    - Placed in separate files, compiled into a lookup table to save memory
-
 ## Map
 
 - Mark Dark / Light Background tiles with different collision values (Might be useful for something?)
@@ -109,11 +105,7 @@
 
 ## Tweaks
 
-- Pounding when diving is disabled (is not cancelled perfectly just yet player is left to deep in water when swimming after the pound was cancelled)
 - Improve transition between pound end and diving up/down animation
-- Double jump animation at top of jump
-- disable double jump after wall jump, need to hit the ground before we can double jump again
-- double jump out of water does not work (issue with jump threshold not being reached)
 - Falling platforms should still trigger during running, but delayed so they disappear behind the player
 
 
