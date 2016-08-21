@@ -754,7 +754,7 @@ map_get_tile_collision: ; b = tile x, c = tile y -> a = value
 
     ; get offset into collision table
     call    map_get_tile_value
-    ld      hl,DataTileCol ; needs to be aligned at 256 bytes
+    ld      h,DataTileCol >> 8; needs to be aligned at 256 bytes
     ld      l,a
     ld      a,[hl]
 
