@@ -55,7 +55,7 @@ SECTION "CoreFar",ROM0
 
 SECTION "Core $0100",ROM0[$100]
     nop
-    call    core_init
+    jp     core_init
 
 
 ; Nintendo scrolling logo -----------------------------------------------------
@@ -65,7 +65,7 @@ DB $BB,$BB,$67,$63,$6E,$0E,$EC,$CC,$DD,$DC,$99,$9F,$BB,$B9,$33,$3E
 
 
 ; Catridge Name ---------------------------------------------------------------
-DS 16 STRUPR(CART_NAME)
+DS 15 STRUPR(CART_NAME)
 
 
 ; Cartridge Options -----------------------------------------------------------
