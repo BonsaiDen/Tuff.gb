@@ -369,6 +369,9 @@ player_pound:
     ld      a,SOUND_EFFECT_PLAYER_POUND_CANCEL
     call    sound_play_effect_one
 
+    ; setup for water dissolve
+    xor     a
+    ld      [playerWaterHitDone],a
     ret
 
 .end:

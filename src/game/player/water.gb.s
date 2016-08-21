@@ -91,7 +91,7 @@ player_water_update:
     cp      1
     jr      nz,.stop_fall
 
-    ; check ability
+    ; check dive ability
     ld      a,[playerCanDive]
     cp      0
     jr      z,.stop_fall
@@ -160,15 +160,25 @@ player_water_update:
     ld      a,[playerY]
     add     b
     ld      [playerYOffset],a
-    ret
+    jr      .check_swim_dissolve
 
 .water_hit_done:
     ld      a,1
     ld      [playerWaterHitDone],a
     ld      a,7; set the value so the first movement after the splash is up
     ld      [playerWaterTick],a
-    ret
 
+.check_swim_dissolve:
+    ; check swim ability
+    ld      a,[playerCanSwim]
+    cp      0
+    ret     nz
+
+    ; if player cannot swim dissolve after entering water
+    ld      a,[playerWaterTick]
+    cp      6
+    jp      nc,player_dissolve; >= 6
+    ret
 
     ; swimming offset
 .animate_water:
