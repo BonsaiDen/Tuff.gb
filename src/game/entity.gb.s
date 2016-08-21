@@ -434,31 +434,13 @@ entity_col_up:; b = x, c = y
     ld      a,c
     sub     17
     ld      c,a
-
-    ; middle
-    call    map_get_collision_simple
-    jr      c,.done
-
-    ; left
-    ld      a,b
-    sub     7
-    ld      b,a
-    call    map_get_collision_simple
-    jr      c,.done
-
-    ; right
-    ld      a,b
-    add     14
-    ld      b,a
-    call    map_get_collision_simple
-
-.done:
-    pop     bc
-    ret
+    jr      _entity_col_up
 
 
 entity_col_down:; b = x, c = y
     push    bc
+
+_entity_col_up:
 
     ; middle
     call    map_get_collision_simple
@@ -485,41 +467,22 @@ entity_col_down:; b = x, c = y
 entity_col_left:; b = x, c = y
     push    bc
 
-    ; border
+    ; left border
     ld      a,b
     sub     9
     ld      b,a
 
-    ; bottom
-    dec     c
-    call    map_get_collision_simple
-    jr      c,.done
-
-    ; middle
-    ld      a,c
-    sub     7
-    ld      c,a
-    call    map_get_collision_simple
-    jr      c,.done
-
-    ; top
-    ld      a,c
-    sub     8
-    ld      c,a
-    call    map_get_collision_simple
-
-.done:
-    pop     bc
-    ret
-
+    jr      _entity_col_left_right
 
 entity_col_right:; b = x, c = y
     push    bc
 
+    ; right border
     ld      a,b
     add     8
     ld      b,a
 
+_entity_col_left_right:
     ; bottom
     dec     c
     call    map_get_collision_simple
@@ -543,44 +506,38 @@ entity_col_right:; b = x, c = y
     ret
 
 
-entity_col_player:; scf -> collision
+entity_col_player:; scf -> collision, thrashes a,h,l
 
-    ; check player x > powerup x - 16 and player x < powerup y
+    ; load ypos
+    ld      a,[playerY]
+    ld      h,a
 
     ; check bottom edge
     ld      a,[de] ; y
-    add     1
-    ld      l,a
-    ld      a,[playerY]
-    cp      l
-    jr      nc,.missed; edge > player
+    inc     a
+    cp      h
+    jr      c,.missed; edge > player
 
-    ; check left edge
-    ld      a,[de] ; y
-    sub     15
-    ld      l,a
-    ld      a,[playerY]
-    cp      l
-    jr      c,.missed; edge < player
+    ; check top edge
+    sub     15 + 1
+    cp      h
+    jr      nc,.missed; edge < player
 
-    ; check player x > powerup x - 8 and player x < powerup x + 8
-    inc     e
+    ; load xpos
+    ld      a,[playerX]
+    ld      h,a
 
     ; check right edge
+    inc     e
     ld      a,[de] ; x
     add     7
-    ld      l,a
-    ld      a,[playerX]
-    cp      l
-    jr      nc,.missed; edge > player
+    cp      h
+    jr      c,.missed; edge > player
 
     ; check left edge
-    ld      a,[de] ; x
-    sub     6
-    ld      l,a
-    ld      a,[playerX]
-    cp      l
-    jr      c,.missed; edge < player
+    sub     6 + 7
+    cp      h
+    jr      nc,.missed; edge < player
 
     scf
     ret

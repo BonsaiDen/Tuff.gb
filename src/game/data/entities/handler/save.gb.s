@@ -24,15 +24,15 @@ entity_handler_update_save: ; generic, b = entity index, c = sprite index, de = 
     cp      b
     ret     nz; player y != save y
 
-    ; check x 
-    call    entity_col_player
-    ret     nc
-
     ; check down press
     ld      a,[coreInputOn]
     and     %10000000
     cp      %10000000
     ret     nz
+
+    ; check x
+    call    entity_col_player
+    ret     nc
 
     call    save_store_to_sram
     ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_LIGHT
