@@ -67,7 +67,7 @@ DB $07; Image Row Index
 DW DataPlayerImg ; Image Data Pointer
 DB $FF; Unused
 DB $00,$01,$02,$03, $04,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
-DB $05,$04,$03,$02, $02,$00,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
+DB $07,$06,$05,$04, $03,$00,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 
 ; Swimming to the Surface
 DB $02; Image Row Index

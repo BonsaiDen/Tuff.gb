@@ -11,17 +11,26 @@ player_update:
     cp      255
     jr      z,.control
 
-    ; add additional Y offset
-    ld      a,[playerY]
-    add     2
+.player_dissolve:
+    and     %0000_0010
+    cp      %0000_0010
+    jr      nz,.no_offset
+
+    ; move downwards when not in water
+    ld      a,[playerInWater]
+    cp      0
+    jr      nz,.no_offset
+    ld      a,[playerYOffset]
+    inc     a
     ld      [playerYOffset],a
 
+.no_offset:
     ld      a,[playerDissolveTick]
     inc     a
     ld      [playerDissolveTick],a
 
     ; initialize flash before we actually reset
-    cp      20
+    cp      50
     jr      nz,.check_reset
 
 .flash_reset:
@@ -30,14 +39,15 @@ player_update:
     ret
 
 .check_reset:
-    ; wait for 40 ticks before resetting player position
-    cp      40
-    ret     nz
+    ; wait another 20 ticks before resetting player position
+    cp      70
+    jp      nz,.update
 
     ; reset player
     ld      a,255
     ld      [playerDissolveTick],a
 
+    ; restore from last savepoint
     call    save_load_from_sram
 
     ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
@@ -79,15 +89,6 @@ player_update:
     ; Jumping / Falling
     call    player_gravity
     call    player_slide_wall
-
-    ; check for hazard once more after gravity got applied
-    ld      a,[mapCollisionFlag]
-    cp      MAP_COLLISION_LAVA
-    jr      z,.dissolve
-    cp      MAP_COLLISION_SPIKES
-    jr      z,.dissolve
-    cp      MAP_COLLISION_ELECTRIC
-    jr      z,.dissolve
 
     ; check for map scrolling
     call    player_scroll_map
@@ -234,7 +235,6 @@ player_update:
     ld      [playerDirectionLast],a
     xor     a
     ld      [playerIsRunning],a
-    xor     a
     ld      [playerRunningTick],a
 
 .no_direction_change:
