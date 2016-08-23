@@ -81,6 +81,11 @@ player_gravity:
     cp      1
     ret     z
 
+    ; skip animation when on water
+    ld      a,[playerPlatformDirection]
+    cp      $ff
+    ret     nz
+
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
     ret

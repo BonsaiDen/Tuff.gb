@@ -31,9 +31,9 @@ player_move:
 
     ld      e,a; store platform speed
 
-    ; setup default animation
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
+    ; setup default animation (TODO only required if platform is moving fast)
+    ;ld      a,PLAYER_ANIMATION_IDLE
+    ;ld      [playerAnimation],a
 
     ; store player x
     ld      a,[playerX]
