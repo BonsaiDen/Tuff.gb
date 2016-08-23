@@ -463,6 +463,25 @@ _entity_col_up:
     pop     bc
     ret
 
+entity_col_left_half:; b = x, c = y
+    push    bc
+
+    ; left border
+    ld      a,b
+    sub     9
+    ld      b,a
+    dec     c
+    jr      _entity_col_left_right_half
+
+entity_col_right_half:; b = x, c = y
+    push    bc
+
+    ; right border
+    ld      a,b
+    add     8
+    ld      b,a
+    dec     c
+    jr      _entity_col_left_right_half
 
 entity_col_left:; b = x, c = y
     push    bc
@@ -486,22 +505,24 @@ _entity_col_left_right:
     ; bottom
     dec     c
     call    map_get_collision_simple
-    jr      c,.done
+    jr      c,_entity_col_done
+
+_entity_col_left_right_half:
 
     ; middle
-    ld      a,c
-    sub     7
-    ld      c,a
-    call    map_get_collision_simple
-    jr      c,.done
-
-    ; top
     ld      a,c
     sub     8
     ld      c,a
     call    map_get_collision_simple
+    jr      c,_entity_col_done
 
-.done:
+    ; top
+    ld      a,c
+    sub     7
+    ld      c,a
+    call    map_get_collision_simple
+
+_entity_col_done:
     pop     bc
     ret
 
@@ -605,11 +626,6 @@ _entity_defintion: ; a = sprite type
     ld      hl,DataEntityDefinitions
 
     dec     a; convert into zero based index
-
-    ; a x 8
-    add     a
-    add     a
-    add     a
 
     ; hl + a
     add     a,l

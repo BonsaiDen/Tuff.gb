@@ -1,11 +1,12 @@
 _DataEntityDefinitions:
     ;       0[BG/FG] 1[PALETTE] 2-7[TILEROW]
-    DB      %00000000,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Light
-    DB      %01000001,$00,$00,$00, $00,$00,$00,$00 ; Save Spot Dark
-    DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
-    DB      %00000011,$00,$00,$00, $00,$00,$00,$00 ; Power up
-    DB      %10000100,$00,$00,$00, $00,$00,$00,$00 ; Gem
-    DB      %01000101,$00,$00,$00, $00,$00,$00,$00 ; Platform
+    DB      %00000000 ; Save Spot Light
+    DB      %01000001 ; Save Spot Dark
+    DB      %11000010 ; Moving Glow
+    DB      %00000011 ; Power up
+    DB      %10000100 ; Gem
+    DB      %00000101 ; Platform Top Block Half
+    DB      %00000101 ; Platform Bottom Block Half
 
 
 ; Entity Handler Table --------------------------------------------------------
@@ -15,7 +16,8 @@ DataEntityLoadHandlerTable:
     DW      entity_handler_load_glow
     DW      entity_handler_load_powerup
     DW      entity_handler_load_gem
-    DW      entity_handler_load_platform
+    DW      entity_handler_load_platform_top
+    DW      entity_handler_load_platform_bottom
 
 DataEntityUpdateHandlerTable:
     DW      entity_handler_update_save
@@ -23,6 +25,7 @@ DataEntityUpdateHandlerTable:
     DW      entity_handler_update_glow
     DW      entity_handler_update_powerup
     DW      entity_handler_update_gem
+    DW      entity_handler_update_platform
     DW      entity_handler_update_platform
 
 

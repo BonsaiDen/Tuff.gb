@@ -1,4 +1,14 @@
-entity_handler_load_platform: ; b = entity index, c = sprite index
+entity_handler_load_platform_bottom:
+    inc     e; skip type
+    inc     e; skip flags
+    inc     e; skip direction
+
+    ; correct Y offset
+    ld      a,[de]
+    add     8
+    ld      [de],a
+
+entity_handler_load_platform_top: ; b = entity index, c = sprite index
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_PLATFORM
     call    sprite_set_animation
@@ -85,14 +95,14 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ; flags = 0
 .move_left:
 
-    call    entity_col_left
+    call    entity_col_left_half
     jr      c,.switch_to_right
     dec     b
     jr      .position
 
     ; flags = 1
 .move_right:
-    call    entity_col_right
+    call    entity_col_right_half
     jr      c,.switch_to_left
     inc     b
 
