@@ -6,10 +6,10 @@
 ; - animation loop count ($FF=endless loop)
 
 ; Oxygen Bubble
-DB $00, %0101_0000, $85,$13, $01,$FF, $FF,$FF
+DB $00, %0001_0000, $85,$13, $01,$FF, $FF,$FF
 
 ; Fire flare
-DB $01, %0001_0001, $00,$11, $FF,$FF, $FF,$FF
+DB $01, %0001_0001, $00,$04, $02,$FF, $FF,$FF
 
 ; Dust Cloud
 DB $02, %0001_0001, $00,$07, $01,$FF, $FF,$FF

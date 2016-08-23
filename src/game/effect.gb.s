@@ -1,9 +1,9 @@
 SECTION "EffectLogic",ROM0
 
 effect_init:
-    ;ld      b,24
+    ;ld      b,112
     ;ld      c,112
-    ;ld      a,11
+    ;ld      a,1
     ;call    effect_create
     ret
 

@@ -9,51 +9,7 @@ player_update:
     ; check if we're dissolving
     ld      a,[playerDissolveTick]
     cp      255
-    jr      z,.control
-
-.player_dissolve:
-    and     %0000_0010
-    cp      %0000_0010
-    jr      nz,.no_offset
-
-    ; move downwards when not in water
-    ld      a,[playerInWater]
-    cp      0
-    jr      nz,.no_offset
-    ld      a,[playerYOffset]
-    inc     a
-    ld      [playerYOffset],a
-
-.no_offset:
-    ld      a,[playerDissolveTick]
-    inc     a
-    ld      [playerDissolveTick],a
-
-    ; initialize flash before we actually reset
-    cp      50
-    jr      nz,.check_reset
-
-.flash_reset:
-    ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_DARK
-    call    screen_animate
-    ret
-
-.check_reset:
-    ; wait another 20 ticks before resetting player position
-    cp      70
-    jp      nz,.update
-
-    ; reset player
-    ld      a,255
-    ld      [playerDissolveTick],a
-
-    ; restore from last savepoint
-    call    save_load_from_sram
-
-    ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
-    call    sound_play_effect_one
-    ret
-
+    jp      nz,_player_dissolve
 
     ; control / animation
 .control:
@@ -61,7 +17,7 @@ player_update:
     ; ignore when controls are disabled
     ld      a,[playerHasControl]
     cp      0
-    jp      z,.update
+    jp      z,_player_update
 
     ; ignore when pounding
     ld      a,[playerIsPounding]
@@ -150,7 +106,7 @@ player_update:
     ld      [playerInWater],a
     ld      [playerUnderWater],a
     ld      [playerWaterHitDone],a
-    jr      .update
+    jr      _player_update
 
 .under_water:
     ld      a,1
@@ -163,12 +119,12 @@ player_update:
     ; swim animation
     ld      a,[playerUnderWater]
     cp      1
-    jr      nz,.update
+    jr      nz,_player_update
 
     ; do not overwrite pounding
     ld      a,[playerIsPounding]
     cp      0
-    jr      nz,.update
+    jr      nz,_player_update
 
     ; set swim animation when moving underwater
     ld      a,[coreInput]
@@ -183,24 +139,24 @@ player_update:
     ; check if pushing against wall
     ld      a,[playerDirectionWall]
     cp      0
-    jr      nz,.update
+    jr      nz,_player_update
 
     ld      a,PLAYER_ANIMATION_SWIMMING
     ld      [playerAnimation],a
 
-    jr      .update
+    jr      _player_update
 
     ; set idle animation in case neither a / b is pressed
 .water_idle:
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B
-    jr      nz,.update
+    jr      nz,_player_update
 
     ld      a,PLAYER_ANIMATION_IDLE
     ld      [playerAnimation],a
 
     ; animation / other logic
-.update:
+_player_update:
 
     ; update player sprite position
     ld      a,[playerX]
@@ -252,5 +208,91 @@ player_update:
     ld      b,a
     ld      a,PLAYER_SPRITE_INDEX
     call    sprite_set_animation
+    ret
+
+
+
+_player_dissolve:
+    and     %0000_0010
+    cp      %0000_0010
+    jr      nz,.no_offset
+
+    ; move downwards when not in water
+    ld      a,[playerInWater]
+    cp      0
+    jr      nz,.no_offset
+    ld      a,[playerYOffset]
+    inc     a
+    ld      [playerYOffset],a
+
+.no_offset:
+
+    ; check for lava death
+    ld      a,[mapCollisionFlag]
+    cp      MAP_COLLISION_LAVA
+    jr      nz,.not_lava
+
+    ; skip fire effects
+    ld      a,[playerDissolveTick]
+    cp      20
+    jr      nc,.not_lava
+
+    ; lava fire effects
+    and     %0000_0110
+    cp      %0000_0110
+    jr      nz,.not_lava
+
+    ; randomize x position
+    call    math_random
+    rrca
+    rrca
+    and     %0000_1111
+    sub     4
+    ld      c,a
+    and     %0000_0011
+    ld      d,a
+
+    ; create flame effect
+    ld      a,[playerX]
+    add     c
+    ld      c,a
+
+    ld      a,[playerY]
+    add     d
+    add     4
+    ld      b,a
+    ld      a,EFFECT_FIRE_FLARE
+    call    effect_create
+
+    ; tick dissolve timer
+.not_lava:
+    ld      a,[playerDissolveTick]
+    inc     a
+    ld      [playerDissolveTick],a
+
+    ; initialize flash before we actually reset
+    cp      50
+    jr      nz,.check_reset
+
+.flash_reset:
+    ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_DARK
+    call    screen_animate
+    ret
+
+.check_reset:
+
+    ; wait another 20 ticks before resetting player position
+    cp      70
+    jp      nz,_player_update
+
+    ; reset player
+    ld      a,255
+    ld      [playerDissolveTick],a
+
+    ; restore from last savepoint
+    call    save_load_from_sram
+
+    ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
+    call    sound_play_effect_one
     ret
 

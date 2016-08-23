@@ -134,7 +134,6 @@ player_dissolve:
 
     xor     a
     ld      [playerDissolveTick],a
-    ld      [mapCollisionFlag],a
 
 .done:
     ret

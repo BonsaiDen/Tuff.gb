@@ -122,6 +122,7 @@ map_load_room: ; b = x, c = y
     ; reset animation delays to keep everything in sync
     ld      hl,mapAnimationDelay
     xor     a
+    ld      [mapCollisionFlag],a
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
 
