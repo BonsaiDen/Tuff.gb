@@ -152,3 +152,7 @@ playerDissolveTick:        DB ; tick for when the player is dissolving
 ; Effects
 playerEffectCounter:       DB ; counter used for periodic effects (air bubbles)
 
+; Platforms
+playerPlatformDirection:   DB
+playerPlatformSpeed:       DB
+

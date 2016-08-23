@@ -2,7 +2,7 @@
 
 
 ; UP --------------------------------------------------------------------- UP -
-player_collision_far_up: 
+player_collision_far_up:
 
     ; different height when diving
     ld      a,[playerUnderWater]
@@ -16,7 +16,7 @@ player_collision_far_up:
     jr      _player_col_up
 
 
-player_collision_up: 
+player_collision_up:
     ; different height when diving
     ld      a,[playerUnderWater]
     cp      1
@@ -38,7 +38,7 @@ _player_col_up:
     call    map_get_collision
     ret     c
 
-    ; right half 
+    ; right half
     ld      a,[playerY]
     sub     e
     ld      c,a
@@ -49,7 +49,7 @@ _player_col_up:
     call    map_get_collision
     ret     c
 
-    ; left half 
+    ; left half
     ld      a,[playerY]
     sub     e
     ld      c,a
@@ -62,7 +62,7 @@ _player_col_up:
 
 
 ; DOWN ----------------------------------------------------------------- DOWN -
-player_collision_down: 
+player_collision_down:
 
     ; different height when diving
     ld      a,[playerUnderWater]
@@ -85,7 +85,7 @@ player_collision_down:
     ld      a,[playerIsPounding]
     cp      1
     jr      z,.pounding
-    
+
     ; otherwise check for collision with breakable blocks
 .col_breakable:
     ld      h,5
@@ -94,6 +94,10 @@ player_collision_down:
 
 .pounding:
     call    player_pounding_collision
+    ret
+
+.platform:
+    scf
     ret
 
 
@@ -109,7 +113,7 @@ _player_col_check_down:
     cp      h
     jr      z,.col
 
-    ; right half 
+    ; right half
     ld      a,[playerY]
     add     e
     ld      c,a
@@ -121,7 +125,7 @@ _player_col_check_down:
     cp      h
     jr      z,.col
 
-    ; left half 
+    ; left half
     ld      a,[playerY]
     add     e
     ld      c,a
@@ -161,7 +165,7 @@ _player_col_left:
     call    map_get_collision
     ret     c
 
-    ; upper half 
+    ; upper half
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
     ld      c,a
@@ -172,7 +176,7 @@ _player_col_left:
     call    map_get_collision
     ret     c
 
-    ; lower half 
+    ; lower half
     ld      a,[playerY]
     sub     1
     ld      c,a
@@ -181,7 +185,7 @@ _player_col_left:
     sub     h
     ld      b,a
     call    map_get_collision
-    ret     
+    ret
 
 player_collision_left_all:
 
@@ -196,7 +200,7 @@ player_collision_left_all:
     call    map_get_collision
     ret     nc
 
-    ; upper half 
+    ; upper half
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
     cp      255
@@ -209,7 +213,7 @@ player_collision_left_all:
     call    map_get_collision
     ret     nc
 
-    ; lower half 
+    ; lower half
 .upper_bound:
     ld      a,[playerY]
     sub     1
@@ -242,7 +246,7 @@ _player_col_right:
     call    map_get_collision
     ret     c
 
-    ; upper half 
+    ; upper half
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
     ld      c,a
@@ -253,7 +257,7 @@ _player_col_right:
     call    map_get_collision
     ret     c
 
-    ; lower half 
+    ; lower half
     ld      a,[playerY]
     sub     1
     ld      c,a
@@ -277,7 +281,7 @@ player_collision_right_all:
     call    map_get_collision
     ret     nc
 
-    ; upper half 
+    ; upper half
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1
     cp      255
@@ -290,7 +294,7 @@ player_collision_right_all:
     call    map_get_collision
     ret     nc
 
-    ; lower half 
+    ; lower half
 .upper_bound:
     ld      a,[playerY]
     sub     1

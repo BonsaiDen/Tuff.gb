@@ -11,7 +11,42 @@ player_move:
     cp      0
     jp      nz,.landing
 
+    ; moving on a platform?
+    ld      a,[playerPlatformDirection]
+    cp      $ff
+    jr      z,.not_on_platform
+
+    ; check if still touching ground and ignore platform movement
+    call    player_collision_down
+    jr      c,.not_on_platform
+
+    ; store direction
+    ld      a,[playerPlatformDirection]
+    ld      b,a
+
+    ; setup platform speed
+    ld      a,[playerPlatformSpeed]
+    cp      0
+    jr      z,.not_on_platform
+
+    ld      e,a; store platform speed
+
+    ; setup default animation
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+
+    ; store player x
+    ld      a,[playerX]
+    ld      d,a
+
+    ; check in which direction the player should move
+    ld      a,b
+    cp      0
+    jp      z,.move_left_inner
+    jr      .move_right_inner
+
     ; are we moving at all?
+.not_on_platform:
     ld      a,[playerSpeedLeft]
     ld      b,a
     ld      a,[playerSpeedRight]
@@ -68,6 +103,8 @@ player_move:
     cp      0
     jr      z,.move_left
     ld      e,a
+
+.move_right_inner:
 
     ; reset wall flag
     xor     a
@@ -129,6 +166,8 @@ player_move:
     cp      0
     jr      z,.moved
     ld      e,a
+
+.move_left_inner:
 
     ; reset wall flag
     xor     a
@@ -385,6 +424,10 @@ player_accelerate:
     ld      [playerDirection],a
 
 .accelerate:
+    ; ignore platform movement when controlling directly
+    xor     a
+    ld      [playerPlatformSpeed],a
+
     ld      a,[playerIsRunning]
     cp      1
     jr      z,.running_half

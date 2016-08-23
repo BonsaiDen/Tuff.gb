@@ -91,6 +91,7 @@ player_reset:
 
     ld      a,255
     ld      [playerDissolveTick],a
+    ld      [playerPlatformDirection],a
 
     ret
 

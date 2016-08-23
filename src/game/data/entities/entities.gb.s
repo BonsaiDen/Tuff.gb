@@ -5,6 +5,7 @@ _DataEntityDefinitions:
     DB      %11000010,$00,$00,$00, $00,$00,$00,$00 ; Moving Glow
     DB      %00000011,$00,$00,$00, $00,$00,$00,$00 ; Power up
     DB      %10000100,$00,$00,$00, $00,$00,$00,$00 ; Gem
+    DB      %01000101,$00,$00,$00, $00,$00,$00,$00 ; Platform
 
 
 ; Entity Handler Table --------------------------------------------------------
@@ -14,6 +15,7 @@ DataEntityLoadHandlerTable:
     DW      entity_handler_load_glow
     DW      entity_handler_load_powerup
     DW      entity_handler_load_gem
+    DW      entity_handler_load_platform
 
 DataEntityUpdateHandlerTable:
     DW      entity_handler_update_save
@@ -21,6 +23,7 @@ DataEntityUpdateHandlerTable:
     DW      entity_handler_update_glow
     DW      entity_handler_update_powerup
     DW      entity_handler_update_gem
+    DW      entity_handler_update_platform
 
 
 ; Entity Logic Code Includes --------------------------------------------------
@@ -28,4 +31,5 @@ DataEntityUpdateHandlerTable:
     INCLUDE "handler/glow.gb.s"
     INCLUDE "handler/powerup.gb.s"
     INCLUDE "handler/gem.gb.s"
+    INCLUDE "handler/platform.gb.s"
 

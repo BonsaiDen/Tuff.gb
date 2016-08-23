@@ -4,9 +4,9 @@ entity_handler_load_glow:
     call    sprite_set_animation
     ld      a,c
     call    sprite_set_transparent
-    xor     a; 
+    xor     a;
     ret
-    
+
 
 entity_handler_update_glow: ; generic, b = entity index, c = sprite index, de = screen data
 
@@ -18,13 +18,10 @@ entity_handler_update_glow: ; generic, b = entity index, c = sprite index, de = 
 
     inc     de; skip type
     inc     de; skip flags
-    call    entity_glow_movement
-    ret
 
+.entity_glow_movement:; de = pointer at direction flag
 
-entity_glow_movement:; de = pointer at direction flag
-
-    ; randomly switch the direction 
+    ; randomly switch the direction
     call    math_random
     cp      8
     jr      nc,.move
@@ -57,7 +54,7 @@ entity_glow_movement:; de = pointer at direction flag
     jr      z,.down
     cp      ENTITY_DIRECTION_LEFT
     jr      z,.left
-    
+
 .done:
     ; set y and x direction
     inc     de
@@ -103,7 +100,7 @@ entity_glow_movement:; de = pointer at direction flag
     dec     c
     dec     c
     jr      .done
-    
+
 ; Down ------------------------------------------------------------------------
 .down:
     call    entity_col_down

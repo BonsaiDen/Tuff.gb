@@ -158,6 +158,12 @@ player_update:
     ; animation / other logic
 _player_update:
 
+    ; reset player platform status
+    xor     a
+    ld      [playerPlatformSpeed],a
+    dec     a
+    ld      [playerPlatformDirection],a
+
     ; update player sprite position
     ld      a,[playerX]
     ld      b,a

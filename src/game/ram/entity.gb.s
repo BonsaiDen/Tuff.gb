@@ -12,6 +12,7 @@ ENTITY_ANIMATION_SAVE_DARK    EQU 1
 ENTITY_ANIMATION_GLOW         EQU 2
 ENTITY_ANIMATION_POWERUP      EQU 3
 ENTITY_ANIMATION_GEM          EQU 4
+ENTITY_ANIMATION_PLATFORM     EQU 5
 
 ENTITY_DIRECTION_UP           EQU 0
 ENTITY_DIRECTION_RIGHT        EQU 1
@@ -24,14 +25,14 @@ ENTITY_STORED_STATE_SIZE      EQU ENTITY_MAX_STORE_BUCKETS * 4
 
 ; RAM storage for entity positions / states -----------------------------------
 ; mapStorage format is 2 bytes per entity [ddtttttt] xxxxyyyy (type, direction, x, y)
-entityScreenState:      DS  32 ; 8 bytes per entity 
-                               ; [type][flags][direction][y] 
+entityScreenState:      DS  32 ; 8 bytes per entity
+                               ; [type][flags][direction][y]
                                ; [x][tileslot][custom][custom]
                                ; type > 0 = entity is active
 
 entityTileRowMap:       DS  4 ; which entity tile rows are currently mapped into vram
 
-entityStoredState:      DS  ENTITY_STORED_STATE_SIZE 
+entityStoredState:      DS  ENTITY_STORED_STATE_SIZE
                               ; 4 bytes per bucket entry
 
 entityUpdateActive:     DS  1  ; whether entity logic updates are performed

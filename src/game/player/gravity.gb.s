@@ -413,7 +413,12 @@ player_fall:
 
     ; check for downward collision
     call    player_collision_down
-    jr      c,.collision ; unlikely jump, thus jr and not jp
+    jr      c,.collision; unlikely jump, thus jr and not jp
+
+    ; check for platform collision
+    ld      a,[playerPlatformDirection]
+    cp      $ff
+    jr      nz,.collision
 
     ; reset ground state
     xor     a
@@ -435,6 +440,7 @@ player_fall:
     xor     a
     ld      [playerFallSpeed],a
 
+    ; already on ground
     ld      a,[playerOnGround]
     cp      1
     ret     z

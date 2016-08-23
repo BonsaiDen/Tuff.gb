@@ -1,4 +1,4 @@
-SECTION "GameRam",WRAM0[$C0DF]
+SECTION "GameRam",WRAM0[$C0E0]
 
 
 ; Game Constants --------------------------------------------------------------

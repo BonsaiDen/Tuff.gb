@@ -41,3 +41,10 @@ DB $FF; Unused
 DB $00,$01,$02,$03, $fe,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 DB $50,$0b,$05,$08, $00,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
 
+; Platform
+DB $05; Image Row Index
+DW DataEntityImg ; Image Data Pointer
+DB $FF; Unused
+DB $00,$fe,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
+DB $01,$00,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff,$ff,$ff, $ff,$ff
+
