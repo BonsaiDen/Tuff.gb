@@ -59,10 +59,17 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ld      a,[playerX]
     add     10; center of player sprite
     cp      b; compare with left end of platform
-    jr      c,.no_player ; playerX + 8 => b
-    sub     20; offset for right end of platform
+    jr      c,.no_player ; playerX + 8 => platformX
+
+    ; right end of platform
+    ld      a,b
+    add     16
+    ld      b,a
+
+    ; playerX + 8 <= platformX + 16
+    ld      a,[playerX]
     cp      b
-    jr      nc,.no_player ; playerX + 8 <= b + 16
+    jr      nc,.no_player
 
     ; correct player Y to be exactly on top of platform
     ld      a,c
@@ -75,14 +82,16 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ld      l,1
 
 .no_player:
+    ; restore platform x position
+    ld      a,[de]
+    ld      b,a
     dec     e
     dec     e
 
     ; check if we should move on this frame
-    ; TODO speed up and fix player walk speed on platform
     ld      a,[coreLoopCounter]
     and     %0000_0001
-    ;ret     z
+    ret     z
 
     ; check if player is on this very platform
     ld      a,l
