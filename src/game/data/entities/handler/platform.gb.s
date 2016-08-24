@@ -3,7 +3,13 @@ entity_handler_load_platform_bottom:
     inc     e; skip flags
     inc     e; skip direction
 
-    ; correct Y offset
+    ; check for 8 pixel alignment
+    ld      a,[de]
+    and     %0000_1000
+    cp      0
+    jr      nz,entity_handler_load_platform_top
+
+    ; correct Y offset if alignment is 16 pixel
     ld      a,[de]
     add     8
     ld      [de],a
@@ -73,9 +79,10 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     dec     e
 
     ; check if we should move on this frame
+    ; TODO speed up and fix player walk speed on platform
     ld      a,[coreLoopCounter]
     and     %0000_0001
-    ret     z
+    ;ret     z
 
     ; check if player is on this very platform
     ld      a,l
