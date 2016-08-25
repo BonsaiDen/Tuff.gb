@@ -1,20 +1,20 @@
 ; Data Unpacking Routines -----------------------------------------------------
 CORE_DECODE_MIN_COPY_LENGTH     EQU 2
 CORE_DECODE_MIN_REPEAT_LENGTH   EQU 2
-                                
+
 
 ; Decompression Algorithm -----------------------------------------------------
 ; -----------------------------------------------------------------------------
 core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
 
-    ; check there is a end address specified 
+    ; check there is a end address specified
     ld      a,[coreDecodeAddress]
     cp      0
     jr      z,.decode
 
     ; check low byte
     ld      a,[coreDecodeAddress + 1]
-    cp      e 
+    cp      e
     jr      nz,.decode
 
     ; check high byte
@@ -46,7 +46,7 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     ld      b,a; ; store the actual match size, this is also used as the loop counter for the copying
 
     ld      a,[hli]; load copy offset and goto instruction byte
-    add     b; add match size to get final offset 
+    add     b; add match size to get final offset
     ld      c,a; store offset
 
     ; hl = de - offset
@@ -68,6 +68,7 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
     jr      nz,@-4          ; ----+
 
     ; copy the next byte
+    ; TODO fix vram access issues (since we copy from / to vram)
     ld      a,[hli]
     ld      [de],a
     inc     de
@@ -76,7 +77,7 @@ core_decode_eom: ; HL = source, DE = target, coreDecodeAddress
 
     pop     hl; restore next instruction offset
     jr      core_decode_eom
-            
+
 
 ; Literals --------------------------------------------------------------------
 .literal: ; read a number of plain bytes from the input stream
