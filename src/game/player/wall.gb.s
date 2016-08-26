@@ -103,15 +103,30 @@ player_slide_wall:
     cp      8
     ret     c; >= 8
 
-    ; TODO set correct side
+    ; setup effect position
     ld      a,[playerY]
     ld      b,a
+
+    ld      a,[playerDirectionWall]
+    cp      2
+    jr      z,.sliding_right
+
+    ; left side
+    ld      d,EFFECT_WALL_DUST_LEFT
     ld      a,[playerX]
     add     2
-    ld      c,a
-    ld      a,12
-    call    effect_create
+    jr      .sliding_effect
 
+    ; right side
+.sliding_right:
+    ld      d,EFFECT_WALL_DUST_RIGHT
+    ld      a,[playerX]
+    add     6
+
+.sliding_effect:
+    ld      c,a
+    ld      a,d
+    call    effect_create
     ret
 
 
@@ -141,7 +156,7 @@ player_slide_wall:
     ; otherwise stop the slide and set the correct direction
     call    player_slide_wall_stop
 
-    ; we have X frames where a wall jump can be executed by pressind
+    ; we have X frames where a wall jump can be executed by pressing
     ; the joypad away from the last jump direction and pressing the jump
     ; button at the same time
     ld      a,PLAYER_WALL_JUMP_WINDOW
@@ -239,21 +254,21 @@ player_slide_wall:
     ld      b,a
 
     ld      a,[playerWallJumpDir]
-    cp      0
-    jr      z,.effect_left
-
-.effect_right:
-    ld      a,[playerX]
-    sub     2
-    ld      c,a
-    ld      a,EFFECT_DUST_SIDE_RIGHT
-    jr      .effect
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.effect_right
 
 .effect_left:
     ld      a,[playerX]
-    add     PLAYER_HALF_WIDTH + 4
+    add     2
     ld      c,a
     ld      a,EFFECT_DUST_SIDE_LEFT
+    jr      .effect
+
+.effect_right:
+    ld      a,[playerX]
+    add     4
+    ld      c,a
+    ld      a,EFFECT_DUST_SIDE_RIGHT
 
 .effect:
     call    effect_create
