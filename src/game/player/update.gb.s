@@ -3,8 +3,8 @@ player_update:
 
     ; do not update during screen transitions
     ld      a,[mapRoomUpdateRequired]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; check if we're dissolving
     ld      a,[playerDissolveTick]
@@ -48,8 +48,8 @@ player_update:
 
     ; check for map scrolling
     call    player_scroll_map
-    cp      1
-    ret     z; exit if the map got scrolled to prevent glitched collision access
+    cp      0
+    ret     nz; exit if the map got scrolled to prevent glitched collision access
 
     call    player_sleep
 
@@ -73,8 +73,8 @@ player_update:
 
     ; check if was diving
     ld      a,[playerWasUnderWater]
-    cp      1
-    jr      nz,.check_diving
+    cp      0
+    jr      z,.check_diving
 
     ; ignore surface checks when at the very bottom of the screen
     ld      a,[playerY]
@@ -118,8 +118,8 @@ player_update:
 
     ; swim animation
     ld      a,[playerUnderWater]
-    cp      1
-    jr      nz,_player_update
+    cp      0
+    jr      z,_player_update
 
     ; do not overwrite pounding
     ld      a,[playerIsPounding]

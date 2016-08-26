@@ -13,8 +13,8 @@ player_pound:
 
     ; check if on ground
     ld      a,[playerOnGround]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; check for B button
     ld      a,[coreInputOn]
@@ -24,12 +24,12 @@ player_pound:
 
     ; check if under water or swimming
     ld      a,[playerUnderWater]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ld      a,[playerInWater]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; set pounding and animation
     ld      a,1
@@ -270,13 +270,13 @@ _player_pound_update:
 
     ; check if we hit water
     ld      a,[playerInWater]
-    cp      1
-    jr      z,.water
+    cp      0
+    jr      nz,.water
 
     ; check if we hit ground
     ld      a,[playerOnGround]
-    cp      1
-    ret     nz; return if not
+    cp      0
+    ret     z; return if not
 
     ; If we hit ground shake screen, delay and then disable pounding
     ld      a,10
@@ -322,8 +322,8 @@ _player_pound_update:
 
     ; if the player cant dive we exit early
     ld      a,[playerInWater]
-    cp      1
-    jr      z,.water_end
+    cp      0
+    jr      nz,.water_end
     jr      .water_slow
 
 .can_dive:
@@ -348,8 +348,8 @@ _player_pound_update:
 
     ; skip water offset
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.under_water
+    cp      0
+    jr      nz,.under_water
 
     ld      a,PLAYER_WATER_OFFSET_MAX
     jr      .water_end_set

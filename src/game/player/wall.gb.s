@@ -20,13 +20,13 @@ player_slide_wall:
 
     ; check if on ground / in water
     ld      a,[playerOnGround]
-    cp      1
-    jp      z,.on_ground
+    cp      0
+    jp      nz,.on_ground
 
     ; check if on ground
     ld      a,[playerInWater]
-    cp      1
-    jp      z,.on_ground
+    cp      0
+    jp      nz,.on_ground
 
     ; check if falling
     ld      a,[playerFallSpeed]
@@ -181,8 +181,8 @@ player_slide_wall:
 
     ; check if button was hold down since the last jump, if so don't jump again
     ld      a,[playerWallJumpPressed]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; check if jump button is pressed pressed
     ld      a,[coreInput]
@@ -239,8 +239,8 @@ player_slide_wall:
     ld      b,a
 
     ld      a,[playerWallJumpDir]
-    cp      1
-    jr      nz,.effect_left
+    cp      0
+    jr      z,.effect_left
 
 .effect_right:
     ld      a,[playerX]

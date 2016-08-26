@@ -27,8 +27,8 @@ _effect_update: ; l = reset
 
     ; check if in reset mode
     ld      a,l
-    cp      1
-    jr      z,.reset
+    cp      0
+    jr      nz,.reset
 
     ; update sprite
     push    hl
@@ -405,8 +405,8 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
 
     ; update sprite palette
     ld      a,[coreColorEnabled]
-    cp      1
-    jr      z,.color
+    cp      0
+    jr      nz,.color
 
     ; adjust palette and flags for DMG
     ld      a,b

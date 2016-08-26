@@ -314,8 +314,8 @@ title_draw_room:
     call    save_check_state
     ld      [titleCanContinue],a
     ld      [titleCursorPos],a
-    cp      1
-    jr      nz,.done
+    cp      0
+    jr      z,.done
 
     ld      hl,DataTitleLayout + 4
     ld      de,$9800 + 519; "Continue"
@@ -427,8 +427,8 @@ title_select_option:
 
 .continue:
     ld      a,[titleCursorPos]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ld      a,1
     ld      [titleCursorPos],a
@@ -459,8 +459,8 @@ title_handle_button:
 
     ; check selected option
     ld      a,[titleCursorPos]
-    cp      1
-    jr      z,.continue
+    cp      0
+    jr      nz,.continue
 
 .start:
     ld      a,GAME_MODE_START
@@ -476,8 +476,8 @@ title_handle_button:
 title_draw_cursor:
 
     ld      a,[titleCursorPos]
-    cp      1
-    jr      z,.continue
+    cp      0
+    jr      nz,.continue
 
 .start:
     ld      hl,$9800 + 487; "> Start"

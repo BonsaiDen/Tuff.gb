@@ -1,15 +1,15 @@
 ; Sleep Timer -----------------------------------------------------------------
 player_sleep:
 
-    ; in case no button is pressed decrease the sleep ticker 
+    ; in case no button is pressed decrease the sleep ticker
     ld      a,[coreInput]
     and     BUTTON_A | BUTTON_B | BUTTON_LEFT | BUTTON_RIGHT
     jr      nz,.active
 
     ; also check whether we're on the ground
     ld      a,[playerOnGround]
-    cp      1
-    jr      nz,.active
+    cp      0
+    jr      z,.active
 
     ; check sleep ticker
     ld      a,[playerSleepTick]

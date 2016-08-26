@@ -36,8 +36,8 @@ player_water_update:
 
     ; play sound
     ld      a,[playerWasUnderWater]
-    cp      1
-    jr      z,.sound_surface
+    cp      0
+    jr      nz,.sound_surface
 
     ; water in gfx
     ld      d,EFFECT_WATER_IN_OFFSET
@@ -58,8 +58,8 @@ player_water_update:
 
     ; check if we were previously under water, if so skip water offset
     ld      a,[playerWasUnderWater]
-    cp      1
-    jr      nz,.not_initial
+    cp      0
+    jr      z,.not_initial
 
     ; if we are surfacing skip the offset, and correct the player y position
     ld      a,7
@@ -117,8 +117,8 @@ player_water_update:
     ; check swimming offset or initial hit offset
 .offset:
     ld      a,[playerWaterHitDone]
-    cp      1
-    jr      z,.animate_water
+    cp      0
+    jr      nz,.animate_water
 
     ; initial "splash / hit" offset
     ld      a,[playerWaterTick]

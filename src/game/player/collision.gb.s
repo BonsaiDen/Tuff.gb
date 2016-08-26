@@ -6,8 +6,8 @@ player_collision_far_up:
 
     ; different height when diving
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.diving
+    cp      0
+    jr      nz,.diving
     ld      e,PLAYER_HEIGHT + 3
     jr      _player_col_up
 
@@ -19,8 +19,8 @@ player_collision_far_up:
 player_collision_up:
     ; different height when diving
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.diving
+    cp      0
+    jr      nz,.diving
     ld      e,PLAYER_HEIGHT
     jr      _player_col_up
 
@@ -66,8 +66,8 @@ player_collision_down:
 
     ; different height when diving
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.diving
+    cp      0
+    jr      nz,.diving
     ld      e,0
     jr      .check
 
@@ -83,8 +83,8 @@ player_collision_down:
 
     ; if pounding check for breaking blocks
     ld      a,[playerIsPounding]
-    cp      1
-    jr      z,.pounding
+    cp      0
+    jr      nz,.pounding
 
     ; otherwise check for collision with breakable blocks
 .col_breakable:

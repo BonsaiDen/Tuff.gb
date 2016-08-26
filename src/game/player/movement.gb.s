@@ -305,12 +305,12 @@ player_accelerate:
 
     ; check for B button and running
     ld      a,[playerOnGround]; needs to be on ground
-    cp      1
-    jr      nz,.is_not_running
+    cp      0
+    jr      z,.is_not_running
 
     ld      a,[playerInWater]; not in water
-    cp      1
-    jr      z,.is_not_running
+    cp      0
+    jr      nz,.is_not_running
 
     ld      a,[coreInput]; and hold the B button
     and     BUTTON_B
@@ -587,8 +587,8 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
     ; only if at full speed
     call    _player_running_collision
-    cp      1
-    jr      nz,.bounce; no breakable wall in our way
+    cp      0
+    jr      z,.bounce; no breakable wall in our way
 
     ld      a,1; indicate that we do not want to be stopped by the wall
     ret

@@ -147,8 +147,8 @@ map_draw_room:
 
     ; switch between the two screen buffers to prevent flickering
     ld      a,[mapCurrentScreenBuffer]
-    cp      1
-    jr      z,.buffer_9c
+    cp      0
+    jr      nz,.buffer_9c
 
 .buffer_98:
     ld      de,$9800
@@ -543,8 +543,8 @@ map_check_fallable_blocks:
 .check_active:
     ld      a,[hli]
     and     %00000001
-    cp      1
-    jr      z,.active
+    cp      0
+    jr      nz,.active
 
     ; skip frame
     inc     hl
@@ -656,8 +656,8 @@ map_update_falling_blocks:
     ; check if active
     ld      a,[hl]
     and     %00000001
-    cp      1
-    jr      nz,.inactive
+    cp      0
+    jr      z,.inactive
 
     ; check for delay
     ld      a,[hl]
@@ -829,8 +829,8 @@ _map_load_animations:
     ld      a,[mapRoomHeaderFlags]
     and     %00000001
     ld      b,0; per default animations are off
-    cp      1
-    jr      nz,.skip_animation_byte
+    cp      0
+    jr      z,.skip_animation_byte
 
     ; load animation attribute byte
     ld      a,[hli]

@@ -180,8 +180,8 @@ entity_load:
     ld      hl,DataEntityLoadHandlerTable
     call    _entity_call_handler
     pop     de
-    cp      1
-    jr      z,.ignore_load
+    cp      0
+    jr      nz,.ignore_load
 
     ; set sprite position
     inc     e ; skip type

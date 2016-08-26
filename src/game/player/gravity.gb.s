@@ -51,8 +51,8 @@ player_gravity:
 
     ; set jump animation
     ld      a,[playerDoubleJumped]
-    cp      1
-    jr      z,.double_jump
+    cp      0
+    jr      nz,.double_jump
 
     ld      a,PLAYER_ANIMATION_JUMP
     ld      [playerAnimation],a
@@ -78,8 +78,8 @@ player_gravity:
     ; skip the animation when under water
     ; otherwise pressing against a ceiling will result in flicker
     ld      a,[playerUnderWater]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; skip animation when on water
     ld      a,[playerPlatformDirection]
@@ -127,8 +127,8 @@ player_jump:
 
     ; check if the player is continuosly pressing the button
     ld      a,[playerJumpPressed]
-    cp      1
-    jp      z,.still_pressed
+    cp      0
+    jp      nz,.still_pressed
 
     ; otherwise set the button pressed on first press
     ld      a,1
@@ -141,8 +141,8 @@ player_jump:
 
     ; no sound under water (even when on ground)
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.no_sound
+    cp      0
+    jr      nz,.no_sound
 
     ; when on ground play normal jump
     ld      a,SOUND_EFFECT_PLAYER_JUMP
@@ -152,16 +152,16 @@ player_jump:
 
     ; check if swimming
     ld      a,[playerWaterHitDone]
-    cp      1
-    jr      nz,.no_sound
+    cp      0
+    jr      z,.no_sound
 
     ld      a,[playerInWater]
     cp      0
     jr      z,.no_sound
 
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.no_sound
+    cp      0
+    jr      nz,.no_sound
 
     ; player normal jump sound plus water leave sound
     ld      a,SOUND_EFFECT_PLAYER_JUMP
@@ -173,18 +173,18 @@ player_jump:
     ; under water movement
 .no_sound:
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.jump_swim
+    cp      0
+    jr      nz,.jump_swim
 
     ; check if we're in water (and the splash offset is done)
     ld      a,[playerWaterHitDone]
-    cp      1
-    jr      z,.jump_water
+    cp      0
+    jr      nz,.jump_water
 
     ; and check if we're on the ground
     ld      a,[playerOnGround]
-    cp      1
-    jr      nz,.check_double; if not check for double jump
+    cp      0
+    jr      z,.check_double; if not check for double jump
 
     ; set normal double jump threshold
     ld      a,PLAYER_DOUBLE_JUMP_THRESHOLD
@@ -263,8 +263,8 @@ player_jump:
 
     ; check if we already double jumped
     ld      a,[playerDoubleJumped]
-    cp      1
-    jr      z,.jump
+    cp      0
+    jr      nz,.jump
 
     ; prevent jumping while in contact with the ceiling
     call    player_collision_up
@@ -377,8 +377,8 @@ player_decrease_jump:
 
     ; check if under water
     ld      a,[playerUnderWater]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; check whether the jump button is still pressed;
     ; if not we decrease the jump force more quickly
@@ -452,13 +452,13 @@ player_fall:
 
     ; already on ground
     ld      a,[playerOnGround]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; don't allow landing while underwater
     ld      a,[playerInWater]
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     ; set ground flag
     ld      a,1

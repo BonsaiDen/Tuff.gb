@@ -488,8 +488,8 @@ _sprite_update_hardware:; a = sprite index, b = tile index, c = flags, d = xpos,
 
     ; adjust palette bits
     ld      a,[coreColorEnabled]
-    cp      1
-    jr      z,.direction
+    cp      0
+    jr      nz,.direction
 
     ; adjust palette for DMG
     ld      a,c
@@ -594,8 +594,8 @@ _sprite_update_tile_rows:
     jr      z,.was_used
 
     ; check if the row is currently used
-    cp      1
-    jr      z,.next
+    cp      0
+    jr      nz,.next
 
     ; otherwise the row is available and we point the unused row index to it
     ld      a,b

@@ -38,12 +38,12 @@ core_vblank_handler:
     ; game specific code ------------------------------------------------------
 
     ; now copy OAM to match the sprites
-    call    $ff80 
+    call    $ff80
 
     ; update scroll registers (values need to be negated)
     ld      a,[coreScrollX]
     dec     a
-    cpl     
+    cpl
     ld      [rSCX],a
 
     ld      a,[coreScrollY]
@@ -53,8 +53,8 @@ core_vblank_handler:
 
     ; check if we need to draw the room data to screen ram
     ld      a,[mapRoomUpdateRequired]
-    cp      1
-    jr      nz,.no_map_update
+    cp      0
+    jr      z,.no_map_update
 
     ; draw new before updating sprites so the player does not appear in
     ; the wall of the previous room for one frame

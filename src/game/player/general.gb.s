@@ -177,8 +177,8 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
 
     ; add a boost to the jump to we can reach a platform or something
     ld      a,[playerUnderWater]
-    cp      1
-    jr      z,.check_up_water
+    cp      0
+    jr      nz,.check_up_water
 
     ld      a,[playerY]
     cp      2 ; < 1
@@ -218,8 +218,8 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      b,130; normal lower screen border when not under water
 
     ld      a,[playerUnderWater]
-    cp      1
-    jr      nz,.check_down_ground
+    cp      0
+    jr      z,.check_down_ground
     ld      b,126; when under water we need to include the swim animation offset
 
 .check_down_ground:

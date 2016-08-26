@@ -25,8 +25,8 @@ break_horizontal_blocks_on_scroll:; a = side (0 = left, 1 = right)
     ; check side to break
     ld      a,d
     ld      b,0
-    cp      1
-    jr      z,_break_horizontal_blocks_left
+    cp      0
+    jr      nz,_break_horizontal_blocks_left
     ld      b,9
     jr      _break_horizontal_blocks_right
 
@@ -42,8 +42,8 @@ break_horizontal_blocks:; a = block y, b = block x
     srl     a
     and     %00000001
 
-    cp      1
-    jr      z,_break_horizontal_blocks_left
+    cp      0
+    jr      nz,_break_horizontal_blocks_left
 
     cp      0
     jr      z,_break_horizontal_blocks_right
@@ -62,8 +62,8 @@ _break_horizontal_blocks_left:
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,_break_horizontal_blocks_delay
+    cp      0
+    jr      z,_break_horizontal_blocks_delay
 
     ; wait for delay to be over
     ld      a,[playerMovementDelay]
@@ -93,8 +93,8 @@ _break_horizontal_blocks_right:
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,_break_horizontal_blocks_delay
+    cp      0
+    jr      z,_break_horizontal_blocks_delay
 
     ; wait for delay to be over
     ld      a,[playerMovementDelay]
@@ -159,8 +159,8 @@ break_vertical_blocks:; a = block x, c = block y
     and     %00000001
     jr      z,.top
 
-    cp      1
-    jr      z,.bottom
+    cp      0
+    jr      nz,.bottom
     ret
 
 .top:
@@ -176,8 +176,8 @@ break_vertical_blocks:; a = block x, c = block y
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,.delay
+    cp      0
+    jr      z,.delay
 
     ; wait for delay to be over
     ld      a,[playerGravityDelay]
@@ -207,8 +207,8 @@ break_vertical_blocks:; a = block x, c = block y
 
     ; check if we need to set up the initial delay
     ld      a,[playerBreakDelayed]
-    cp      1
-    jr      nz,.delay
+    cp      0
+    jr      z,.delay
 
     ; wait for delay to be over
     ld      a,[playerGravityDelay]

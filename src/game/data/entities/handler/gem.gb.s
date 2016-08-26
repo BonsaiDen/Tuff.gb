@@ -5,13 +5,13 @@ entity_handler_load_gem:; b = entity index, c = sprite index
     inc     e; skip type
     ld      a,[de]; check collection flag
     ret
-    
+
 entity_handler_update_gem: ; b = entity index, c = sprite index, de = screen data
 
     inc     e; skip type
     ld      a,[de]; check flags
-    cp      1
-    ret     z
+    cp      0
+    ret     nz
 
     inc     e; skip flags
     inc     e; skip direction

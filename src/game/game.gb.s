@@ -38,8 +38,8 @@ game_init:
 
     ; Debug More or Release Mode
     ld      a,GAME_DEBUG_MODE
-    cp      1
-    jr      z,.debug
+    cp      0
+    jr      nz,.debug
 
 .release:
     call    title_init
