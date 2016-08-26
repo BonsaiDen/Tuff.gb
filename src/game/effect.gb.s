@@ -1,9 +1,9 @@
 SECTION "EffectLogic",ROM0
 
 effect_init:
-    ;ld      b,112
+    ;ld      b,11
     ;ld      c,112
-    ;ld      a,1
+    ;ld      a,12
     ;call    effect_create
     ret
 
@@ -165,6 +165,11 @@ _effect_create:; a = effect index, de = effect data pointer, b = ypos, c = xpos
     ld      [de],a
     inc     e
 
+    ; load animation max index:
+    ld      a,[hli]
+    ld      [de],a
+    inc     e
+
     ; reset effect animation index
     xor     a
     ld      [de],a
@@ -213,12 +218,13 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     inc     e
     cp      0
     jr      z,.no_move
+    ld      c,a; store dy for add
     sub     $80
-    ld      c,a; store dy
     jr      c,.add_y
 
 .sub_y:
     ; only move every specified frame
+    ld      c,a; store dy for sub
     ld      a,[coreLoopCounter]
     sub     c
     jr      c,.no_move
@@ -275,7 +281,7 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     call    map_get_tile_collision
     pop     bc
     cp      MAP_COLLISION_WATER_DEEP
-    jr      nz,.disable
+    jp      nz,.disable
 
     ; check for transparency
 .transparency:
@@ -328,6 +334,9 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     cp      c
     jr      nz,.no_index_advance
 
+    ; store flags
+    push    bc
+
     ; reset delay offset
     dec     e
     xor     a
@@ -335,18 +344,29 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     inc     e; skip delay offset
     inc     e; skip delay
     inc     e; skip loops left
+    ld      a,[de]; load max animation index
+    ld      b,a; store max animation index
+    inc     e
 
     ; advance frame index
     ld      a,[de]
     inc     a
     ld      c,a; store frame index
-    and     %0000_0011; wrap at 4 frames
+    cp      b
+    jr      nz,.no_overflow
+    xor     a; reset animation frame
+
+.no_overflow:
     ld      [de],a
+    dec     e
     dec     e; back to loops left
 
     ; check if the animation looped
     ld      a,c
-    cp      4
+    cp      b
+
+    ; restore flags
+    pop     bc
     jr      nz,.update_index
 
     ; update loops left
@@ -365,6 +385,7 @@ _update_effect_sprite:; h = effect index, de = effect data pointer
     ; load frame index
 .update_index:
     inc     e; skip loops left
+    inc     e; skip max index
     ld      a,[de]
     ld      c,a
     inc     e

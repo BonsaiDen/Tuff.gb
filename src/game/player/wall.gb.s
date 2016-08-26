@@ -84,13 +84,33 @@ player_slide_wall:
     cp      PLAYER_SLIDE_DURATION
     jr      z,.sliding_done
 
-
     ; otherwise continue sliding
+    ld      b,a
     inc     a
     ld      [playerWallSlideTick],a
 
     ld      a,PLAYER_ANIMATION_SLIDE
     ld      [playerAnimation],a
+
+    ; wall slide dust effect
+    ld      a,[coreLoopCounter]
+    and     %0000_0111
+    cp      %0000_0111
+    ret     nz
+
+    ; only create effect after at least 8 frames of sliding
+    ld      a,b
+    cp      8
+    ret     c; >= 8
+
+    ; TODO set correct side
+    ld      a,[playerY]
+    ld      b,a
+    ld      a,[playerX]
+    add     2
+    ld      c,a
+    ld      a,12
+    call    effect_create
 
     ret
 
