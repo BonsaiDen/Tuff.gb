@@ -458,7 +458,7 @@ _effect_reset:
 
     ; skip effect data until animation tile
     ld      a,e
-    add     6
+    add     EFFECT_BYTES - 3
     ld      e,a
 
     ; decrease effect quad usage
