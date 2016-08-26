@@ -42,7 +42,7 @@ save_load_from_sram:
     ld      [mapRoomY],a
 
     ; Player State
-    ld      b,3
+    ld      b,SAVE_PLAYER_STATE_BYTES
     ld      de,playerX
 .loop_player_state:
     ld      a,[hli]
@@ -208,7 +208,7 @@ save_store_to_sram:
     ld      [hli],a
 
     ; Player State
-    ld      b,3
+    ld      b,SAVE_PLAYER_STATE_BYTES
     ld      de,playerX
 .loop_player_state:
     ld      a,[de]
