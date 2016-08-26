@@ -20,26 +20,20 @@ player_move:
     call    player_collision_down
     jr      c,.not_on_platform
 
-    ; store direction
-    ld      a,[playerPlatformDirection]
-    ld      b,a
-
     ; setup platform speed
     ld      a,[playerPlatformSpeed]
     cp      0
     jr      z,.not_on_platform
 
-    ld      e,a; store platform speed
+    ; store platform speed
+    ld      e,a
 
-    ; store player x
-    ld      a,[playerX]
+    ; convert platform direction into player direction
+    ld      a,[playerPlatformDirection]
+    inc     a; platform 0/1 -> player 1/2
     ld      d,a
-
-    ; check in which direction the player should move
-    ld      a,b
-    cp      0
-    jp      z,.move_left_inner
-    jr      .move_right_inner
+    call    _player_move
+    ret
 
     ; are we moving at all?
 .not_on_platform:
@@ -51,8 +45,8 @@ player_move:
 
     ; set walking animation only when on ground
     ld      a,[playerOnGround]
-    cp      1
-    jr      nz,.not_on_ground
+    cp      0
+    jr      z,.not_on_ground
 
     ; check if we're running at full speed
     ld      a,[playerIsRunning]
@@ -63,197 +57,93 @@ player_move:
 
 .not_running:
     ld      a,PLAYER_ANIMATION_WALKING
-    ld      [playerAnimation],a
-    jr      .not_on_ground
+    jr      .running_animation
 
 .running_half:
     ld      a,PLAYER_ANIMATION_RUNNING_HALF
-    ld      [playerAnimation],a
-    jr      .not_on_ground
+    jr      .running_animation
 
 .running_full:
     ld      a,PLAYER_ANIMATION_RUNNING_FULL
+
+.running_animation:
     ld      [playerAnimation],a
 
 .not_on_ground:
     ld      a,[playerInWater]
     cp      0
-    jr      z,.not_in_water
+    jr      z,.move_right
 
     ; half speed when in water
     ld      a,[playerMoveTick]
-    cp      1
-    jp      nz,.delay
+    cp      0
+    jp      z,.delay_movement
     xor     a
     ld      [playerMoveTick],a
-
-.not_in_water:
-
-    ; load x position
-    ld      a,[playerX]
-    ld      d,a
 
     ; move right -----------------------------------
 .move_right:
     ld      a,[playerSpeedRight]
     cp      0
     jr      z,.move_left
+
+    ; store speed
     ld      e,a
 
 .move_right_inner:
-
-    ; reset wall flag
-    xor     a
-    ld      [playerDirectionWall],a
-
-.loop_right:
-
-    call    player_collision_right
-    jr      nc,.not_blocked_right
-
-    ; check for wall hit
-    call    player_wall_hit
-    cp      1
-    jr      z,.not_blocked_right; we broke a block continue moving
-
-    ; set wall flag
-    ld      a,PLAYER_DIRECTION_RIGHT
-    ld      [playerDirectionWall],a
-
-    ; set pushing animation when not in water
-    ld      a,[playerInWater]
-    cp      0
-    jr      z,.pushing_right
-    jr      .idle_right
-
-.pushing_right:
-    call    player_collision_right_all
-    jr      nc,.idle_right
-    ld      a,[playerOnGround]
-    cp      1
-    jr      nz,.idle_right
-    ld      a,PLAYER_ANIMATION_PUSHING
-    ld      [playerAnimation],a
-    jr      .move_left
-
-.idle_right:
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-    jr      .move_left
-
-.not_blocked_right:
-    ld      a,[playerInWater]
-    cp      1
-    jr      nz,.not_in_water_right
-    ld      a,PLAYER_ANIMATION_SWIMMING
-    ld      [playerAnimation],a
-
-.not_in_water_right:
-    inc     d
-    ld      a,d
-    ld      [playerX],a
-    dec     e
-    jr      nz,.loop_right
-
+    ld      d,PLAYER_DIRECTION_RIGHT
+    call    _player_move
+    ret
 
     ; move left ------------------------------------
 .move_left:
     ld      a,[playerSpeedLeft]
     cp      0
-    jr      z,.moved
+    ret     z
+
+    ; store speed
     ld      e,a
 
 .move_left_inner:
-
-    ; reset wall flag
-    xor     a
-    ld      [playerDirectionWall],a
-
-.loop_left:
-
-    call    player_collision_left
-    jr      nc,.not_blocked_left
-
-    ; check for wall hit
-    call    player_wall_hit
-    cp      1
-    jr      z,.not_blocked_left; we broke a block continue moving
-
-    ; set wall flag
-    ld      a,PLAYER_DIRECTION_LEFT
-    ld      [playerDirectionWall],a
-
-    ; set pushing animation when not in water
-    ld      a,[playerInWater]
-    cp      0
-    jr      z,.pushing_left
-    jr      .idle_left
-
-.pushing_left:
-    call    player_collision_left_all
-    jr      nc,.idle_left
-    ld      a,[playerOnGround]
-    cp      1
-    jr      nz,.idle_left
-    ld      a,PLAYER_ANIMATION_PUSHING
-    ld      [playerAnimation],a
-    jr      .moved
-
-.idle_left:
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-    jr      .moved
-
-.not_blocked_left:
-    ld      a,[playerInWater]
-    cp      1
-    jr      nz,.not_in_water_left
-    ld      a,PLAYER_ANIMATION_SWIMMING
-    ld      [playerAnimation],a
-
-.not_in_water_left:
-    dec     d
-    ld      a,d
-    ld      [playerX],a
-    dec     e
-    jr      nz,.loop_left
-
-
-    ; moved ----------------------------------------
-.moved:
-    ld      a,d
-    ld      [playerX],a
-    ret     z
+    ld      d,PLAYER_DIRECTION_LEFT
+    call    _player_move
+    ret
 
 .stopped:
 
     ; reset wall flag when no direction is pressed
     ld      a,[coreInput]
     and     BUTTON_RIGHT | BUTTON_LEFT
-    jr      nz,.reset
+    jr      nz,.idle_ground
     xor     a
     ld      [playerDirectionWall],a
 
-    ; reset to idle animation if on ground
-.reset:
+    ; reset to idle animation if on ground and stopped
+.idle_ground:
+
+    ; check if player is on ground
     ld      a,[playerOnGround]
     cp      0
-    jr      z,.stopped_water
+    jr      z,.idle_water
 
+    ; if so set idle animation
     ld      a,PLAYER_ANIMATION_IDLE
     ld      [playerAnimation],a
     ret
 
-.stopped_water:
+.idle_water:
+
+    ; don't override swim animation under water
     ld      a,[playerInWater]
     cp      0
     ret     z
 
+    ; set idle animation when swimming
     ld      a,PLAYER_ANIMATION_IDLE
     ld      [playerAnimation],a
     ret
 
-.delay:
+.delay_movement:
     inc     a
     ld      [playerMoveTick],a
     ret
@@ -271,6 +161,116 @@ player_move:
 .breaking_delayed:
     dec     a
     ld      [playerMovementDelay],a
+    ret
+
+
+; Moving ----------------------------------------------------------------------
+_player_move: ; e = movement speed, d = movement direction
+
+    ; reset wall direction flag
+    xor     a
+    ld      [playerDirectionWall],a
+
+.loop:
+
+    ; check for collision
+    ld      a,d
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.move_right
+
+    ; left
+    call    player_collision_left
+    jr      nc,.not_blocked
+    jr      .maybe_blocked
+
+    ; right
+.move_right:
+    call    player_collision_right
+    jr      nc,.not_blocked
+
+    ; if blocked, check for actual wall hit (we might have broken through a block)
+.maybe_blocked:
+    call    player_wall_hit
+    cp      0
+    jr      nz,.not_blocked; we broke a block continue moving
+
+    ; set wall drection flag
+    ld      a,d
+    ld      [playerDirectionWall],a
+
+    ; set pushing animation when not in water
+    ld      a,[playerInWater]
+    cp      0
+    jr      z,.push_wall
+    jr      .stopped
+
+.push_wall:
+
+    ; only allow pushing when actually on the ground
+    ld      a,[playerOnGround]
+    cp      0
+    jr      z,.stopped
+
+    ; check for full vertical collision with the walL
+    ld      a,d
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.push_wall_right
+
+    ; pushing left
+    call    player_collision_left_all
+    jr      nc,.stopped
+    jr      .push_wall_animation
+
+    ; pushing right
+.push_wall_right:
+    call    player_collision_right_all
+    jr      nc,.stopped
+
+    ; set pushing animation
+.push_wall_animation:
+
+    ; check if player is moving on platform and don't set animation
+    ld      a,[playerPlatformSpeed]
+    cp      0
+    jr      nz,.stopped
+
+    ld      a,PLAYER_ANIMATION_PUSHING
+    ld      [playerAnimation],a
+    ret
+
+.stopped:
+    ld      a,PLAYER_ANIMATION_IDLE
+    ld      [playerAnimation],a
+    ret
+
+.not_blocked:
+
+    ; set in-water animation if required
+    ld      a,[playerInWater]
+    cp      0
+    jr      z,.move_apply
+
+    ld      a,PLAYER_ANIMATION_SWIMMING
+    ld      [playerAnimation],a
+
+.move_apply:
+    ld      hl,playerX
+
+    ld      a,d
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      z,.move_add
+
+    ; move left
+    dec     [hl]
+    jr      .next
+
+    ; move right
+.move_add:
+    inc     [hl]
+
+.next:
+    dec     e
+    jr      nz,.loop
     ret
 
 
