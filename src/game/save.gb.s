@@ -42,7 +42,7 @@ save_load_from_sram:
     ld      [mapRoomY],a
 
     ; Player State
-    ld      b,10
+    ld      b,3
     ld      de,playerX
 .loop_player_state:
     ld      a,[hli]
@@ -106,14 +106,8 @@ save_load_player:
     ld      [mapRoomY],a
 
     ; Abilities
-    ld      a,1
-    ld      [playerCanJump],a
-    ld      [playerCanWallJump],a
-    ld      [playerCanSwim],a
-    ld      [playerCanDive],a
-    ld      [playerCanPound],a
-    ld      [playerCanRun],a
-    ld      [playerCanDoubleJump],a
+    ld      a,%1111_1111
+    ld      [playerAbility],a
 
 .init:
 
@@ -214,7 +208,7 @@ save_store_to_sram:
     ld      [hli],a
 
     ; Player State
-    ld      b,10
+    ld      b,3
     ld      de,playerX
 .loop_player_state:
     ld      a,[de]

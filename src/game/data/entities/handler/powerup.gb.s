@@ -5,21 +5,21 @@ entity_handler_load_powerup:
     ;call    sprite_animation_start
 
     ; TODO check the actual powerup
-    ld      a,[playerCanJump]; check if powerup is already collected
+    ld      a,[playerAbility]; check if powerup is already collected
     ld      a,0
     ret
-    
+
 
 entity_handler_update_powerup: ; b = entity index, c = sprite index, de = screen data
-    ld      hl,playerCanJump
+    ;ld      hl,playerCanJump
     call    _entity_handler_powerup_collect
     ret
 
 
 _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = screen data, hl = powerup enabled byte
 
-    ld      a,[hl]
-    cp      1
+    ;ld      a,[hl]
+    ;cp      1
     ret     z
 
     ; TODO is this aligned, if so we only need to inc e
@@ -41,14 +41,14 @@ _entity_handler_powerup_collect: ; b = entity index, c = sprite index, de = scre
 
     ; TODO trigger cutscene
     ; TODO we need a cutscene manager
-    ; one active cutscene 
+    ; one active cutscene
     ; - id
     ; - stage
     ; - tick
     ld      a,SCREEN_PALETTE_FLASH | SCREEN_PALETTE_LIGHT
     call    screen_animate
 
-    ; enable ability 
+    ; enable ability
     ld      a,1
     ld      [hl],a
     ret

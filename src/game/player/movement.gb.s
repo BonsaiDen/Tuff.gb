@@ -298,11 +298,12 @@ player_accelerate:
     cp      BUTTON_LEFT | BUTTON_RIGHT
     ret     z
 
-    ; check for B button and running
-    ld      a,[playerCanRun]
-    cp      1
-    jr      nz,.is_not_running
+    ; check if we can run
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_RUN
+    jr      z,.is_not_running
 
+    ; check for B button and running
     ld      a,[playerOnGround]; needs to be on ground
     cp      1
     jr      nz,.is_not_running
@@ -573,14 +574,19 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     call    player_is_running
     jr      nz,.done; normal collision
 
-    ; check break blocks
+    ; check if we can actually break blocks, if now we'll bounc off the wall
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_BREAK
+    jr      z,.bounce
+
+    ; check player speed, if we're not fast enough we'll bounce off the wall
     ld      a,c
     and     %00000011
     cp      %00000011
     jr      nz,.bounce
 
     ; only if at full speed
-    call    _player_check_wall_break
+    call    _player_running_collision
     cp      1
     jr      nz,.bounce; no breakable wall in our way
 
@@ -636,7 +642,6 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     call    sound_play_effect_one
     ld      a,$01
     ld      [playerJumpPressed],a
-    ld      a,$01
     ld      [playerGravityTick],a
     xor     a
     ld      [playerJumpFrames],a
@@ -666,7 +671,8 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ret
 
 
-_player_check_wall_break:
+; Running Collision Detection with Breakable Blocks ---------------------------
+_player_running_collision:
 
     ; setup X offset value
     ld      a,[playerDirection]

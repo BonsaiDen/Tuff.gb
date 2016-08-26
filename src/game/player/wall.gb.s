@@ -2,8 +2,8 @@
 player_slide_wall:
 
     ; check ability
-    ld      a,[playerCanWallJump]
-    cp      0
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_WALL_JUMP
     ret     z
 
     ; if we're still in the ground hit animation where the player can't move

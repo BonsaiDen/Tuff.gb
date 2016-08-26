@@ -2,14 +2,14 @@
 player_pound:
 
     ; check ability
-    ld      a,[playerCanPound]
-    cp      0
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_POUND
     ret     z
 
     ; check if already pounding
     ld      a,[playerIsPounding]
     cp      0
-    jp      nz,.delay
+    jp      nz,_player_pound_init
 
     ; check if on ground
     ld      a,[playerOnGround]
@@ -59,15 +59,20 @@ player_pound:
     ld      a,PLAYER_GRAVITY_MAX_POUND
     ld      [playerGravityMax],a
 
+    ; check if we can actually break blocks, if not skip centering
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_BREAK
+    ret     z
+
     ; reset x centering for block beneath
     xor     a
     ld      [playerPoundCenterX],a
 
-    ; check if there's a breakable block below us to align with
+    ; align ourselves with the 16x16 block directly below
     ld      a,[playerX]
     ld      b,a
 
-    ; difference of x block to current player xpos
+    ; check difference of x block to current player xpos
     and     %11110000; modulo 16
     or      %00001000
     sub     b
@@ -82,7 +87,7 @@ player_pound:
 
 .positive:
 
-    ; check if difference < 3, otherwise exit
+    ; check if difference < 3, otherwise don't align
     cp      PLAYER_POUND_ALIGN_BORDER
     ret     nc
 
@@ -128,7 +133,8 @@ player_pound:
 
 
     ; delay the start / stop animation
-.delay:
+
+_player_pound_init:
     ; check if we're at the start and play the pounding up sound
     ld      a,[playerIsPounding]
     cp      1
@@ -165,7 +171,7 @@ player_pound:
 .skip_sound:
     ld      a,[playerPoundTick]
     cp      0
-    jr      z,.pounding
+    jr      z,_player_pound_update
     dec     a
     ld      [playerPoundTick],a
 
@@ -252,7 +258,7 @@ player_pound:
     ret
 
 
-.pounding:
+_player_pound_update:
 
     ld      a,[playerIsPounding]
     cp      2
@@ -306,9 +312,9 @@ player_pound:
     ret
 
 .water:
-    ld      a,[playerCanDive]
-    cp      1
-    jr      z,.can_dive
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_DIVE
+    jr      nz,.can_dive
 
     ; reset water entry if we cannot swim
     xor     a
@@ -392,7 +398,7 @@ player_pound:
 player_pounding_collision:
 
     ; check which 16x16 blocks we're hitting
-    ld      a,255; reset
+    ld      a,$ff; reset
     ld      [playerBreakBlockM],a
     ld      [playerBreakBlockR],a
     ld      [playerBreakBlockL],a
@@ -418,9 +424,10 @@ player_pounding_collision:
 
     ; right edge of player
 .check_right:
+
+    ; setup
     ld      a,[playerY]
     ld      c,a
-
     ld      a,[playerX]
     add     7
     ld      b,a
@@ -428,6 +435,7 @@ player_pounding_collision:
     cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
+    ; if the block is not breakable, check the left side
     cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_left
 
@@ -450,8 +458,14 @@ player_pounding_collision:
     cp      MAP_COLLISION_BLOCK
     jr      z,.collision
 
+    ; if the block is not breakable, check if we can break the right side
     cp      MAP_COLLISION_BREAKABLE
     jr      nz,.check_blocks
+
+    ; check if we can actually break blocks
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_BREAK
+    jr      z,.collision
 
     ; store L block x coordinate
     ld      a,[playerX]; divide x by 16

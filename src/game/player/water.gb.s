@@ -88,19 +88,19 @@ player_water_update:
 
     ; check if water hit done
     ld      a,[playerWaterHitDone]
-    cp      1
-    jr      nz,.stop_fall
-
-    ; check dive ability
-    ld      a,[playerCanDive]
     cp      0
-    jr      z,.stop_fall
+    jr      z,.swim
+
+    ; can we dive?
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_DIVE
+    jr      z,.swim
 
     ; check button for diving
     ld      a,[coreInput]
     and     BUTTON_B
     cp      BUTTON_B
-    jr      nz,.stop_fall
+    jr      nz,.swim
 
     ; animation and speed
     ld      a,PLAYER_ANIMATION_FALL
@@ -110,7 +110,7 @@ player_water_update:
     ld      [playerFallSpeed],a
     jr      .offset
 
-.stop_fall:
+.swim:
     xor     a
     ld      [playerFallSpeed],a
 
@@ -169,9 +169,10 @@ player_water_update:
     ld      [playerWaterTick],a
 
 .check_swim_dissolve:
-    ; check swim ability
-    ld      a,[playerCanSwim]
-    cp      0
+
+    ; can we swim if so, just fall into the water
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_SWIM
     ret     nz
 
     ; if player cannot swim dissolve after entering water

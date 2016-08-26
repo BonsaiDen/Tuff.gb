@@ -100,8 +100,8 @@ player_gravity:
 player_jump:
 
     ; check ability
-    ld      a,[playerCanJump]
-    cp      0
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_JUMP
     ret     z
 
     ; check for landing frames
@@ -249,6 +249,11 @@ player_jump:
     ld      a,[playerWallJumpTick]
     cp      0
     jr      nz,.jump
+
+    ; check if we can double jump
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_DOUBLE_JUMP
+    jr      z,.jump
 
     ; check if we really hit the button on this frame
     ld      a,[coreInputOn]
