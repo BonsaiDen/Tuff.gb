@@ -1,34 +1,12 @@
 # Platforms
 
-- Configure Vertical Offset (Top or Bottom Half)
-- Configure Speed
-- If platform is moving 1 Pixel per Frame it cancels out the player movement
-    - Need to add platform speed to movement speed so player can get off the platform
-
-- Bottom Half platform is moving down on each load due to it's store X offset
-    - check for multiply of 16 before moving it down
-
 - Also add support for vertical moving platforms?
-
-
-# Optimize
-
-- and XX
-- cp  XX
-- jr  z/nz
-
-into
-
-- and XX
-- cp  0
-- jr  nz,z
-
 
 # Sounds
 
 - Update sounds for water and spike death
 
-# Water death bubbles
+# Update water death animation
 
 # Powerup collection logic / handling
 
@@ -36,9 +14,6 @@ into
 
 - GFX when running fast?
 
-# Scripts
-
-- Save script state / check if script was run
 
 # Gems
 
@@ -57,6 +32,10 @@ into
 
 - colorize water and lava on gameboy color etc.
 
+
+# Tileset
+
+- Support multiple, identical tiles with different collisions values
 
 # Outdated --------------------------------------------------------------------
 
