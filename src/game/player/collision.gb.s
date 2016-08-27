@@ -193,20 +193,20 @@ player_collision_left_all:
     ld      a,[playerY]
     sub     a,7
     ld      c,a
-
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
     call    map_get_collision
     ret     nc
 
-    ; upper half
+    ; check we leave the upper screen edge
     ld      a,[playerY]
-    sub     a,PLAYER_HEIGHT - 1
-    cp      255
-    jr      c,.upper_bound
+    sub     a,PLAYER_HEIGHT - 1; will underflow if we leave the top screen edge
+    cp      128
+    jr      nc,.top_of_screen; playerTop >=128
     ld      c,a
 
+    ; upper half
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 1
     ld      b,a
@@ -214,7 +214,7 @@ player_collision_left_all:
     ret     nc
 
     ; lower half
-.upper_bound:
+.top_of_screen:
     ld      a,[playerY]
     sub     1
     ld      c,a
@@ -281,13 +281,14 @@ player_collision_right_all:
     call    map_get_collision
     ret     nc
 
-    ; upper half
+    ; check we leave the upper screen edge
     ld      a,[playerY]
-    sub     a,PLAYER_HEIGHT - 1
-    cp      255
-    jr      c,.upper_bound
+    sub     a,PLAYER_HEIGHT - 1; will underflow if we leave the top screen edge
+    cp      128
+    jr      nc,.top_of_screen; playerTop >=128
     ld      c,a
 
+    ; upper half
     ld      a,[playerX]
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
@@ -295,7 +296,7 @@ player_collision_right_all:
     ret     nc
 
     ; lower half
-.upper_bound:
+.top_of_screen:
     ld      a,[playerY]
     sub     1
     ld      c,a
