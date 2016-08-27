@@ -25,19 +25,19 @@ sound_enable:
     ret
 
 
-sound_disable:
-
-    ; disable output of all channels
-    xor     a
-    ld      [$ff25],a
-
-    ; disable sound circuits
-    ld      [$ff26],a
-
-    ; disable sound engine
-    ld      [soundEnabled],a
-
-    ret
+;sound_disable:
+;
+;    ; disable output of all channels
+;    xor     a
+;    ld      [$ff25],a
+;
+;    ; disable sound circuits
+;    ld      [$ff26],a
+;
+;    ; disable sound engine
+;    ld      [soundEnabled],a
+;
+;    ret
 
 sound_play_effect_two_wait:; a = song id
     ld      c,a
