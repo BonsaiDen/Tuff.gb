@@ -820,9 +820,9 @@ _map_load_room_pointer:; b = x, c = y -> bc = pointer to packed room data
 
 
 _map_load_animations:
+    ld      b,0; per default animations are off
     ld      a,[mapRoomHeaderFlags]
     and     %00000001
-    ld      b,0; per default animations are off
     cp      0
     jr      z,.skip_animation_byte
 
@@ -839,16 +839,16 @@ _map_load_animations:
     ; each time we check bit 0 and flag two animations active
 .next_animation_byte:
     xor     a
-    bit     0,b
+    bit     0,b; check if animation is active
     jr      z,.set_animation_byte; if not set, set the value to 0
-    ld      a,1; otherwise we load a 1
+    inc     a; otherwise we load a 1
 
 .set_animation_byte:
     ld      [de],a
     inc     de
     ld      [de],a
     inc     de
-    srl     b; shift to next byte
+    srl     b; shift to next byte of animation active table
     dec     c
     jr      nz,.next_animation_byte
     ret
@@ -896,7 +896,7 @@ _map_load_block_definitions:
 .not_mapped:
     srl     c; shift to next bit
 
-    ; we check 8 bits we DO not expect more than 4 blocks def rows to be active
+    ; we check 8 bits we do NOT expect more than 4 blocks def rows to be active
     inc     a
     cp      8
     jr      nz,.next
@@ -951,11 +951,13 @@ _map_load_tile_block: ; a = origin block, b = target block
     ld      a,[hli]
     ld      [bc],a
 
+    ; back to first row
     dec     b
     dec     b
     dec     b
 
-    inc     bc
+    ; advance column
+    inc     c
 
 .skip:
     dec     d
@@ -1069,7 +1071,7 @@ _map_load_room_data:
     add     hl,de; get offset address
 
     ; store tile type (dark / light) and reset active
-    ; TODO store correct value based on tile value
+    ; TODO store correct TYPE value based on tile value (dark falling block support)
     ld      a,%00000010; 6 bytes type, 1 bytes active
     ld      [hli],a
 
@@ -1110,6 +1112,8 @@ _map_load_room_data:
 
     ; y loop end (skip one 16x16 screen data row)
     ld      a,44 ; 12 8x8 tiles left on this row + one full row of 32
+
+    ; 16 bit addition a to hl
     add     a,l
     ld      l,a
     adc     a,h
