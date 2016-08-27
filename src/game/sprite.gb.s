@@ -32,20 +32,9 @@ sprite_enable: ; a = sprite id
     bit     7,[hl]
     jr      nz,.done
 
-    ; set enabled
-    set     7,[hl]
-
-    ; unset wasEnabled
-    res     6,[hl]
-
-    ; unset mirrored
-    res     5,[hl]
-
-    ; unset transparency
-    res     3,[hl]
-
-    ; skip flags
-    inc     l
+    ; set enabled and reset all other state flags
+    ld      a,%1000_0000
+    ld      [hli],a; skip flags
 
     ; unset tile row
     ld      a,$ff
@@ -76,12 +65,9 @@ sprite_disable: ; a = sprite id
     bit     7,[hl]
     jr      z,.done
 
-    ; unset enabled
-    res     7,[hl]
-
-    ; set wasEnabled
-    set     6,[hl]
-    inc     l
+    ; unset enabled, set wasEnabled and reset all other state flags
+    ld      a,%0100_0000
+    ld      [hli],a; skip flags
 
     ; mark the sprite's tile row as "was used"
     ld      a,[hl]
@@ -174,7 +160,7 @@ sprite_set_hardware_index:; a = sprite id, b = hardware sprite index
     push    hl
     call    _get_sprite_pointer
     ld      a,l
-    add     8
+    add     8; offset into sprite screen data
     ld      l,a
     ld      [hl],b
     pop     hl
@@ -184,7 +170,7 @@ sprite_set_position:; a = sprite id, b = x, c = y
     push    hl
     call    _get_sprite_pointer
     ld      a,l
-    add     6
+    add     6; offset into sprite screen data
     ld      l,a
     ld      [hl],b
     inc     l
@@ -350,6 +336,8 @@ _sprite_update: ; hl = sprite data pointer
 
     ; add offset for animation frame data
     ld      a,14
+
+    ; 16 bit addition a to de
     add     e
     ld      e,a
     adc     a,d
@@ -372,7 +360,7 @@ _sprite_update: ; hl = sprite data pointer
     ; load animation frame value and multiply by 4
 .set_animation_frame:
     ld      a,[hli]
-    add     a
+    add     a; multiply by 4
     add     a
 
     ; check for frame value of $04 and hide sprite
@@ -380,10 +368,9 @@ _sprite_update: ; hl = sprite data pointer
     jr      nz,.set_animation_tile
 
     ; setup 0x0 position to hide the sprite
+    ld      d,0
     ld      e,0
     inc     l
-
-    ld      d,0
     inc     l
     jr      .draw_hardware_sprite
 
