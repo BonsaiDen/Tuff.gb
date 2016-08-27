@@ -28,11 +28,14 @@ player_water_update:
     ld      a,[playerFallFrames]
     ld      [playerWaterHitDepth],a
 
-    ld      a,1
-    ld      [playerInWater],a
 
+    ; reset fall frames
     xor     a
     ld      [playerFallFrames],a
+
+    ; set water flag
+    inc     a
+    ld      [playerInWater],a
 
     ; play sound
     ld      a,[playerWasUnderWater]
@@ -54,6 +57,7 @@ player_water_update:
     ld      a,SOUND_EFFECT_PLAYER_WATER_LEAVE
 
 .sound:
+    ; water in / out sfx
     call    sound_play_effect_two
 
     ; check if we were previously under water, if so skip water offset
@@ -65,14 +69,16 @@ player_water_update:
     ld      a,7
     ld      [playerWaterTick],a
 
-    ld      a,1
-    ld      [playerWaterHitDone],a
-    ld      [playerGravityTick],a
-
+    ; reset water state
     xor     a
     ld      [playerWasUnderWater],a
     ld      [playerUnderWater],a
     ld      [playerJumpForce],a
+
+    ; force gravity
+    inc     a
+    ld      [playerWaterHitDone],a
+    ld      [playerGravityTick],a
 
 .not_initial:
 
@@ -99,8 +105,7 @@ player_water_update:
     ; check button for diving
     ld      a,[coreInput]
     and     BUTTON_B
-    cp      BUTTON_B
-    jr      nz,.swim
+    jr      z,.swim
 
     ; animation and speed
     ld      a,PLAYER_ANIMATION_FALL
@@ -155,7 +160,7 @@ player_water_update:
     jr      nc,.fast
     srl     b; divide depth by 2 if speed was low
 
-    ; apply
+    ; apply water animation offset
 .fast:
     ld      a,[playerY]
     add     b
@@ -196,13 +201,13 @@ player_water_update:
     cp      8
     jr      c,.move_down ; if 4 is greater than the tick, move the player down (0, 1, 2, 3)
 
-.move_up: ; move the player up, 4, 5, 6, 7
+.move_up: ; move the player up on 4, 5, 6, 7
     ld      a,[playerY]
     sub     b
     ld      [playerYOffset],a
     ret
 
-.move_down:
+.move_down:; move playerdown on all other frames
     ld      a,[playerY]
     add     b
     ld      [playerYOffset],a
@@ -243,7 +248,7 @@ player_water_timer:
     ; check if effect counter reached 0
     ld      a,[playerEffectCounter]
     cp      0
-    jr      nz,.decrease_counter
+    jr      nz,.decrease_bubble_counter
 
     ; reset counter
     call    math_random
@@ -275,8 +280,7 @@ player_water_timer:
     call    effect_create
     ret
 
-
-.decrease_counter:
+.decrease_bubble_counter:
     dec     a
     ld      [playerEffectCounter],a
     ret
