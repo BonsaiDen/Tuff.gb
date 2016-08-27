@@ -172,6 +172,8 @@ _screen_update_palette_dmg:; a = fade index
 
     ; load color fading entry for current index
     ld      hl,_screen_fade_table_dmg
+
+    ; 16 bit addition of a to hl
     add     a,l
     ld      l,a
     adc     a,h
@@ -336,6 +338,8 @@ _screen_update_color_palette_entry:; a = color, de = palette target register
 
     ; get pointer into color palette
     ld      hl,_gbc_palette
+
+    ; 16 bit addition of a to hl
     add     a
     add     a,l
     ld      l,a

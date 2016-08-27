@@ -80,6 +80,7 @@ tileset_draw_image:; hl = image source
     dec     c
     jr      nz,.loop_x
 
+    ; 16 bit addition of 12 to hl
     ld      a,l
     add     a,12
     ld      l,a

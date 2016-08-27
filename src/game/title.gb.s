@@ -9,37 +9,40 @@ title_init:
     ret
 
 title_update:
+
+    ; actual title screen
     ld      a,[gameMode]
     cp      GAME_MODE_TITLE
-    jp      z,.title
+    jp      z,.title_screen_logic
 
+    ; allow to skip maker logo
+    ld      a,[coreInputOn]
+    and     BUTTON_START
+    call    nz,.skip_maker_logo
+
+    ; wait for transitions to complete before setting next state
+    call    _title_wait
+    ret     nc
+
+    ; title state machine
+    ld      a,[gameMode]
     cp      GAME_MODE_INIT
-    jp      z,.init
+    jp      z,.setup_maker_logo
 
     cp      GAME_MODE_LOGO
-    jp      z,.logo
+    jp      z,.setup_title_fadein
 
     cp      GAME_MODE_FADE_IN
-    jp      z,.fade_in
+    jp      z,.setup_title_screen_fade_in
 
     cp      GAME_MODE_CONTINUE
-    jp      z,.continue
+    jp      z,.game_continue
 
     cp      GAME_MODE_START
-    jp      z,.start
-
+    jp      z,.game_start
     ret
 
-    ; Setup logo and fade in
-.init:
-
-    ; delay
-    ld      a,[titleWaitCounter]
-    dec     a
-    ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
-
+.setup_maker_logo:
     ld     hl,DataLogoImg
     call   tileset_draw_image
 
@@ -58,26 +61,12 @@ title_update:
 
     ret
 
-; Show logo and fade out
-.logo:
-
-    ld      a,[screenAnimation]
-    cp      0
+.skip_maker_logo:
+    ld      a,[gameMode]
+    cp      GAME_MODE_LOGO
     ret     nz
 
-    ; allow to skip logo
-    ld      a,[coreInputOn]
-    and     BUTTON_START
-    jr      nz,.skip_logo
-
-    ; delay
-    ld      a,[titleWaitCounter]
-    dec     a
-    ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
-
-.skip_logo:
+.setup_title_fadein:
     ld      a,SCREEN_PALETTE_FADE_OUT | SCREEN_PALETTE_LIGHT
     call    screen_animate
 
@@ -86,26 +75,13 @@ title_update:
 
     ld      a,4
     ld      [titleWaitCounter],a
-
     ret
 
-; Setup title screen and fade in
-.fade_in:
-
-    ld      a,[screenAnimation]
-    cp      0
-    ret     nz
-
-    ; delay
-    ld      a,[titleWaitCounter]
-    dec     a
-    ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
+.setup_title_screen_fade_in:
 
     ; draw title background
-    call    title_draw_room
-    call    title_draw_cursor
+    call    _title_draw_room
+    call    _title_draw_cursor
 
     ; player
     ld      a,87
@@ -125,12 +101,11 @@ title_update:
 
     ret
 
-; Title screen logic
-.title:
+.title_screen_logic:
 
     ; handle selection of options
-    call    title_select_option
-    call    title_handle_button
+    call    _title_select_option
+    call    _title_handle_button
 
     ; disable inputs
     xor     a
@@ -139,57 +114,42 @@ title_update:
     ld      [coreInputOff],a
 
     ; move the player character around
-    call    title_screen_movement
+    call    _title_screen_movement
 
     call    player_update
     call    sprite_update
     call    sound_update
 
-    call    title_animate_logo
+    call    _title_animate_logo
 
     ret
 
-; Fade out and continue a existing game
-.continue:
-    ld      a,[screenAnimation]
-    cp      0
-    ret     nz
-
-    ; delay
-    ld      a,[titleWaitCounter]
-    dec     a
-    ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
-
-    call    title_hide_logo
+.game_continue:
     call    game_continue
+    jr      .game_fadeout
+
+.game_start:
+    call    game_start
+
+.game_fadeout:
+    call    _title_hide_logo
     ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
     call    screen_animate
-
     ret
 
-; Fade out and start a new game
-.start:
-    ld      a,[screenAnimation]
-    cp      0
-    ret     nz
 
-    ; delay
+_title_wait:
+    ld      a,[screenAnimation]
+    cp      1
+    ret     nc
+
     ld      a,[titleWaitCounter]
     dec     a
     ld      [titleWaitCounter],a
-    cp      0
-    ret     nz
-
-    call    title_hide_logo
-    call    game_start
-    ld      a,SCREEN_PALETTE_FADE_IN | SCREEN_PALETTE_LIGHT
-    call    screen_animate
+    cp      1
     ret
 
-
-title_screen_movement:
+_title_screen_movement:
 
     ; clean up actual input state
     ld      a,[coreInput]
@@ -201,16 +161,16 @@ title_screen_movement:
     cp      0
     jp      nz,.move
 
-    ; new length of the movement
-    call    math_random
-    and     %00001111; at most 15 random frames
-    add     10; minimum of 10 frames
-    ld      [titlePlayerTick],a
-
     ; get new direction
     call    math_random
     and     %000001111
     ld      [titlePlayerDir],a
+
+    ; new length of the movement
+    call    math_random
+    and     %00001111; at most 15 random frames
+    add     10; plus a minimum of 10 frames
+    ld      [titlePlayerTick],a
 
 ; continously move into the current target direction
 .move:
@@ -263,17 +223,16 @@ title_screen_movement:
 .control:
     ld      a,c
     ld      [coreInput],a
-
     ret
 
 
-title_draw_room:
+_title_draw_room:
 
     ; force background buffer at $9800
     xor     a
     ld      [mapCurrentScreenBuffer],a
 
-    ; clear screen buffer
+    ; clear the last two rows of the screen buffer
     ld      d,$DF
     ld      hl,$9A00
     ld      bc,64
@@ -294,19 +253,17 @@ title_draw_room:
     call    core_decode_eom
 
     ; setup title screen logo sprite
-    call    title_draw_logo_sprite
+    call    _title_draw_logo_sprite
 
-    ; draw room
+    ; draw the title room right away instead of waiting for the next vblank
     ld      b,15
     ld      c,15
     call    map_load_room
-
-    ; draw the room right away instead of waiting for the next vblank to draw it
     call    map_draw_room
 
-    ; setup title text
+    ; draw "start" text
     ld      hl,DataTitleLayout
-    ld      de,$9800 + 488; "Start"
+    ld      de,$9800 + 488; "Start" text position
     ld      b,$04
     call    core_vram_cpy_low
 
@@ -315,18 +272,17 @@ title_draw_room:
     ld      [titleCanContinue],a
     ld      [titleCursorPos],a
     cp      0
-    jr      z,.done
+    ret     z
 
+    ; draw "continue" text
     ld      hl,DataTitleLayout + 4
-    ld      de,$9800 + 519; "Continue"
+    ld      de,$9800 + 519; "Continue" text position
     ld      b,$06
     call    core_vram_cpy_low
-
-.done:
     ret
 
 
-title_draw_logo_sprite:
+_title_draw_logo_sprite:
     xor     a
     ld      [titleSpriteOffsetIndex],a
 
@@ -334,12 +290,12 @@ title_draw_logo_sprite:
     ld      hl,DataTitleSpriteLayout
     ld      bc,DATA_TITLE_SPRITE_COUNT * 4
     call    core_mem_cpy
-    call    title_animate_logo
+    call    _title_animate_logo
 
     ret
 
 
-title_animate_logo:
+_title_animate_logo:
 
     ; load offset from sine table
     ld      hl,DataTitleSpriteLayoutAnimation
@@ -361,10 +317,10 @@ title_animate_logo:
     add     DATA_TITLE_SPRITE_Y
     add     c
     ld      [de],a
-    inc     de
-    inc     de
-    inc     de
-    inc     de
+    inc     e
+    inc     e
+    inc     e
+    inc     e
     dec     b
     jr      nz,.loop
 
@@ -386,7 +342,7 @@ title_animate_logo:
     ret
 
 
-title_hide_logo:
+_title_hide_logo:
     xor     a
     ld      hl,spriteOam + $48
     ld      bc,DATA_TITLE_SPRITE_COUNT * 4
@@ -394,53 +350,48 @@ title_hide_logo:
     ret
 
 
-title_select_option:
+_title_select_option:
 
+    ; continue option available?
     ld      a,[titleCanContinue]
     cp      0
     ret     z
 
+    ; load current cursor position
+    ld      a,[titleCursorPos]
+    ld      b,a; store cursor pos
+
     ld      a,[coreInputOn]
     and     BUTTON_UP
-    cp      BUTTON_UP
-    jr      z,.start
+    jr      nz,.cursor_move_start
 
     ld      a,[coreInputOn]
     and     BUTTON_DOWN
-    cp      BUTTON_DOWN
-    jr      z,.continue
+    jr      nz,.cursor_move_continue
     ret
 
-.start:
-    ld      a,[titleCursorPos]
-    cp      0
-    ret     z
-
+.cursor_move_start:
     xor     a
     ld      [titleCursorPos],a
-    call    title_draw_cursor
+    jr      .switched
 
-    ld      a,SOUND_EFFECT_GAME_MENU_SELECT
-    call    sound_play_effect_one
-
-    ret
-
-.continue:
-    ld      a,[titleCursorPos]
-    cp      0
-    ret     nz
-
+.cursor_move_continue:
     ld      a,1
     ld      [titleCursorPos],a
-    call    title_draw_cursor
 
+.switched:
+    ; check if actually switched
+    cp      b
+    ret     z
+
+    ; draw and play sound
+    call    _title_draw_cursor
     ld      a,SOUND_EFFECT_GAME_MENU_SELECT
     call    sound_play_effect_one
-
     ret
 
 
-title_handle_button:
+_title_handle_button:
 
     ; Wait for START or A to be pressed
     ld      a,[coreInputOn]
@@ -460,48 +411,47 @@ title_handle_button:
     ; check selected option
     ld      a,[titleCursorPos]
     cp      0
-    jr      nz,.continue
+    jr      nz,.button_continue
 
-.start:
+.button_start:
     ld      a,GAME_MODE_START
     ld      [gameMode],a
     ret
 
-.continue:
+.button_continue:
     ld      a,GAME_MODE_CONTINUE
     ld      [gameMode],a
     ret
 
 
-title_draw_cursor:
+_title_draw_cursor:
 
+    ld      hl,$9800 + 487; "Start" text location
+
+    ; check cursor position
     ld      a,[titleCursorPos]
     cp      0
-    jr      nz,.continue
+    jr      nz,.cursor_continue
 
-.start:
-    ld      hl,$9800 + 487; "> Start"
-    ld      bc,1
+.cursor_start:
+    ; "> Start"
     ld      d,$1B
-    call    core_vram_set
+    call    core_vram_set_byte
 
-    ld      hl,$9800 + 518; " Continue"
-    ld      bc,1
+    ; "  Continue"
     ld      d,MAP_BACKGROUND_TILE_LIGHT
-    sub     128
-    call    core_vram_set
-    ret
+    jr      .update_continue
 
-.continue:
-    ld      hl,$9800 + 487; "Start"
-    ld      bc,1
+.cursor_continue:
+    ; "  Start"
     ld      d,MAP_BACKGROUND_TILE_LIGHT
-    sub     128
-    call    core_vram_set
+    call    core_vram_set_byte
 
-    ld      hl,$9800 + 518; "> Continue"
-    ld      bc,1
+    ; "> Continue"
     ld      d,$1A
-    call    core_vram_set
+
+.update_continue:
+    ld      hl,$9800 + 518
+    call    core_vram_set_byte
     ret
 

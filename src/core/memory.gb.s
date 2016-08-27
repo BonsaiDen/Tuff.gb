@@ -59,6 +59,13 @@ core_vram_set: ; d = value, hl = address, bc = bytecount
     jr      nz,.loop
     ret
 
+core_vram_set_byte: ; d = value, hl = address
+    ld      a,[rSTAT]       ; <---+
+    and     STATF_BUSY      ;     |
+    jr      nz,@-4          ; ----+
+    ld      [hl],d
+    ret
+
 
 ; VRAM Copy -------------------------------------------------------------------
 core_vram_cpy: ; hl = source, de = dest, bc = bytecount / 2
