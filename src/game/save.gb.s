@@ -149,7 +149,7 @@ save_check_state: ; return 1 in a if a valid save state exists in sram
     jr      nz,.missing
 
     ; game version
-    ld      a,[hli]
+    ld      a,[hl]
     cp      SAVE_GAME_VERSION
     jr      nz,.missing
 
@@ -271,7 +271,7 @@ _crc16: ; de = source address, bc = byte count -> hl = crc
     push    bc
     ld	    b,8
 
-.crcByte:
+.crc_byte:
     add	    hl,hl
     jr	    nc,.next
     ld	    a,h
@@ -283,7 +283,7 @@ _crc16: ; de = source address, bc = byte count -> hl = crc
 
 .next:
     dec     b
-    jr      nz,.crcByte
+    jr      nz,.crc_byte
 
     pop     bc
     dec     c
