@@ -162,7 +162,7 @@ map_draw_room:
     ld      bc,256
     call    core_vram_cpy
 
-    ; flip buffer
+    ; flip background buffer (we double buffer to avoid tear)
     ld      a,[mapCurrentScreenBuffer]
     xor     1
     ld      [mapCurrentScreenBuffer],a
@@ -266,16 +266,15 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
 
     ; check type of collision
     call    map_get_tile_collision
+    pop     bc
     cp      0
     jr      nz,.collision
-    pop     bc
 
     ; no collision
     and     a
     ret
 
 .collision:
-    pop     bc
     scf
     ret
 
@@ -525,8 +524,7 @@ map_check_fallable_blocks:
     ret     z
 
     ; setup loop counter
-    xor     a
-    ld      b,a
+    ld      b,0
 
 .loop:
 
@@ -539,8 +537,6 @@ map_check_fallable_blocks:
     add     hl,de; get offset address
 
     ; check if inactive
-    jr      .check_active
-.check_active:
     ld      a,[hli]
     and     %00000001
     cp      0
