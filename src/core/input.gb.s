@@ -1,12 +1,12 @@
 ; Input Constants -------------------------------------------------------------
-BUTTON_DOWN     EQU %10000000
-BUTTON_UP       EQU %01000000
-BUTTON_LEFT     EQU %00100000
-BUTTON_RIGHT    EQU %00010000
-BUTTON_START    EQU %00001000
-BUTTON_SELECT   EQU %00000100
-BUTTON_B        EQU %00000010
-BUTTON_A        EQU %00000001
+BUTTON_DOWN     EQU 1 << 7
+BUTTON_UP       EQU 1 << 6
+BUTTON_LEFT     EQU 1 << 5
+BUTTON_RIGHT    EQU 1 << 4
+BUTTON_START    EQU 1 << 3
+BUTTON_SELECT   EQU 1 << 2
+BUTTON_B        EQU 1 << 1
+BUTTON_A        EQU 1 << 0
 
 
 ; Input Handling --------------------------------------------------------------

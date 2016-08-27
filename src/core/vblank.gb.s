@@ -37,10 +37,10 @@ core_vblank_handler:
 
     ; game specific code ------------------------------------------------------
 
-    ; now copy OAM to match the sprites
+    ; now copy sprite screen state to OAM
     call    $ff80
 
-    ; update scroll registers (values need to be negated)
+    ; update scroll registers (values need to be negated!)
     ld      a,[coreScrollX]
     dec     a
     cpl

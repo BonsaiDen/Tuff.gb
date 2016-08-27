@@ -9,7 +9,7 @@ core_screen_off:
     res     0,a
     ld      [rIE],a         ; Disable vblank interrupt if enabled
 
-.screen_off_loop:  
+.screen_off_loop:
     ld      a,[rLY]         ; Loop until in first part of vblank
     cp      145
     jr      nz,.screen_off_loop
@@ -21,10 +21,10 @@ core_screen_off:
 core_screen_on:
 
     ; initialize OAM
-    call    $ff80 
+    call    $ff80
 
     ; setup screen flags
-    ld      a,LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
+    ld      a,LCDCF_ON | LCDCF_BG8800 | LCDCF_BG9800 | LCDCF_BGON | LCDCF_OBJ16 | LCDCF_OBJON
     ld      [rLCDC],a
     ret
 

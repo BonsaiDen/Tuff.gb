@@ -7,19 +7,20 @@ core_timer_handler:
     push    de
     push    hl
 
-    ; When in color mode we need to step down the timer by 2
     ld      a,[coreColorEnabled]
     cp      0
-    jr      z,.timer
+    jr      z,.update_timer
 
+    ; When in color mode we need to slow down the timer by a factor of 2
     ld      a,[coreTimerToggle]
     inc     a
     and     %00000001
     ld      [coreTimerToggle],a
     jr      nz,.done
 
-    ; Timer counter which goes from 0-7 (on a ~250ms basis)
-.timer:
+.update_timer:
+
+    ; Timer counter which goes through 0-7 (on a ~250ms basis)
     ld      a,[coreTimerCounter]
     inc     a
     and     %00000111
