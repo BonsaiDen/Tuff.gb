@@ -266,15 +266,16 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
 
     ; check type of collision
     call    map_get_tile_collision
-    pop     bc
     cp      0
     jr      nz,.collision
+    pop     bc
 
     ; no collision
     and     a
     ret
 
 .collision:
+    pop     bc
     scf
     ret
 
@@ -524,7 +525,7 @@ map_check_fallable_blocks:
     ret     z
 
     ; setup loop counter
-    ld      b,0
+    ld      b,a
 
 .loop:
 
@@ -532,6 +533,7 @@ map_check_fallable_blocks:
     ld      de,mapFallableBlocks
     ld      h,0
     ld      l,b
+    dec     l; correct block indexing
     add     hl,hl; x 2
     add     hl,hl; x 4
     add     hl,de; get offset address
@@ -578,7 +580,7 @@ map_check_fallable_blocks:
     ; check the block 2 pixel under the player
     ; TODO check if in upper half of block only ?
     ld      a,[playerY]
-    add     1
+    inc     a
     swap    a
     and     $0f; divide by 16
     cp      c
@@ -588,7 +590,7 @@ map_check_fallable_blocks:
     dec     hl
     dec     hl
 
-    ; if near set active
+    ; if player is near block set active
     ld      a,[hl]
     and     %00000010; reset everything but type
     or      %00000001; type / active flag
@@ -623,20 +625,19 @@ map_check_fallable_blocks:
 
     ; loop
 .active:
-    inc     b
-    ld      a,[mapFallableBlockCount]
-    cp      b
+    dec     b
     jr      nz,.loop
     ret
 
 
 map_update_falling_blocks:
+
+    ; check if there are any blocks on the current screen
     ld      a,[mapFallableBlockCount]
     cp      0
     ret     z
 
     ; setup loop counter
-    xor     a
     ld      b,a
 
 .loop:
@@ -645,6 +646,7 @@ map_update_falling_blocks:
     ld      de,mapFallableBlocks
     ld      h,0
     ld      l,b
+    dec     l; correct block indexing
     add     hl,hl; x 2
     add     hl,hl; x 4
     add     hl,de; get offset address
@@ -665,7 +667,7 @@ map_update_falling_blocks:
     jr      .inactive
 
 .delayed:
-    ; decrease delay
+    ; decrease drop delay
     ld      a,[hl]
     swap    a
     dec     a
@@ -680,9 +682,7 @@ map_update_falling_blocks:
 
     ; loop
 .inactive:
-    inc     b
-    ld      a,[mapFallableBlockCount]
-    cp      b
+    dec     b
     jr      nz,.loop
     ret
 
@@ -691,15 +691,13 @@ _map_update_falling_block: ; b = index
 
     inc     hl; skip flags
 
-    ; check frame count
+    ; check animation frame index (animation has 4 frames)
     ld      a,[hl]
     cp      4
     ret     z
 
-    ; next frame
-    ld      a,[hl]
-    inc     a
-    ld      [hl],a
+    ; advance to next animation frame index
+    inc     [hl]
 
     ; store loop counter and frame pointer
     push    bc
@@ -725,19 +723,19 @@ _map_update_falling_block: ; b = index
     add     d
     ld      e,a
     add     4
-    jr      .set
+    jr      .update_tiles
 
 .done_light:
     ld      a,MAP_BACKGROUND_TILE_LIGHT
     ld      e,a
 
-.set:
+.update_tiles:
     call    map_set_tile_value
     inc     b
     ld      a,e
     call    map_set_tile_value
 
-    ; restore frame pointer
+    ; restore frame pointer and loop counter
     pop     hl
     pop     bc
 
