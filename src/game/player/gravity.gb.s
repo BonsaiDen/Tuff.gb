@@ -122,8 +122,7 @@ player_jump:
     ; see if the jump button has been pressed
     ld      a,[coreInput]
     and     BUTTON_A
-    cp      BUTTON_A
-    jp      nz,.not_pressed
+    jp      z,.not_pressed
 
     ; check if the player is continuosly pressing the button
     ld      a,[playerJumpPressed]
@@ -258,8 +257,7 @@ player_jump:
     ; check if we really hit the button on this frame
     ld      a,[coreInputOn]
     and     BUTTON_A
-    cp      BUTTON_A
-    jr      nz,.jump
+    jr      z,.jump
 
     ; check if we already double jumped
     ld      a,[playerDoubleJumped]

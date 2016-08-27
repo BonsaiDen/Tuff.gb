@@ -395,13 +395,11 @@ player_accelerate:
 .check_direction:
     ld      a,[coreInput]
     and     BUTTON_LEFT
-    cp      BUTTON_LEFT
-    jr      z,.acc_left
+    jr      nz,.acc_left
 
     ld      a,[coreInput]
     and     BUTTON_RIGHT
-    cp      BUTTON_RIGHT
-    jr      z,.acc_right
+    jr      nz,.acc_right
 
     ret ; not moving in any direction
 

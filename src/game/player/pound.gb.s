@@ -19,8 +19,7 @@ player_pound:
     ; check for B button
     ld      a,[coreInputOn]
     and     BUTTON_B
-    cp      BUTTON_B
-    ret     nz
+    ret     z
 
     ; check if under water or swimming
     ld      a,[playerUnderWater]
