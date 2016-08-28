@@ -311,11 +311,18 @@ _player_pound_update:
     ret
 
 .water:
+    ; check if we can swim, if not force exit pound (so we get dissolved)
+    ld      a,[playerAbility]
+    and     PLAYER_ABILITY_SWIM
+    jr      z,.cannot_swim
+
+    ; check if we can dive, if not force exit pound (so we don't enter the water)
     ld      a,[playerAbility]
     and     PLAYER_ABILITY_DIVE
     jr      nz,.can_dive
 
     ; reset water entry if we cannot swim
+.cannot_swim:
     xor     a
     ld      [playerFallSpeed],a
 
