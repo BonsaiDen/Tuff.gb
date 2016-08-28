@@ -420,7 +420,7 @@ player_fall:
 
     ; check for downward collision
     call    player_collision_down
-    jr      c,.collision; unlikely jump, thus jr and not jp
+    jr      c,.collision
 
     ; check for platform collision
     ld      a,[playerPlatformDirection]

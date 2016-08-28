@@ -218,6 +218,10 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     jr      z,.collision
     cp      MAP_COLLISION_BREAKABLE; breakable
     jr      z,.collision
+    cp      MAP_COLLISION_NONE; breakable
+    jr      z,.no_collision
+    ; store hazard flag for all other kinds of block
+    ld      [mapHazardFlag],a
 
     ; everything that is not solid has no collision
 .no_collision:

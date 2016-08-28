@@ -59,6 +59,9 @@ mapRoomLastX:               DB ; last x index on the map
 mapRoomLastY:               DB ; last y index on the map
 mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
+mapHazardFlag:              DB ; flag that gets once per game loop when a hazard
+                               ; block was found
+
 
 ; Fallable Blocks -------------------------------------------------------------
 mapFallableBlocks:          DS MAP_MAX_FALLABLE_BLOCKS * 4; [Delay4Non2Type1Active1][frame][x][y]

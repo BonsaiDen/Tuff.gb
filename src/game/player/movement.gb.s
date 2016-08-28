@@ -70,6 +70,8 @@ player_move:
     ld      [playerAnimation],a
 
 .not_on_ground:
+
+    ; reset wall direction flag
     ld      a,[playerInWater]
     cp      0
     jr      z,.move_right
@@ -165,10 +167,6 @@ player_move:
 
 ; Moving ----------------------------------------------------------------------
 _player_move: ; e = movement speed, d = movement direction
-
-    ; reset wall direction flag
-    ;xor     a
-    ;ld      [playerDirectionWall],a
 
 .loop:
 

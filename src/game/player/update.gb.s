@@ -8,11 +8,15 @@ player_update:
 
     ; check if we're dissolving
     ld      a,[playerDissolveTick]
-    cp      255
+    cp      $ff
     jp      nz,_player_dissolve
 
     ; control / animation
 .control:
+
+    ; reset hazard flag
+    xor     a
+    ld      [mapHazardFlag],a
 
     ; ignore when controls are disabled
     ld      a,[playerHasControl]
@@ -24,20 +28,12 @@ player_update:
     cp      0
     jr      nz,.pounding
 
+    ; apply movement
     call    player_accelerate
     call    player_decelerate
     call    player_move
 
 .pounding:
-
-    ; check for hazard (checked before gravity so we actually overlap a few pixels)
-    ld      a,[mapCollisionFlag]
-    cp      MAP_COLLISION_LAVA
-    jr      z,.dissolve
-    cp      MAP_COLLISION_SPIKES
-    jr      z,.dissolve
-    cp      MAP_COLLISION_ELECTRIC
-    jr      z,.dissolve
 
     ; pounding logic
     call    player_pound
@@ -46,11 +42,15 @@ player_update:
     call    player_gravity
     call    player_slide_wall
 
+    ; Check for hazards
+    call    player_check_hazard
+
     ; check for map scrolling
     call    player_scroll_map
     cp      0
     ret     nz; exit if the map got scrolled to prevent glitched collision access
 
+    ; check for sleep animation
     call    player_sleep
 
     ; y position for sprite
@@ -86,9 +86,6 @@ player_update:
     ld      [playerUnderWater],a
     ld      [playerInWater],a
     jr      .water
-
-.dissolve:
-    jp      z,player_dissolve
 
     ; check for deep water (diving)
 .check_diving:
@@ -217,16 +214,30 @@ _player_update:
     ret
 
 
+player_check_hazard: ; will NOT return if hazard was hit
+    ld      a,[mapHazardFlag]
+    cp      MAP_COLLISION_LAVA
+    jr      z,.dissolve
+    cp      MAP_COLLISION_SPIKES
+    jr      z,.dissolve
+    cp      MAP_COLLISION_ELECTRIC
+    jr      z,.dissolve
+    ret
+
+.dissolve:
+    jp      player_dissolve
+
 
 _player_dissolve:
     and     %0000_0010
     cp      %0000_0010
     jr      nz,.no_offset
 
-    ; move downwards when not in water
-    ld      a,[playerInWater]
-    cp      0
+    ; move downwards when in lava
+    ld      a,[mapHazardFlag]
+    cp      MAP_COLLISION_LAVA
     jr      nz,.no_offset
+
     ld      a,[playerYOffset]
     inc     a
     ld      [playerYOffset],a
@@ -234,7 +245,7 @@ _player_dissolve:
 .no_offset:
 
     ; check for lava death
-    ld      a,[mapCollisionFlag]
+    ld      a,[mapHazardFlag]
     cp      MAP_COLLISION_LAVA
     jr      nz,.not_lava
 

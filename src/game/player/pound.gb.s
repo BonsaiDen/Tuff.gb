@@ -109,11 +109,11 @@ player_pound:
     cp      MAP_COLLISION_BREAKABLE ; found a block
     jr      z,.found
 
-    ; setup normal collision here to prevent hazard values leaking through
-    ; and triggering instant death in mid air
-    ld      a,MAP_COLLISION_BLOCK
-    ld      [mapCollisionFlag],a
-    ret;    something other block, exit
+    ; reset map hazard flag here to avoid player dissolve when starting pound
+    ; above a hazard
+    xor     a
+    ld      [mapHazardFlag],a
+    ret;    found some other, non-breakable block
 
     ; go to next block
 .next:

@@ -1,13 +1,6 @@
 ; High Level Player API -------------------------------------------------------
 player_init:
 
-    ; Position
-    ; ld      a,24
-    ; ld      [playerX],a
-    ; ld      a,62
-    ; ld      [playerY],a
-    ; ld      [playerYOffset],a
-
     ; Direction
     ld      a,PLAYER_DIRECTION_RIGHT
     ld      [playerDirection],a
@@ -84,6 +77,7 @@ player_reset:
     ld      [playerWallSlideTick],a
     ld      [playerWallJumpPressed],a
     ld      [playerWallJumpTick],a
+    ld      [playerWallJumpWindow],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
@@ -115,7 +109,7 @@ player_dissolve:
     jr      nz,.done
 
     ; get sound to play
-    ld      a,[mapCollisionFlag]
+    ld      a,[mapHazardFlag]
     ld      hl,PlayerDissolveSounds
     ld      b,0
     ld      c,a
@@ -126,12 +120,6 @@ player_dissolve:
     ; dissolve player when hitting a hazard
     ld      a,PLAYER_ANIMATION_DISSOLVE
     ld      [playerAnimation],a
-
-    ; play animation here, since it won't update otherwise
-    ld      [playerAnimationLast],a
-    ld      b,a
-    ld      a,PLAYER_SPRITE_INDEX
-    call    sprite_set_animation
 
     xor     a
     ld      [playerDissolveTick],a
