@@ -106,7 +106,7 @@ save_load_player:
     ld      [mapRoomY],a
 
     ; Abilities
-    ld      a,%1111_1111
+    ld      a,SAVE_DEFAULT_ABILITIES
     ld      [playerAbility],a
 
 .init:

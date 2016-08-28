@@ -62,14 +62,14 @@ PLAYER_POUND_ALIGN_BORDER     EQU 4 ; number of x pixels in which players gets a
 
 PLAYER_AIR_BUBBLE_INTERVAL    EQU 7; X * 60ms
 
-PLAYER_ABILITY_JUMP           EQU 1 << 0
-PLAYER_ABILITY_WALL_JUMP      EQU 1 << 1
-PLAYER_ABILITY_SWIM           EQU 1 << 2
-PLAYER_ABILITY_DIVE           EQU 1 << 3
-PLAYER_ABILITY_POUND          EQU 1 << 4
-PLAYER_ABILITY_RUN            EQU 1 << 5
-PLAYER_ABILITY_DOUBLE_JUMP    EQU 1 << 6
-PLAYER_ABILITY_BREAK          EQU 1 << 7
+PLAYER_ABILITY_JUMP           EQU 1 << 0; 1=1
+PLAYER_ABILITY_WALL_JUMP      EQU 1 << 1; 2=2
+PLAYER_ABILITY_SWIM           EQU 1 << 2; 3=4
+PLAYER_ABILITY_DIVE           EQU 1 << 3; 4=8
+PLAYER_ABILITY_POUND          EQU 1 << 4; 5=16
+PLAYER_ABILITY_RUN            EQU 1 << 5; 6=32
+PLAYER_ABILITY_DOUBLE_JUMP    EQU 1 << 6; 7=64
+PLAYER_ABILITY_BREAK          EQU 1 << 7; 8=128
 
 
 ; Player Variables for Save State ---------------------------------------------
