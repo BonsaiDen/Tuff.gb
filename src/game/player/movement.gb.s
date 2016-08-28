@@ -190,8 +190,7 @@ _player_move: ; e = movement speed, d = movement direction
     ; if blocked, check for actual wall hit (we might have broken through a block)
 .maybe_blocked:
     call    _player_wall_hit
-    cp      0
-    jr      nz,.not_blocked; we broke a block continue moving
+    jr      c,.not_blocked; we broke a block continue moving
 
     ; set wall drection flag
     ld      a,d
@@ -555,7 +554,7 @@ player_is_running:; -> a = 0 = is running
     cp      %00000010
     ret
 
-_player_wall_hit:; d = direction -> a = block destroy = 1, bounce = 0 TODO use carry flag as return value
+_player_wall_hit:; d = direction -> carry set = no wall / block destroy, no carry = bounce
 
     ; Do not bounce from forced wall jump movement
     ld      a,[playerWallJumpTick]
@@ -584,10 +583,8 @@ _player_wall_hit:; d = direction -> a = block destroy = 1, bounce = 0 TODO use c
 
     ; only if at full speed
     call    _player_running_collision
-    cp      0
-    jr      z,.bounce; no breakable wall in our way
-
-    ld      a,1; indicate that we do not want to be stopped by the wall
+    jr      nc,.bounce; non-breakable wall in our way
+    scf; indicate that we should break through the wall
     ret
 
 .cancel_bounce:
@@ -637,11 +634,11 @@ _player_wall_hit:; d = direction -> a = block destroy = 1, bounce = 0 TODO use c
     call    screen_shake
     ld      a,SOUND_EFFECT_PLAYER_BOUNCE_WALL
     call    sound_play_effect_one
-    ld      a,$01
-    ld      [playerJumpPressed],a
-    ld      [playerGravityTick],a
     xor     a
     ld      [playerJumpFrames],a
+    inc     a
+    ld      [playerJumpPressed],a
+    ld      [playerGravityTick],a
 
     ; check wall collision direction
     ld      a,d
@@ -678,7 +675,7 @@ _player_wall_hit:; d = direction -> a = block destroy = 1, bounce = 0 TODO use c
 
 
 ; Running Collision Detection with Breakable Blocks ---------------------------
-_player_running_collision:; d = direction TODO use carry flag as return value
+_player_running_collision:; d = direction -> carry set = break block, no carry = collide with wall
 
     ; setup X offset value
     ld      a,d
@@ -779,27 +776,27 @@ _player_running_collision:; d = direction TODO use carry flag as return value
 
     ; check which 16x16 blocks need to be destroyed
     ld      a,[playerBreakBlockR]
-    cp      255
+    cp      $ff
     push    bc
     call    nz,break_horizontal_blocks
     pop     bc
 
     ld      a,[playerBreakBlockM]
-    cp      255
+    cp      $ff
     push    bc
     call    nz,break_horizontal_blocks
     pop     bc
 
     ld      a,[playerBreakBlockL]
-    cp      255
+    cp      $ff
     push    bc
     call    nz,break_horizontal_blocks
     pop     bc
 
-    ld      a,1; break wall
+    scf
     ret
 
 .collision:
-    xor     a; bounce of
+    and     a; bounce of
     ret
 
