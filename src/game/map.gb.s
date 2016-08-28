@@ -92,6 +92,7 @@ map_load_room: ; b = x, c = y
 
     call    _map_load_animations
     call    _map_load_tile_map
+    call    _map_load_effects
     call    _map_load_entities
 
     ; unpack the tile data
@@ -119,6 +120,9 @@ map_load_room: ; b = x, c = y
 
     ; force sprite unloads
     call    sprite_update
+
+    ; load effects from map
+    call    _map_create_effects
 
     ; load room data into vram
     call    _map_load_room_data
@@ -976,12 +980,80 @@ _map_load_tile_block: ; a = origin block, b = target block
     ret
 
 
+_map_load_effects:
+
+    ; check number of effects used in room
+    ld      a,[mapRoomHeaderFlags]
+    srl     a
+    srl     a
+    and     %00000111
+
+    ; copy effect data after room tile buffer and entity data buffer
+    ld      [mapRoomEffectCount],a
+    ld      b,0
+    ld      c,a
+    sla     c ; each entity has two bytes so we multiple by two here
+    ld      de,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
+    call    core_mem_cpy
+    ret
+
+
+_map_create_effects:
+
+    ; check if we have any effects in the current room
+    ld      a,[mapRoomEffectCount]
+    cp      0
+    ret     z
+
+    ; setup loop
+    ld      hl,mapRoomBlockBuffer + MAP_ROOM_SIZE + MAP_ENTITY_SIZE
+    ld      b,a
+
+.loop:
+
+    ; store loop counter
+    push    bc
+
+    ; load position
+    ld      a,[hli]
+    ld      b,a; store ypos
+
+    ; mask xpos
+    and     %0000_1111
+    swap    a; multiply by 16
+    ld      c,a
+
+    ; mask ypos
+    ld      a,b
+    and     %1111_0000
+    add     16
+    ld      b,a
+
+    ; load type
+    ld      a,[hli]
+    and     %00_111111; mask out 8x8 offsets
+    add     EFFECT_MAP_DEFINITION_OFFSET - 1
+
+    push    hl
+    call    effect_create
+    pop     hl
+
+    ; restore loop counter
+    pop     bc
+    dec     b
+    jr      nz,.loop
+    ret
+
+
 _map_load_entities:
 
-    ; copy entity data after room tile buffer
-    ld      a,[mapRoomHeaderFlags]; restore room flags
+    ; check number of entities used in room
+    ld      a,[mapRoomHeaderFlags]
     swap    a
-    and     %00001111
+    and     %00001110
+    srl     a
+
+    ; copy entity data after room tile buffer
     ld      [mapRoomEntityCount],a
     ld      b,0
     ld      c,a

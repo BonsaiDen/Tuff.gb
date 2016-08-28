@@ -4,7 +4,8 @@
 ; - dy: 0-7, > 80 = negative movement
 ; - animation delay in frames
 ; - animation loop count ($FF=endless loop)
-;
+
+; Code Effects ----------------------------------------------------------------
 
 ; Oxygen Bubble
 DB $00, %0101_0000, $85, $13, $01, $04, $FF,$FF
@@ -47,4 +48,10 @@ DB $05, %0001_0001, $00, $06, $02, $03, $FF,$FF
 
 ; Wall Slide Cloud Right
 DB $05, %0001_0011, $00, $06, $02, $03, $FF,$FF
+
+
+; Map Effects -----------------------------------------------------------------
+
+; Fire Flame
+DB $01, %0001_0001, $00, $04, $FF, $04, $FF,$FF
 

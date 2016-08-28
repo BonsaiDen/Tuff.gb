@@ -735,11 +735,17 @@ var Parse = {
 // ----------------------------------------------------------------------------
 var Map = {
 
-    parseRoom: function(data, entityData, x, y, w, h, roomOffsets, mapBytes, blockDefinitions, animationOffset) {
+    parseRoom: function(
+        data, entityData, effectData,
+        x, y, w, h,
+        roomOffsets, mapBytes, blockDefinitions, animationOffset
+    ) {
 
         var tileBytes = [],
             entityBytes = [],
+            effectBytes = [],
             entities,
+            effects,
             animations,
             tiles,
             header = 0,
@@ -749,6 +755,7 @@ var Map = {
             var offset = ((y * 8 + i) * w) + x * 10;
             tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
             entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
+            effectBytes.push.apply(effectBytes, effectData.slice(offset, offset + 10));
         }
 
         // Record mapped tile blocks
@@ -780,6 +787,9 @@ var Map = {
         // Pack Entity Data
         entities = Map.parseEntities(entityBytes, x, y);
 
+        // Pack Effect Data
+        effects = Map.parseEffects(effectBytes, x, y);
+
         // Pack Animation Data
         animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
 
@@ -797,15 +807,19 @@ var Map = {
 
         var roomBytes = [];
         if (animations.used) {
-            header |= 1;
+            header |= 1; // 0000_000x
         }
 
         if (customTileMapping) {
-            header |= 2;
+            header |= 2; // 0000_00x0
+        }
+
+        if (effects.used) {
+            header |= (effects.count << 2); // 000x_xx00
         }
 
         if (entities.used) {
-            header |= (entities.count << 4);
+            header |= (entities.count << 5); // xxx0_0000
         }
 
         // Write Room Header Byte
@@ -818,6 +832,11 @@ var Map = {
 
         if (customTileMapping) {
             roomBytes.push(blockMappingByte);
+        }
+
+        // Write Effect Bytes
+        if (effects.used) {
+            roomBytes.push.apply(roomBytes, effects.data.slice(0, effects.count * 2));
         }
 
         // Write Entity Bytes
@@ -899,6 +918,51 @@ var Map = {
             data: entities,
             count: entityCount,
             used: entityIndex !== -1
+        };
+
+    },
+
+    parseEffects: function(effectBytes, x, y) {
+
+        // Find Effects
+        var effects = [
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0
+            ],
+            effectIndex = -1,
+            effectCount = 0;
+
+        effectBytes.map(function(value, index) {
+
+            if (value > 352) {
+
+                if (effectIndex === 7) {
+                    throw new TypeError('More than 4 effects in map room ' + x + 'x' + y);
+                }
+
+                var ey = Math.floor(index / 10),
+                    ex = index - ey * 10,
+                    type = value - 352,
+                    // 8x8 offsets
+                    xOffset = 0,
+                    yOffset = 0;
+
+                effects[++effectIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
+                effects[++effectIndex] = (type & 0x3f) | (yOffset << 6) | (xOffset << 7);
+                effectCount++;
+
+            } else if (value < 352 && value > 0) {
+                throw new TypeError('Invalid effect ' + value + ' in map room ' + x + 'x' + y);
+            }
+
+        });
+
+        return {
+            data: effects,
+            count: effectCount,
+            used: effectIndex !== -1
         };
 
     }
@@ -1077,6 +1141,7 @@ var Convert = {
                     //return ((i - 1) + 256) % 256;
                 }),
                 entityData = map.layers[1].data,
+                effectData = map.layers[2].data,
                 mapBytes = [],
                 roomOffsets = [],
                 w = map.width,
@@ -1087,12 +1152,12 @@ var Convert = {
             // Generate rooms
             for(var y = 0; y < ry; y++) {
                 for(var x = 0; x < rx; x++) {
-
                     Map.parseRoom(
-                        data, entityData, x, y, w, h,
+                        data, entityData, effectData,
+                        x, y, w, h,
                         roomOffsets, mapBytes,
-                        blockDefinitions, animationOffset);
-
+                        blockDefinitions, animationOffset
+                    );
                 }
             }
 

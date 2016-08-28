@@ -1,9 +1,10 @@
-SECTION "MapRam",WRAM0[$CF25]
+SECTION "MapRam",WRAM0[$CF00]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE              EQU     512
 MAP_ROOM_SIZE               EQU     80
 MAP_ENTITY_SIZE             EQU     8
+MAP_EFFECT_SIZE             EQU     8
 MAP_ROOM_DATA_BANK          EQU     2
 MAP_WIDTH                   EQU     16
 MAP_HEIGHT                  EQU     16
@@ -43,9 +44,10 @@ MAP_FALLABLE_BLOCK_DELAY    EQU     2
 
 
 ; Room drawing ----------------------------------------------------------------
-mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE ; buffer for the decompressed room data
+mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE + MAP_EFFECT_SIZE ; buffer for the decompressed room data
 mapRoomUpdateRequired:      DB
 mapRoomEntityCount:         DB
+mapRoomEffectCount:         DB
 mapCurrentScreenBuffer:     DB
 mapRoomHeaderFlags:         DB
 mapRoomTileBlockMap:        DB
