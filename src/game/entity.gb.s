@@ -231,7 +231,7 @@ _entity_load: ; c = type
     push    de
     push    bc
     call    _entity_get_current_room_id
-    call    _entity_find_bucket ; c is the room id, b is the entity id, return hl
+    call    _entity_find_bucket ; c is the room id, b is the entity id, return bucket pointer in hl
     jr      nc,.load_defaults
 
 .load_stored:
@@ -657,43 +657,35 @@ _entity_definition_pointer:; a = entity type -> hl = pointer
 
 ; Entity Storage Bucket Handling ----------------------------------------------
 ; -----------------------------------------------------------------------------
-_entity_get_current_room_id: ; c -> room id
-
-    ld      a,[mapRoomX]
-    inc     a ; convert to 1 based indexing
-    ld      h,a
-
+_entity_get_current_room_id:; c -> room id (0-255)
+    ; mapRoomY * 16 + mapRoomX
     ld      a,[mapRoomY]
-    inc     a ; convert to 1 based indexing
-    ld      e,a
-
-    ; get room number index into hl
-    call    math_mul8b ; hl = h * e
-    ld      c,l
-
+    add     a; multiply by 16
+    add     a
+    add     a
+    add     a
+    ld      c,a
+    ld      a,[mapRoomX]
+    add     c ; add column
+    ld      c,a
     ret
-
 
 
 _entity_get_last_room_id: ; c -> room id
-
-    ld      a,[mapRoomLastX]
-    inc     a ; convert to 1 based indexing
-    ld      h,a
-
+    ; mapRoomLastY * 16 + mapRoomLastX
     ld      a,[mapRoomLastY]
-    inc     a ; convert to 1 based indexing
-    ld      e,a
-
-    ; get room number index into hl
-    call    math_mul8b ; hl = h * e
-    ld      c,l
-
+    add     a; multiply by 16
+    add     a
+    add     a
+    add     a
+    ld      c,a
+    ld      a,[mapRoomLastX]
+    add     c ; add column
+    ld      c,a
     ret
 
 
-
-_entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> scf = found bucket, hl = bucket pointer
+_entity_get_store_bucket: ; c = room id (0-255), b = entity id (0-3) -> scf = found bucket, hl = bucket pointer
     push    bc
     call    _entity_find_bucket; first check for a existing bucket that contains the entity
     ; find a free bucket, if required and possible
@@ -702,11 +694,10 @@ _entity_get_store_bucket: ; c = room id (1-255), b = entity id (0-3) -> scf = fo
     ret
 
 
-
 _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
-    ; return a = 1 if we found a match, in which case hl = data pointer to entity state
+    ; return carry set if we found a match, in which case hl = data pointer to entity state
 
-    ; [roomid] (1 based indexing)
+    ; [roomid] (0 based indexing)
     ; [ffffff][ii] flags and entity id
     ; [y position]
     ; [x position]
@@ -757,7 +748,7 @@ _entity_find_bucket: ; b = room id (1-255), c = entity id (0-3)
 _entity_find_free_bucket:
     ; return scf if we found a free spot, in which case hl = data pointer to entity state
 
-    ; [roomid] (1 based indexing)
+    ; [roomid] (0 based indexing)
     ; [ffffff][ii] flags and entity id
     ; [y position]
     ; [x position]

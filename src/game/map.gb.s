@@ -51,6 +51,11 @@ _map_scroll:
     ld      a,SCRIPT_TRIGGER_ROOM_LEAVE
     call    script_execute
 
+    ; store entity state
+    push    bc
+    call    entity_store
+    pop     bc
+
     call    map_load_room
     ret
 
@@ -107,7 +112,6 @@ map_load_room: ; b = x, c = y
     call    _map_load_block_definitions
 
     ; unload entities
-    call    entity_store ; first store them
     call    entity_reset
 
     ; unload effects
