@@ -56,6 +56,9 @@ PLAYER_SLIDE_SLOWDOWN         EQU 3 ; only apply fall speed every X other ticks 
 PLAYER_WALL_JUMP_WINDOW       EQU 5
 PLAYER_WALL_JUMP_DURATION     EQU 12
 
+PLAYER_LANDING_SOFT_THRESHOLD EQU 14
+PLAYER_LANDING_HARD_THRESHOLD EQU 40
+
 PLAYER_POUND_DELAY_START      EQU 45; delay in frames for pound start
 PLAYER_POUND_DELAY_END        EQU 37; delay in frames for pound end
 PLAYER_POUND_ALIGN_BORDER     EQU 4 ; number of x pixels in which players gets aligned with nearest breakable block

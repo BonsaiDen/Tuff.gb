@@ -467,12 +467,12 @@ player_fall:
 
     ; check how long we've been falling
     ld      a,[playerFallFrames]
-    cp      14
+    cp      PLAYER_LANDING_SOFT_THRESHOLD
     jr      c,.soft
-    cp      50
+    cp      PLAYER_LANDING_HARD_THRESHOLD
     jr      c,.normal
 
-    ; if we'be been falling for more than 30 frames play a landing animation
+    ; if we'be been falling for more than 40 frames play a landing animation
     ; and delay further movement
     ld      a,16
     ld      [playerLandingFrames],a
