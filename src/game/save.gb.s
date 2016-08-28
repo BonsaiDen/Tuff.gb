@@ -68,6 +68,7 @@ save_load_from_sram:
     ld      bc,SAVE_ENTITY_DATA_SIZE
     ld      de,entityStoredState
     call    core_mem_cpy
+    brk
 
     xor     a
     call    save_load_player
@@ -76,6 +77,18 @@ save_load_from_sram:
 .defaults:
     ld      a,1
     call    save_load_player
+
+    ; reset script state in work ram
+    xor     a
+    ld      bc,SCRIPT_TABLE_MAX_ENTRIES
+    ld      hl,scriptTableStatus
+    call    core_mem_set
+
+    ; reset entity state in work ram
+    xor     a
+    ld      bc,SAVE_ENTITY_DATA_SIZE
+    ld      hl,entityStoredState
+    call    core_mem_set
 
 .end:
     ; disable external RAM
@@ -237,6 +250,7 @@ save_store_to_sram:
     ld      e,l
     ld      hl,entityStoredState
     call    core_mem_cpy
+    brk
 
     ; caclulate checksum
     ld      bc,SAVE_COMPLETE_SIZE
