@@ -93,7 +93,6 @@ player_move:
 .move_right_inner:
     ld      d,PLAYER_DIRECTION_RIGHT
     call    _player_move
-    ret
 
     ; move left ------------------------------------
 .move_left:
@@ -168,8 +167,8 @@ player_move:
 _player_move: ; e = movement speed, d = movement direction
 
     ; reset wall direction flag
-    xor     a
-    ld      [playerDirectionWall],a
+    ;xor     a
+    ;ld      [playerDirectionWall],a
 
 .loop:
 
@@ -190,7 +189,7 @@ _player_move: ; e = movement speed, d = movement direction
 
     ; if blocked, check for actual wall hit (we might have broken through a block)
 .maybe_blocked:
-    call    player_wall_hit
+    call    _player_wall_hit
     cp      0
     jr      nz,.not_blocked; we broke a block continue moving
 
@@ -556,7 +555,7 @@ player_is_running:; -> a = 0 = is running
     cp      %00000010
     ret
 
-player_wall_hit:; -> a = block destroy = 1, bounce = 0
+_player_wall_hit:; d = direction -> a = block destroy = 1, bounce = 0 TODO use carry flag as return value
 
     ; Do not bounce from forced wall jump movement
     ld      a,[playerWallJumpTick]
@@ -644,17 +643,19 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     xor     a
     ld      [playerJumpFrames],a
 
-    ; gfx
-    ld      c,0
-    ld      b,0
-    call    player_effect_dust
-
-    ; check direction
-    ld      a,[playerDirection]
+    ; check wall collision direction
+    ld      a,d
     cp      PLAYER_DIRECTION_RIGHT
     jr      z,.bounce_right
 
 .bounce_left:
+
+    ; gfx
+    ld      c,2
+    ld      b,0
+    call    player_effect_dust
+
+    ; setup speed
     ld      a,[playerSpeedLeft]
     ld      [playerSpeedRight],a
     xor     a
@@ -662,6 +663,13 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
     ret
 
 .bounce_right:
+
+    ; gfx
+    ld      c,6
+    ld      b,0
+    call    player_effect_dust
+
+    ; setup speed
     ld      a,[playerSpeedRight]
     ld      [playerSpeedLeft],a
     xor     a
@@ -670,10 +678,10 @@ player_wall_hit:; -> a = block destroy = 1, bounce = 0
 
 
 ; Running Collision Detection with Breakable Blocks ---------------------------
-_player_running_collision:
+_player_running_collision:; d = direction TODO use carry flag as return value
 
     ; setup X offset value
-    ld      a,[playerDirection]
+    ld      a,d
     cp      PLAYER_DIRECTION_RIGHT
     jr      z,.right
 
