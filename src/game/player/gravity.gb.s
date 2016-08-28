@@ -109,6 +109,10 @@ player_jump:
     cp      0
     ret     nz
 
+    ; prevent jumping while in contact with the ceiling
+    call    player_collision_up
+    jp      c,.jump_apply
+
     ; Prevent very high jumps during pound end animation
     ld      a,[playerIsPounding]
     cp      0
@@ -117,7 +121,7 @@ player_jump:
     ; Check for wall bounce
     ld      a,[playerBounceFrames]
     cp      0
-    jp      nz,.jump
+    jp      nz,.jump_apply
 
     ; see if the jump button has been pressed
     ld      a,[coreInput]
@@ -224,7 +228,7 @@ player_jump:
     ld      [playerGravityTick],a
     xor     a
     ld      [playerJumpFrames],a
-    jr      .jump
+    jr      .jump_apply
 
     ; reset the jump state
 .not_pressed:
@@ -232,48 +236,44 @@ player_jump:
     ld      [playerJumpPressed],a
     ld      [playerJumpHold],a
     ld      [playerWallJumpPressed],a
-    jr      .jump
+    jr      .jump_apply
 
 .check_double:
 
     ; don't allow any sort of double jump during wall sliding / jumping
     ld      a,[playerDirectionWall]
     cp      0
-    jr      nz,.jump
+    jr      nz,.jump_apply
 
     ld      a,[playerWallSlideDir]
     cp      0
-    jr      nz,.jump
+    jr      nz,.jump_apply
 
     ld      a,[playerWallJumpTick]
     cp      0
-    jr      nz,.jump
+    jr      nz,.jump_apply
 
     ; check if we can double jump
     ld      a,[playerAbility]
     and     PLAYER_ABILITY_DOUBLE_JUMP
-    jr      z,.jump
+    jr      z,.jump_apply
 
     ; check if we really hit the button on this frame
     ld      a,[coreInputOn]
     and     BUTTON_A
-    jr      z,.jump
+    jr      z,.jump_apply
 
     ; check if we already double jumped
     ld      a,[playerDoubleJumped]
     cp      0
-    jr      nz,.jump
-
-    ; prevent jumping while in contact with the ceiling
-    call    player_collision_up
-    jr      c,.jump
+    jr      nz,.jump_apply
 
     ; check if above threshold for double jump
     ld      a,[playerDoubleJumpThreshold]
     ld      b,a
     ld      a,[playerJumpFrames]
     cp      b; PLAYER_DOUBLE_JUMP_THRESHOLD
-    jr      c,.jump; if playerJumpFrames - threshold < 0 don't jump
+    jr      c,.jump_apply; if playerJumpFrames - threshold < 0 don't jump
 
     ; set double jump flag
     ld      a,1
@@ -307,10 +307,10 @@ player_jump:
     ld      a,[playerJumpHold]
     inc     a
     cp      $ff; limit to 255
-    jr      z,.jump
+    jr      z,.jump_apply
     ld      [playerJumpHold],a
 
-.jump:
+.jump_apply:
 
     ; check if we need to move upwards
     ld      a,[playerJumpForce]
@@ -321,11 +321,10 @@ player_jump:
     ; check if we're the button was released
     ld      a,[playerJumpPressed]
     cp      0
-    jr      nz,.apply_force ; if not continue applying jump force
     ret     z ; otherwise end here
 
     ; move player upwards
-.apply_force:
+.jump_apply_force_loop:
 
     ; reset on ground flag
     xor     a
@@ -357,7 +356,7 @@ player_jump:
 
     ; loop until stored jump force reaches 0
     dec     d
-    jr      nz,.apply_force
+    jr      nz,.jump_apply_force_loop
     ret
 
 .collision:
