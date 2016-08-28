@@ -20,7 +20,7 @@ entity_handler_update_gem: ; b = entity index, c = sprite index, de = screen dat
     call    entity_col_player
     ret     nc
 
-    ; disable entity
+    ; mark gem as collected
     dec     e
     dec     e; back to direction
     dec     e; back to flags

@@ -1,4 +1,4 @@
-entity_handler_load_platform_bottom:
+entity_handler_load_platform_bottom: ; b = entity index, c = sprite index
     inc     e; skip type
     inc     e; skip flags
     inc     e; skip direction
@@ -18,8 +18,6 @@ entity_handler_load_platform_top: ; b = entity index, c = sprite index
     ld      a,c
     ld      b,ENTITY_ANIMATION_OFFSET + ENTITY_ANIMATION_PLATFORM
     call    sprite_set_animation
-
-    ; TODO check initial flags and move platform by a few pixels
     ret
 
 entity_handler_update_platform: ; generic, b = entity index, c = sprite index, de = screen data

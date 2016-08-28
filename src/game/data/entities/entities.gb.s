@@ -1,12 +1,13 @@
 _DataEntityDefinitions:
-    ;       0[BG/FG] 1[PALETTE] 2-7[TILEROW]
-    DB      %00000000 ; Save Spot Light
-    DB      %01000001 ; Save Spot Dark
-    DB      %11000010 ; Moving Glow
-    DB      %00000011 ; Power up
-    DB      %10000100 ; Gem
-    DB      %00000101 ; Platform Top Block Half
-    DB      %00000101 ; Platform Bottom Block Half
+    ;       TypeDef: 0[BG/FG] 1[PALETTE] 2-7[TILEROW]
+    ;       DefaultFlags: 4-7[NO USABLE] 0-3[FLAGS]
+    DB      %00_000000, %0000_0000 ; Save Spot Light
+    DB      %01_000001, %0000_0000 ; Save Spot Dark
+    DB      %11_000010, %0000_0000 ; Moving Glow
+    DB      %00_000011, %0000_0111 ; Power up, flags = 1-8 for ability type
+    DB      %10_000100, %0000_0000 ; Gem
+    DB      %00_000101, %0000_0000 ; Platform Top Block Half
+    DB      %00_000101, %0000_0000 ; Platform Bottom Block Half
 
 
 ; Entity Handler Table --------------------------------------------------------

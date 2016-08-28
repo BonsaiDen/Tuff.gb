@@ -224,7 +224,7 @@ entity_load:
 
 
 ; Load a single Entity's state ------------------------------------------------
-_entity_load:
+_entity_load: ; c = type
 
     ; check if an existing bucket that stores this entity
     push    hl
@@ -285,6 +285,15 @@ _entity_load:
     pop     de
     pop     hl
 
+    ; load default flags
+    push    hl
+    ld      a,c
+    call    _entity_definition_pointer
+    inc     hl
+    ld      a,[hl]; default flags
+    ld      [coreTmp],a
+    pop     hl
+
     ; push loop indicies
     push    hl
     push    de
@@ -292,7 +301,9 @@ _entity_load:
     ; get entity screen offset for b into de
     call    _entity_screen_offset_de
     inc     e ; skip type
-    inc     e ; skip flags
+    ld      a,[coreTmp]
+    ld      [de],a; set default flags
+    inc     e
     inc     e ; skip direction
 
     ; skip stored type and direction
@@ -621,11 +632,19 @@ _entity_screen_offset_de: ; b = entity index
     ret
 
 
-_entity_defintion: ; a = sprite type
+_entity_defintion: ; a = entity type
     push    hl
+    call    _entity_definition_pointer
+    ld      a,[hl]
+    pop     hl
+    ret
+
+
+_entity_definition_pointer:; a = entity type -> hl = pointer
     ld      hl,DataEntityDefinitions
 
     dec     a; convert into zero based index
+    add     a; x2
 
     ; hl + a
     add     a,l
@@ -633,12 +652,7 @@ _entity_defintion: ; a = sprite type
     adc     a,h
     sub     l
     ld      h,a
-
-    ; load definition
-    ld      a,[hl]
-    pop     hl
     ret
-
 
 
 ; Entity Storage Bucket Handling ----------------------------------------------
