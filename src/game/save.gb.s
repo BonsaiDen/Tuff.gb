@@ -68,7 +68,6 @@ save_load_from_sram:
     ld      bc,SAVE_ENTITY_DATA_SIZE
     ld      de,entityStoredState
     call    core_mem_cpy
-    brk
 
     xor     a
     call    save_load_player
@@ -250,7 +249,6 @@ save_store_to_sram:
     ld      e,l
     ld      hl,entityStoredState
     call    core_mem_cpy
-    brk
 
     ; caclulate checksum
     ld      bc,SAVE_COMPLETE_SIZE
