@@ -1014,6 +1014,15 @@ _map_create_effects:
     ; store loop counter
     push    bc
 
+    ; type and offsets
+    ld      a,[hli]
+    ld      e,a
+    and     %00_111111
+    ld      d,a; store type
+    ld      a,e
+    and     %11_000000
+    ld      e,a; store 8x8 offsets
+
     ; load position
     ld      a,[hli]
     ld      b,a; store ypos
@@ -1023,18 +1032,33 @@ _map_create_effects:
     swap    a; multiply by 16
     ld      c,a
 
+    ; check for offset and add 8 pixel
+    ld      a,e
+    and     %1_000_0000
+    jr      z,.ypos
+    ld      a,c
+    add     8
+    ld      c,a
+
     ; mask ypos
+.ypos:
     ld      a,b
     and     %1111_0000
-    add     16
+    add     16; offset effect at the bottom
     ld      b,a
 
-    ; load type
-    ld      a,[hli]
-    and     %00_111111; mask out 8x8 offsets
-    add     EFFECT_MAP_DEFINITION_OFFSET - 1
+    ; check for offset and subtracr 8 pixel
+    ld      a,e
+    and     %0_100_0000
+    jr      z,.create
+    ld      a,b
+    sub     8
+    ld      b,a
 
+.create:
     push    hl
+    ld      a,d; load effect id
+    add     EFFECT_MAP_DEFINITION_OFFSET - 1
     call    effect_create
     pop     hl
 

@@ -949,8 +949,8 @@ var Map = {
                     xOffset = 0,
                     yOffset = 0;
 
-                effects[++effectIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
                 effects[++effectIndex] = (type & 0x3f) | (yOffset << 6) | (xOffset << 7);
+                effects[++effectIndex] = ((ey & 0x0f) << 4) | (ex & 0x0f);
                 effectCount++;
 
             } else if (value < 352 && value > 0) {
