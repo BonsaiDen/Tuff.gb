@@ -61,7 +61,7 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
 
     ; right end of platform
     ld      a,b
-    add     16
+    add     12
     ld      b,a
 
     ; playerX + 8 <= platformX + 16
