@@ -1030,6 +1030,7 @@ _map_create_effects:
     ; mask xpos
     and     %0000_1111
     swap    a; multiply by 16
+    add     8
     ld      c,a
 
     ; check for offset and add 8 pixel
