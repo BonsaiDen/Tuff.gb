@@ -11,7 +11,7 @@ release: convert
 
 convert:
 	@mkdir -p src/data/bin
-	node convert src/data src/data/bin
+	node tools/convert src/data src/data/bin
 
 # Emulation
 run: release
