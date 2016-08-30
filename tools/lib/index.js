@@ -1,6 +1,9 @@
+/*jshint evil: true*/
+
 // Dependencies ---------------------------------------------------------------
 var Promise = require('bluebird'),
     Palette = require('./palette'),
+    Sound = require('./sound'),
     IO = require('./io'),
     Tile = require('./tile'),
     LZ4 = require('./lz4'),
@@ -22,7 +25,7 @@ module.exports = {
         }).then(function(data) {
             return IO.saveAs('bin', file, data);
 
-        }).then().then(function() {
+        }).then(function() {
             console.log('[tilerowmap] Done!');
 
         }).error(function(err) {
@@ -41,7 +44,7 @@ module.exports = {
         }).then(function(data) {
             return IO.saveAs('bin', file, data);
 
-        }).then().then(function() {
+        }).then(function() {
             console.log('[tilerowmap] Done!');
 
         }).error(function(err) {
@@ -230,6 +233,28 @@ module.exports = {
 
         }).error(function(err) {
             console.error(('[col] Error: ' + err).red);
+        });
+
+    },
+
+    Sounds: function(file) {
+
+        console.log('[snd] Converting sound effect definitions data "%s"...', file);
+
+        return IO.load(file).then(function(effectList) {
+            return Sound.fromEffectList(effectList);
+
+        }).then(function(library) {
+            return library.serialize();
+
+        }).then(function(data) {
+            return IO.saveAs('gb.s', file, data);
+
+        }).then(function() {
+            console.log('[snd] Done!');
+
+        }).error(function(err) {
+            console.error(('[snd] Error: ' + err).red);
         });
 
     },
