@@ -64,6 +64,38 @@ player_move:
     jr      .running_animation
 
 .running_full:
+
+    ; speed dash trail effect
+    ld      a,[coreLoopCounter]
+    and     %0000_0010
+    cp      %0000_0010
+    jr      nz,.no_dash
+
+    ; ypos
+    ld      a,[playerY]
+    ld      b,a
+
+    ld      a,[playerDirection]
+    cp      PLAYER_DIRECTION_RIGHT
+    jr      nz,.dash_right
+
+    ; xpos
+    ld      a,[playerX]
+    add     6
+    ld      c,a
+    ld      a,EFFECT_RUN_DASH_RIGHT
+    jr      .dash_effect
+
+.dash_right:
+    ld      a,[playerX]
+    add     4
+    ld      c,a
+    ld      a,EFFECT_RUN_DASH_LEFT
+
+.dash_effect:
+    call    effect_create
+
+.no_dash:
     ld      a,PLAYER_ANIMATION_RUNNING_FULL
 
 .running_animation:
