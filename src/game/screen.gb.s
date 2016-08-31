@@ -15,60 +15,43 @@ screen_shake: ; a = duration in seconds / 8
 
 
 _screen_shake_timer:
+    ;
     ld      a,[screenShakeTicks]
     cp      0
     ret     z
 
+    ; decrease tick
     dec     a
     ld      [screenShakeTicks],a
     cp      0
     jr      z,.reset
 
-.x:
-    call    math_random
-    ld      b,a
-    and     %01000000 ; negative
-    cp      %01000000
-    jr      z,.negative_x
-
-.positive_x:
-    ld      a,b
-    and     %00000011 ; 0-8
-    ld      [coreScrollX],a
-    jr      .y
-
-.negative_x:
-    ld      a,b
-    and     %00000011 ; 0-8
-    add     254
+    call    _random_screen_offset
     ld      [coreScrollX],a
 
-.y:
-    call    math_random
-    ld      b,a
-    and     %01000000 ; negative
-    cp      %01000000
-    jr      z,.negative_y
-
-.positive_y:
-    ld      a,b
-    and     %00000011 ; 0-8
-    ld      [coreScrollY],a
-    ret
-
-.negative_y:
-    ld      a,b
-    and     %00000011 ; 0-8
-    add     254
+    call    _random_screen_offset
     ld      [coreScrollY],a
     ret
 
 .reset:
-    xor     a
     ld      [coreScrollX],a
     ld      [coreScrollY],a
     ret
 
+
+_random_screen_offset:
+    call    math_random
+    bit     6,a
+    jr      nz,.negative
+
+.positive:
+    and     %00000011 ; 0-8
+    ret
+
+.negative:
+    and     %00000011 ; 0-8
+    add     254
+    ret
 
 
 ; Screen Fading ---------------------------------------------------------------
