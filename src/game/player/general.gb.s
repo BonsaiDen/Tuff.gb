@@ -31,6 +31,8 @@ player_reset:
     ; Gravity / Control
     ld      a,1
     ld      [playerGravityTick],a
+    ld      [playerOnGround],a
+
     ld      a,PLAYER_GRAVITY_MAX
     ld      [playerGravityMax],a
     ld      [playerHasControl],a
@@ -53,11 +55,7 @@ player_reset:
     ld      [playerBreakContinue],a
     ld      [playerEffectCounter],a
 
-    ld      a,1
-    ld      [playerOnGround],a
-
     ; Movement
-    xor     a
     ld      [playerSpeedRight],a
     ld      [playerSpeedLeft],a
     ld      [playerDecTick],a
@@ -66,18 +64,17 @@ player_reset:
     ld      [playerWaterTick],a
     ld      [playerRunningTick],a
 
-    ; Jumping
-    ld      a,PLAYER_DOUBLE_JUMP_THRESHOLD
-    ld      [playerDoubleJumpThreshold],a
-
     ; Sliding
-    xor     a
     ld      [playerDirectionWall],a
     ld      [playerWallSlideDir],a
     ld      [playerWallSlideTick],a
     ld      [playerWallJumpPressed],a
     ld      [playerWallJumpTick],a
     ld      [playerWallJumpWindow],a
+
+    ; Jumping
+    ld      a,PLAYER_DOUBLE_JUMP_THRESHOLD
+    ld      [playerDoubleJumpThreshold],a
 
     ; Other
     ld      a,PLAYER_SLEEP_WAIT
