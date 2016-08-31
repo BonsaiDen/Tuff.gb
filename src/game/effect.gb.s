@@ -1,12 +1,5 @@
 SECTION "EffectLogic",ROM0
 
-effect_init:
-    ;ld      b,20
-    ;ld      c,112
-    ;ld      a,14
-    ;call    effect_create
-    ret
-
 
 ; Update all active Effects ---------------------------------------------------
 effect_update:

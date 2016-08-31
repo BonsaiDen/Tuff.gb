@@ -131,8 +131,6 @@ save_load_player:
     call    map_load_room
     call    player_reset
 
-    call    effect_init
-
     ret
 
 

@@ -701,7 +701,11 @@ map_update_falling_blocks:
 
 _map_update_falling_block: ; b = index
 
-    inc     hl; skip flags
+    ; load block type flag (dark / light)
+    ld      a,[hli]
+    and     %000000_1_0
+    add     a; multiply by 2
+    ld      e,a
 
     ; check animation frame index (animation has 4 frames)
     ld      a,[hl]
@@ -726,21 +730,31 @@ _map_update_falling_block: ; b = index
     sla     b; convert into 8x8 index
     sla     c; convert into 8x8 index
 
-    ; check tile color
-.light:
+    ; load background tile base value
+    ld      hl,MapFallableBlockTable
+    ld      a,l
+    add     e
+    ld      l,a
+
+    ; update animated tile
     ld      a,d
     cp      4
-    jr      z,.done_light
-    ld      a,MAP_FALLING_TILE_LIGHT
-    add     d
-    ld      e,a
-    add     4
+    jr      z,.done_animated
+
+.animate:
+    ld      a,[hl]
+    add     d  ; add animation index
+    ld      e,a; right tile
+    add     4  ; left tile
     jr      .update_tiles
 
-.done_light:
-    ld      a,MAP_BACKGROUND_TILE_LIGHT
-    ld      e,a
+    ; final background tile after animation is done
+.done_animated:
+    inc     hl
+    ld      a,[hli]; right tile
+    ld      e,[hl] ; left  tile
 
+    ; update both 8x8 background tiles
 .update_tiles:
     call    map_set_tile_value
     inc     b
@@ -753,6 +767,16 @@ _map_update_falling_block: ; b = index
 
 .done:
     ret
+
+MapFallableBlockTable:
+    DB     MAP_FALLING_TILE_DARK
+    DB     MAP_BACKGROUND_TILE_DARK_L
+    DB     MAP_BACKGROUND_TILE_DARK_R
+    DB     0
+    DB     MAP_FALLING_TILE_LIGHT
+    DB     MAP_BACKGROUND_TILE_LIGHT
+    DB     MAP_BACKGROUND_TILE_LIGHT
+
 
 
 ; Helpers ---------------------------------------------------------------------
@@ -1160,10 +1184,14 @@ _map_load_room_data:
     pop     bc; restore row / col
 
     ; check for falling blocks -------------------------
+    cp      MAP_FALLABLE_BLOCK_DARK
+    jr      z,.fallable_block
     cp      MAP_FALLABLE_BLOCK_LIGHT
     jr      nz,.normal_block
 
     ; get current index
+.fallable_block:
+    ld      [coreTmp],a
     ld      a,[mapFallableBlockCount]
     cp      MAP_MAX_FALLABLE_BLOCKS
     jr      z,.normal_block; maximum index reached skip
@@ -1176,8 +1204,16 @@ _map_load_room_data:
     add     hl,de; get offset address
 
     ; store tile type (dark / light) and reset active
-    ; TODO store correct TYPE value based on tile value (dark falling block support)
-    ld      a,%00000010; 6 bytes type, 1 bytes active
+    ld      a,[coreTmp]
+    cp      MAP_FALLABLE_BLOCK_DARK
+    jr      z,.dark
+    ld      a,%0000_00_1_0; delay, unused, type, active flag
+    jr      .set_type
+
+.dark:
+    xor     a ; delay, unused, type, active flag
+
+.set_type:
     ld      [hli],a
 
     ; reset frames
@@ -1196,7 +1232,6 @@ _map_load_room_data:
     ld      a,[mapFallableBlockCount]
     inc     a
     ld      [mapFallableBlockCount],a
-
 
     ; drawing ------------------------------------------
 .normal_block:

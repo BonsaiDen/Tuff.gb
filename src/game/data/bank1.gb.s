@@ -104,7 +104,8 @@ DataScriptDefinitions:
     INCLUDE "scripts/scripts.gb.s"
 
 DataSoundDefinitions:
-    INCLUDE "sound/data.gb.s"
+    ;INCLUDE "sound/data.gb.s"
+    INCLUDE "/data/bin/sounds.gb.s"
 
 DataEffectAnimation:
     INCLUDE "animation/effect.gb.s"
