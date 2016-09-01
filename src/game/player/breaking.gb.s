@@ -385,7 +385,8 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_left
+    ld      a,MAP_BACKGROUND_FADE_LEFT
+    ret     z
 
 .top:
     ld      a,c; ignore blocks < 0
@@ -397,10 +398,11 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_top
+    ld      a,MAP_BACKGROUND_FADE_TOP
+    ret     z
 
 .right:
-    ld      a,b; ignore blocks > 20
+    ld      a,b; ignore blocks > 10
     cp      20
     jr      z,.bottom
     push    bc
@@ -409,7 +411,8 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_right
+    ld      a,MAP_BACKGROUND_FADE_RIGHT
+    ret     z
 
 .bottom:
     ld      a,c; ignore blocks > 8
@@ -421,25 +424,10 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
     pop     bc
 
     cp      MAP_BACKGROUND_TILE_LIGHT
-    jr      z,.found_bottom
+    ld      a,MAP_BACKGROUND_FADE_BOTTOM
+    ret     z
 
 .found_none:
     ld      a,e; restore base tile
-    ret
-
-.found_left:
-    ld      a,MAP_BACKGROUND_FADE_LEFT
-    ret
-
-.found_top:
-    ld      a,MAP_BACKGROUND_FADE_TOP
-    ret
-
-.found_right:
-    ld      a,MAP_BACKGROUND_FADE_RIGHT
-    ret
-
-.found_bottom:
-    ld      a,MAP_BACKGROUND_FADE_BOTTOM
     ret
 
