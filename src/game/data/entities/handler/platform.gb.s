@@ -1,3 +1,12 @@
+entity_handler_load_platform_vertical: ; b = entity index, c = sprite index
+    inc     e; skip type
+    inc     e; skip flags
+    ld      a,[de]; load default direction
+    or      %0000_0010
+    ld      [de],a
+    dec     e; back to flags
+    dec     e; back to type
+
 entity_handler_load_platform_bottom: ; b = entity index, c = sprite index
     inc     e; skip type
     inc     e; skip flags
@@ -44,7 +53,7 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ; check overlap within in a certain range to handle higher fall speeds
     cp      c
     jr      c,.no_player
-    sub     2
+    sub     2; TODO extend range so pound always hits the platform
     cp      c
     jr      nc,.no_player
 
@@ -71,6 +80,7 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
 
     ; correct player Y to be exactly on top of platform
     ld      a,c
+    ld      [playerPlatformY],a
     sub     16
     ld      [playerY],a
 
@@ -103,12 +113,15 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ; check platform direction
 .no_player_speed:
     ld      a,h
-    cp      0
-    jr      nz,.move_right
+    cp      1
+    jr      z,.move_right
+    cp      2
+    jr      z,.move_up
+    cp      3
+    jr      z,.move_down
 
     ; flags = 0
 .move_left:
-
     call    entity_col_left_half
     jr      c,.switch_to_right
     dec     b
@@ -119,6 +132,20 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     call    entity_col_right_half
     jr      c,.switch_to_left
     inc     b
+    jr      .position
+
+    ; flags = 2
+.move_up:
+    call    entity_col_up
+    jr      c,.switch_to_down
+    dec     c
+    jr      .position
+
+    ; flags = 3
+.move_down:
+    call    entity_col_down
+    jr      c,.switch_to_up
+    inc     c
 
 .position:
     inc     e; skip direction
@@ -132,13 +159,25 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ret
 
 .switch_to_right:
-    ld      a,1
+    ld      a,PLAYER_PLATFORM_DIR_RIGHT
     ld      [de],a
     ld      b,a
     jr      .switched
 
 .switch_to_left:
-    xor     a
+    ld      a,PLAYER_PLATFORM_DIR_LEFT
+    ld      [de],a
+    ld      b,a
+    jr      .switched
+
+.switch_to_down:
+    ld      a,PLAYER_PLATFORM_DIR_DOWN
+    ld      [de],a
+    ld      b,a
+    jr      .switched
+
+.switch_to_up:
+    ld      a,PLAYER_PLATFORM_DIR_UP
     ld      [de],a
     ld      b,a
 

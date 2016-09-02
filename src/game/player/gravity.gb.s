@@ -1,6 +1,9 @@
 ; Gravity ---------------------------------------------------------------------
 player_gravity:
 
+    ; check if player is on platform
+
+    ; apply gravity only every few ticks
     ld      a,[playerGravityDelay]
     cp      0
     jr      nz,.delayed

@@ -20,7 +20,7 @@ player_move:
     call    player_collision_down
     jr      c,.not_on_platform
 
-    ; setup platform speed
+    ; check platform speed
     ld      a,[playerPlatformSpeed]
     cp      0
     jr      z,.not_on_platform
@@ -30,6 +30,8 @@ player_move:
 
     ; convert platform direction into player direction
     ld      a,[playerPlatformDirection]
+    bit     1,a; check for vertical platforms
+    ret     nz
     inc     a; platform 0/1 -> player 1/2
     ld      d,a
     call    _player_move

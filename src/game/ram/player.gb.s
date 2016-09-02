@@ -74,6 +74,11 @@ PLAYER_ABILITY_RUN            EQU 1 << 5; 6=32
 PLAYER_ABILITY_DOUBLE_JUMP    EQU 1 << 6; 7=64
 PLAYER_ABILITY_BREAK          EQU 1 << 7; 8=128
 
+PLAYER_PLATFORM_DIR_LEFT      EQU 0
+PLAYER_PLATFORM_DIR_RIGHT     EQU 1
+PLAYER_PLATFORM_DIR_UP        EQU 2
+PLAYER_PLATFORM_DIR_DOWN      EQU 3
+
 
 ; Player Variables for Save State ---------------------------------------------
 playerX:                   DB
@@ -159,4 +164,5 @@ playerEffectCounter:       DB ; counter used for periodic effects (air bubbles)
 ; Platforms
 playerPlatformDirection:   DB
 playerPlatformSpeed:       DB
+playerPlatformY:           DB
 
