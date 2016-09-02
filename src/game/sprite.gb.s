@@ -674,7 +674,9 @@ _load_sprite_row: ; load a compressed tile row into vram
     add     hl,bc
 
     ; decode with end marker in stream
+    di
     call    core_decode_eom
+    ei
 
     ret
 

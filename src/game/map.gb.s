@@ -107,7 +107,6 @@ map_load_room: ; b = x, c = y
     ; bank switch
     ld      a,$01
     ld      [$2000],a
-    ei
 
     ; setup block definitions
     call    _map_load_block_definitions
@@ -136,6 +135,7 @@ map_load_room: ; b = x, c = y
 
     ; update all sprites
     call    sprite_update
+    ei
 
     pop     bc
     pop     de
