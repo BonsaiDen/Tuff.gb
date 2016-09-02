@@ -7,6 +7,14 @@ screen_timer:
     call    _screen_shake_timer
     ret
 
+screen_hblank_handler:
+    di
+    push    af
+    ld      a,[rLY]
+
+    pop     af
+    reti
+
 
 ; Screen Shaking --------------------------------------------------------------
 screen_shake: ; a = duration in seconds / 8
@@ -41,8 +49,8 @@ _screen_shake_timer:
 
 _random_screen_offset:
     call    math_random
-    bit     6,a
-    jr      nz,.negative
+    bit     3,a
+    jr      z,.negative
 
 .positive:
     and     %00000011 ; 0-8
@@ -50,7 +58,7 @@ _random_screen_offset:
 
 .negative:
     and     %00000011 ; 0-8
-    add     254
+    add     253
     ret
 
 
