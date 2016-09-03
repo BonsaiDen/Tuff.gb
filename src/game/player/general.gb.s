@@ -145,7 +145,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ; right -----------------------------
 .check_right:
     ld      a,[playerX]
-    cp      MAP_ROOM_EDGE_RIGHT - 1 ; > 159
+    cp      MAP_ROOM_EDGE_RIGHT - 1
     jr      c,.check_up
 
     ld      a,3

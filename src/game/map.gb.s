@@ -349,7 +349,6 @@ map_set_tile_value: ; b = tile x, c = tile y, a = value
     ; set tile value in screen buffer
     ld      d,a
     ld      a,[mapCurrentScreenBuffer]
-    ; TODO optimize
     cp      0
     jr      z,.screen_9c
     ld      a,d; restore
@@ -1251,7 +1250,7 @@ _map_load_room_data:
     jr      nz,.loop_x
 
     ; y loop end (skip one 16x16 screen data row)
-    ld      a,32 + (16 - MAP_ROOM_WIDTH) * 2; 12 8x8 tiles left on this row + one full row of 32
+    ld      a,32 + (16 - MAP_ROOM_WIDTH) * 2
 
     ; 16 bit addition a to hl
     add     a,l

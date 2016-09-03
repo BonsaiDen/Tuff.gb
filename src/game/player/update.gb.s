@@ -79,7 +79,7 @@ player_update:
 
     ; ignore surface checks when at the very bottom of the screen
     ld      a,[playerY]
-    cp      MAP_ROOM_EDGE_BOTTOM - 3; we get placed at 125 after upwards screen transition while in water
+    cp      MAP_ROOM_EDGE_BOTTOM - 3
     jr      nc,.water
 
     ; detect surfacing
