@@ -54,6 +54,17 @@ player_gravity:
     cp      0
     jr      nz,.double_jump
 
+    ; check if under water
+    ld      a,[playerUnderWater]
+    cp      0
+    jr      z,.set_animation
+
+    ; require the button to be pressed
+    ld      a,[coreInput]
+    and     BUTTON_A
+    ret     z
+
+.set_animation:
     ld      a,PLAYER_ANIMATION_JUMP
     ld      [playerAnimation],a
     ret
@@ -217,7 +228,7 @@ player_jump:
     ; check if we're in water (and the splash offset is done)
     ld      a,[playerWaterHitDone]
     cp      0
-    jr      nz,.jump_water
+    jr      nz,.jump_out_water
 
     ; and check if we're on the ground
     ld      a,[playerOnGround]
@@ -234,12 +245,13 @@ player_jump:
     ld      a,PLAYER_GRAVITY_INTERVAL
     jr      .init_jump
 
-    ; water jump force
-.jump_water:
+.jump_out_water:
 
     ; gfx
     ld      b,8
     call    player_effect_dust_small
+
+    ; water jump force
     ld      a,PLAYER_JUMP_FORCE
     ld      [playerJumpForce],a
 
@@ -254,7 +266,7 @@ player_jump:
     jr      .init_jump
 
 .jump_swim:
-    ld      a,PLAYER_JUMP_SWIM
+    ld      a,PLAYER_JUMP_FORCE_SWIM
     ld      [playerJumpForce],a
     ld      a,2 ; setup gravity tick delay
 

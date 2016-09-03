@@ -162,9 +162,7 @@ player_move:
     jr      z,.idle_water
 
     ; if so set idle animation
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-    ret
+    jr      .idle
 
 .idle_water:
 
@@ -174,9 +172,7 @@ player_move:
     ret     z
 
     ; set idle animation when swimming
-    ld      a,PLAYER_ANIMATION_IDLE
-    ld      [playerAnimation],a
-    ret
+    jr      .idle
 
 .delay_movement:
     inc     a
@@ -189,6 +185,7 @@ player_move:
     cp      0
     ret     nz
 
+.idle:
     ld      a,PLAYER_ANIMATION_IDLE
     ld      [playerAnimation],a
     ret

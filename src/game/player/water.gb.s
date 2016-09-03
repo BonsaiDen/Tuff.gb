@@ -111,7 +111,7 @@ player_water_update:
     ld      a,PLAYER_ANIMATION_FALL
     ld      [playerAnimation],a
 
-    ld      a,PLAYER_JUMP_SWIM
+    ld      a,PLAYER_JUMP_FORCE_SWIM
     ld      [playerFallSpeed],a
     jr      .offset
 

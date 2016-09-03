@@ -13,7 +13,7 @@ PLAYER_SPEED_FAST             EQU 2
 PLAYER_SPEED_FULL             EQU 3
 PLAYER_GRAVITY_MAX            EQU 2
 PLAYER_GRAVITY_MAX_POUND      EQU 3
-PLAYER_JUMP_SWIM              EQU 1
+PLAYER_JUMP_FORCE_SWIM        EQU 1
 PLAYER_DOUBLE_JUMP_THRESHOLD  EQU $13; max jump frames are $1C
 PLAYER_DOUBLE_JUMP_WATER_THRESHOLD  EQU $0B; max jump frames are $1C
 PLAYER_RUNNING_DELAY          EQU 45; frames to be on ground and hold B before running mode sets in
