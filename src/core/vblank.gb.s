@@ -40,17 +40,6 @@ core_vblank_handler:
     ; now copy sprite screen state to OAM
     call    $ff80
 
-    ; update scroll registers (values need to be negated!)
-    ld      a,[coreScrollX]
-    dec     a
-    cpl
-    ld      [rSCX],a
-
-    ld      a,[coreScrollY]
-    dec     a
-    cpl
-    ld      [rSCY],a
-
     ; check if we need to draw the room data to screen ram
     ld      a,[mapRoomUpdateRequired]
     cp      0
@@ -61,6 +50,18 @@ core_vblank_handler:
     call    map_draw_room
 
 .no_map_update:
+
+    ; update scroll registers (values need to be negated!)
+    ; updated AFTER map is drawn to prevent artifacts
+    ld      a,[coreScrollX]
+    dec     a
+    cpl
+    ld      [rSCX],a
+
+    ld      a,[coreScrollY]
+    dec     a
+    cpl
+    ld      [rSCY],a
 
     ; Set vblank flag, this will cause the core loop to run the game loop once
     ld      a,1

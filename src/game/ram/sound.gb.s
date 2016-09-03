@@ -1,4 +1,4 @@
-SECTION "SoundRam",WRAM0[$CB00]; must be aligned at 256 bytes for soundChannelState
+SECTION "SoundRam",WRAM0[$CF00]; must be aligned at 256 bytes for soundChannelState
 
 
 ; Ram Buffers (must all be aligned)--------------------------------------------
@@ -14,7 +14,7 @@ TrackDataPointer                EQU $06
 
 
 ; Sound Channel State (not the register state) --------------------------------
-soundChannelsData:              
+soundChannelsData:
 Channel1FlagsFreqHi:            DB
 Channel1FreqLo:                 DB
 Channel1Sweep:                  DB

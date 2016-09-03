@@ -167,7 +167,7 @@ map_draw_room:
 
 .copy:
     ld      hl,mapRoomTileBuffer
-    ld      bc,256
+    ld      bc,32 * MAP_ROOM_HEIGHT
     call    core_vram_cpy
 
     ; flip background buffer (we double buffer to avoid tear)
@@ -202,7 +202,7 @@ map_get_collision: ; b = x pos, c = y pos (both without scroll offsets) -> a = 1
     ; if we index into the ram beyond this area we will read invalid data
     ; so we assume that there is never any collision beyond y 128
     ld      a,c
-    cp      128
+    cp      MAP_ROOM_EDGE_BOTTOM + 1
     jr      nc,.off_screen ; reset collision flag and indicate no collision
 
     ; divide x by 8
@@ -249,12 +249,12 @@ map_get_collision_simple: ; b = x pos, c = y pos (both without scroll offsets) -
 
     ; check bottom screen border
     ld      a,c
-    cp      127
+    cp      MAP_ROOM_EDGE_BOTTOM
     jr      nc,.collision
 
     ; check right screen border
     ld      a,b
-    cp      159
+    cp      MAP_ROOM_EDGE_RIGHT
     jr      nc,.collision
 
     ; check top screen border
@@ -298,8 +298,8 @@ map_get_block_value: ; b = x, c = y -> a block value
     push    hl
     push    de
 
-    ; y * 10
-    ld      h,10
+    ; y * MAP_ROOM_WIDTH
+    ld      h,MAP_ROOM_WIDTH
     ld      e,c
     call    math_mul8b
 
@@ -1125,7 +1125,8 @@ _map_load_room_data:
     ld      de,mapRoomBlockBuffer
 
     ; setup loop counts
-    ld      bc,$0800; row / col
+    ld      b,MAP_ROOM_HEIGHT
+    ld      c,$00
 
 .loop_y:
 
@@ -1136,7 +1137,7 @@ _map_load_room_data:
     dec     b
 
     ; y loop body
-    ld      c,10
+    ld      c,MAP_ROOM_WIDTH
 
 .loop_x:
 
@@ -1251,7 +1252,7 @@ _map_load_room_data:
     jr      nz,.loop_x
 
     ; y loop end (skip one 16x16 screen data row)
-    ld      a,44 ; 12 8x8 tiles left on this row + one full row of 32
+    ld      a,32 + (16 - MAP_ROOM_WIDTH) * 2; 12 8x8 tiles left on this row + one full row of 32
 
     ; 16 bit addition a to hl
     add     a,l

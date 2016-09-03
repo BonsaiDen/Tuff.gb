@@ -83,7 +83,7 @@ game_setup:
     call    player_init
 
     ; Hud
-    call    game_draw_hud
+    ;call    game_draw_hud
 
     ld      a,GAME_MODE_PLAYING
     ld      [gameMode],a
@@ -114,11 +114,63 @@ game_loop:
 
 .logic:
     call    player_update
+    call    game_scroll_x
+    call    game_scroll_y
     call    entity_update
     call    sprite_update
     call    effect_update
     call    map_check_fallable_blocks
     call    sound_update
+    ret
+
+
+; TODO dry
+game_scroll_x:
+    ld      a,[playerX]
+    cp      80
+    jr      c,.border_left
+    cp      (MAP_ROOM_EDGE_RIGHT + 1) - 80
+    jr      nc,.border_right
+    sub     80
+    ld      b,a
+    xor     a
+    sub     b
+    jr      .scroll
+
+.border_left:
+    xor     a
+    jr      .scroll
+
+.border_right:
+    ld      a,(MAP_ROOM_EDGE_RIGHT + 1) - 80 - 16
+
+.scroll:
+    ; TODO need to fix screen shake offset
+    ld      [coreScrollX],a
+    ret
+
+game_scroll_y:
+    ld      a,[playerY]
+    cp      72
+    jr      c,.border_top
+    cp      (MAP_ROOM_EDGE_BOTTOM + 1) - 72
+    jr      nc,.border_bottom
+    sub     72
+    ld      b,a
+    xor     a
+    sub     b
+    jr      .scroll
+
+.border_top:
+    xor     a
+    jr      .scroll
+
+.border_bottom:
+    ld      a,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
+
+.scroll:
+    ; TODO need to fix screen shake offset
+    ld      [coreScrollY],a
     ret
 
 
@@ -142,15 +194,15 @@ game_timer:
 
 
 ; Hud -------------------------------------------------------------------------
-game_draw_hud:
-    ld      d,$bf - 128
-    ld      hl,$9800 + 512
-    ld      bc,20
-    call    core_vram_set
-
-    ld      d,$bf - 128
-    ld      hl,$9c00 + 512
-    ld      bc,20
-    call    core_vram_set
-    ret
-
+;game_draw_hud:
+;    ld      d,$bf - 128
+;    ld      hl,$9800 + 512
+;    ld      bc,20
+;    call    core_vram_set
+;
+;    ld      d,$bf - 128
+;    ld      hl,$9c00 + 512
+;    ld      bc,20
+;    call    core_vram_set
+;    ret
+;

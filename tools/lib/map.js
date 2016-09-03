@@ -8,7 +8,8 @@ var Map = {
     parseRoom: function(
         data, entityData, effectData,
         x, y, w, h,
-        roomOffsets, mapBytes, blockDefinitions, animationOffset
+        roomOffsets, mapBytes, blockDefinitions, animationOffset,
+        roomWidth, roomHeight
     ) {
 
         var tileBytes = [],
@@ -21,11 +22,11 @@ var Map = {
             header = 0,
             i;
 
-        for(i = 0; i < 8; i++) {
-            var offset = ((y * 8 + i) * w) + x * 10;
-            tileBytes.push.apply(tileBytes, data.slice(offset, offset + 10));
-            entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + 10));
-            effectBytes.push.apply(effectBytes, effectData.slice(offset, offset + 10));
+        for(i = 0; i < roomHeight; i++) {
+            var offset = ((y * roomHeight + i) * w) + x * roomWidth;
+            tileBytes.push.apply(tileBytes, data.slice(offset, offset + roomWidth));
+            entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + roomWidth));
+            effectBytes.push.apply(effectBytes, effectData.slice(offset, offset + roomWidth));
         }
 
         // Record mapped tile blocks
@@ -54,8 +55,8 @@ var Map = {
             }
         }
 
-        entities = Map.parseEntities(entityBytes, x, y);
-        effects = Map.parseEffects(effectBytes, x, y);
+        entities = Map.parseEntities(entityBytes, x, y, roomWidth);
+        effects = Map.parseEffects(effectBytes, x, y, roomWidth);
         animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
 
         // Convert tile bytes into mapping space of current screen
@@ -144,7 +145,7 @@ var Map = {
 
     },
 
-    parseEntities: function(entityBytes, x, y) {
+    parseEntities: function(entityBytes, x, y, roomWidth) {
 
         // Find Entities
         var entities = [
@@ -164,8 +165,8 @@ var Map = {
                     throw new TypeError('More than 4 entities in map room ' + x + 'x' + y);
                 }
 
-                var ey = Math.floor(index / 10),
-                    ex = index - ey * 10,
+                var ey = Math.floor(index / roomWidth),
+                    ex = index - ey * roomWidth,
                     type = value - 256,
                     direction = 0;
 
@@ -187,7 +188,7 @@ var Map = {
 
     },
 
-    parseEffects: function(effectBytes, x, y) {
+    parseEffects: function(effectBytes, x, y, roomWidth) {
 
         // Find Effects
         var effects = [
@@ -207,8 +208,8 @@ var Map = {
                     throw new TypeError('More than 4 effects in map room ' + x + 'x' + y);
                 }
 
-                var ey = Math.floor(index / 10),
-                    ex = index - ey * 10,
+                var ey = Math.floor(index / roomWidth),
+                    ex = index - ey * roomWidth,
                     type = value - 352,
                     // 8x8 offsets
                     xOffset = 0,

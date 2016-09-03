@@ -171,7 +171,7 @@ module.exports = {
 
     },
 
-    Map: function(file, blockDefinitions, animationOffset) {
+    Map: function(file, blockDefinitions, animationOffset, roomWidth, roomHeight) {
 
         console.log('[map] Converting tiles JSON Map "%s"...', file);
         return IO.load(file).then(function(map) {
@@ -187,8 +187,8 @@ module.exports = {
                 roomOffsets = [],
                 w = map.width,
                 h = map.height,
-                rx = w / 10,
-                ry = h / 8;
+                rx = w / roomWidth,
+                ry = h / roomHeight;
 
             // Generate rooms
             for(var y = 0; y < ry; y++) {
@@ -197,7 +197,8 @@ module.exports = {
                         data, entityData, effectData,
                         x, y, w, h,
                         roomOffsets, mapBytes,
-                        blockDefinitions, animationOffset
+                        blockDefinitions, animationOffset,
+                        roomWidth, roomHeight
                     );
                 }
             }

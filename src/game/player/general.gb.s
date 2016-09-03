@@ -133,7 +133,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     cp      2 ; < 1
     jr      nc,.check_right
 
-    ld      a,157
+    ld      a,MAP_ROOM_EDGE_RIGHT - 2
     ld      [playerX],a
     call    map_scroll_left
     xor     a
@@ -145,7 +145,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ; right -----------------------------
 .check_right:
     ld      a,[playerX]
-    cp      158 ; > 159
+    cp      MAP_ROOM_EDGE_RIGHT - 1 ; > 159
     jr      c,.check_up
 
     ld      a,3
@@ -175,7 +175,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,PLAYER_GRAVITY_INTERVAL / 2
     ld      [playerGravityTick],a
 
-    ld      a,125
+    ld      a,MAP_ROOM_EDGE_BOTTOM - 2
     ld      [playerY],a
 
     call    map_scroll_up
@@ -189,7 +189,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     cp      5 ; < 6
     jr      nc,.check_down
 
-    ld      a,125
+    ld      a,MAP_ROOM_EDGE_BOTTOM - 4
     ld      [playerY],a
 
     call    map_scroll_up
@@ -200,12 +200,12 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ; down ------------------------------
 .check_down:
 
-    ld      b,130; normal lower screen border when not under water
+    ld      b,MAP_ROOM_EDGE_BOTTOM + 1; normal lower screen border when not under water
 
     ld      a,[playerUnderWater]
     cp      0
     jr      z,.check_down_ground
-    ld      b,126; when under water we need to include the swim animation offset
+    ld      b,MAP_ROOM_EDGE_BOTTOM - 3; when under water we need to include the swim animation offset
 
 .check_down_ground:
     ld      a,[playerY]
