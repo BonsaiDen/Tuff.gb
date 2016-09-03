@@ -133,6 +133,10 @@ map_load_room: ; b = x, c = y
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
 
+    ; Force scroll position updates to avoid 1 frame map glitches
+    call    game_scroll_x
+    call    game_scroll_y
+
     ; update all sprites
     call    sprite_update
     ei
