@@ -48,12 +48,12 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
 
     ; see if player is standing clipping into platform
     ld      a,[playerY]
-    add     16
+    add     17
 
     ; check overlap within in a certain range to handle higher fall speeds
     cp      c
     jr      c,.no_player
-    sub     2; TODO extend range so pound always hits the platform
+    sub     4; TODO extend range so pound always hits the platform
     cp      c
     jr      nc,.no_player
 
@@ -80,8 +80,8 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
 
     ; correct player Y to be exactly on top of platform
     ld      a,c
-    ld      [playerPlatformY],a
     sub     16
+    ld      [playerPlatformY],a
     ld      [playerY],a
 
     ; store plaform direction
@@ -136,7 +136,7 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
 
     ; flags = 2
 .move_up:
-    call    entity_col_up
+    call    entity_col_up_far
     jr      c,.switch_to_down
     dec     c
     jr      .position

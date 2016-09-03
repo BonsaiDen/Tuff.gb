@@ -1,8 +1,5 @@
 ; Gravity ---------------------------------------------------------------------
 player_gravity:
-
-    ; check if player is on platform
-
     ; apply gravity only every few ticks
     ld      a,[playerGravityDelay]
     cp      0
@@ -96,6 +93,41 @@ player_gravity:
 .delayed:
     dec     a
     ld      [playerGravityDelay],a
+    ret
+
+
+player_platform:
+
+    ; allow jumping off of platform
+    ld      a,[playerJumpForce]
+    cp      0
+    ret     nz
+
+    ; check if player is on platform
+    ld      a,[playerPlatformDirection]
+    ld      b,a
+    cp      $ff
+    ret      z
+    and     %0000_0010
+    ret      z
+
+    ; load platform position
+    ld      a,[playerPlatformY]
+    dec     a
+    ld      c,a
+
+    ; check if moving downwards
+    ld      a,b
+    cp      PLAYER_PLATFORM_DIR_DOWN
+    ld      a,c
+    jr      nz,.up
+
+    ; correct offset for downwards movement
+    add     2
+
+.up:
+    ; place player on top of platform
+    ld      [playerY],a
     ret
 
 

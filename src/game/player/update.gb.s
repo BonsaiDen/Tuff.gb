@@ -40,6 +40,7 @@ player_update:
 
     ; Jumping / Falling
     call    player_gravity
+    call    player_platform
     call    player_slide_wall
 
     ; Check for hazards

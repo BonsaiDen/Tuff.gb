@@ -439,14 +439,20 @@ entity_reset:
 
 ; Collision Wrappers ----------------------------------------------------------
 ; -----------------------------------------------------------------------------
+entity_col_up_far:; b = x, c = y
+    push    bc
+    ld      a,c
+    sub     8
+    jr _entity_col_up_far
+
 entity_col_up:; b = x, c = y
     push    bc
-
     ld      a,c
+
+_entity_col_up_far:
     sub     17
     ld      c,a
     jr      _entity_col_up
-
 
 entity_col_down:; b = x, c = y
     push    bc
