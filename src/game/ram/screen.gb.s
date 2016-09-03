@@ -12,6 +12,7 @@ SCREEN_PALETTE_LIGHT        EQU %0000_0000
 ; Screen State ----------------------------------------------------------------
 screenAnimation:        DB
 screenAnimationIndex:   DB
-                        
+screenScrollX:          DB
+screenScrollY:          DB
 screenShakeTicks:       DB
 

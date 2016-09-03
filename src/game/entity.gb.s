@@ -673,6 +673,7 @@ _entity_get_current_room_id:; c -> room id (0-255)
     ld      c,a
     ld      a,[mapRoomX]
     add     c ; add column
+    inc     a
     ld      c,a
     ret
 
@@ -687,6 +688,7 @@ _entity_get_last_room_id: ; c -> room id
     ld      c,a
     ld      a,[mapRoomLastX]
     add     c ; add column
+    inc     a
     ld      c,a
     ret
 

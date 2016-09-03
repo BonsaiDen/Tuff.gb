@@ -6,7 +6,7 @@ map_init: ; a = base value for background tiles
 
     sub     128; add offset for tile buffer at $8800
     ld      hl,mapRoomTileBuffer
-    ld      bc,512
+    ld      bc,32 * MAP_ROOM_HEIGHT * 2
     call    core_mem_set
 
     ; clear both screen buffers
@@ -147,9 +147,6 @@ map_load_room: ; b = x, c = y
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
 
-    ; mark as updated (disable interrupts so we don't call this during vblank)
-    di
-
     ; load new entities
     call    entity_load
 
@@ -175,7 +172,7 @@ map_draw_room:
     xor     1
     ld      [mapCurrentScreenBuffer],a
 
-    ; adjust for or mask
+    ; adjust for OR mask
     xor     1
     add     a
     add     a
@@ -190,7 +187,6 @@ map_draw_room:
 
     xor     a
     ld      [mapRoomUpdateRequired],a
-    ei
 
     ret
 
@@ -768,6 +764,7 @@ _map_update_falling_block: ; b = index
 .done:
     ret
 
+
 MapFallableBlockTable:
     DB     MAP_FALLING_TILE_DARK
     DB     MAP_BACKGROUND_TILE_DARK_L
@@ -776,7 +773,6 @@ MapFallableBlockTable:
     DB     MAP_FALLING_TILE_LIGHT
     DB     MAP_BACKGROUND_TILE_LIGHT
     DB     MAP_BACKGROUND_TILE_LIGHT
-
 
 
 ; Helpers ---------------------------------------------------------------------

@@ -82,9 +82,6 @@ game_setup:
     ; Reset player
     call    player_init
 
-    ; Hud
-    ;call    game_draw_hud
-
     ld      a,GAME_MODE_PLAYING
     ld      [gameMode],a
 
@@ -123,54 +120,47 @@ game_loop:
     call    sound_update
     ret
 
-
-; TODO dry
 game_scroll_x:
     ld      a,[playerX]
-    cp      80
-    jr      c,.border_left
-    cp      (MAP_ROOM_EDGE_RIGHT + 1) - 80
-    jr      nc,.border_right
-    sub     80
+    ld      c,80
+    ld      d,(MAP_ROOM_EDGE_RIGHT + 1) - 80
+    ld      e,(MAP_ROOM_EDGE_RIGHT + 1) - 80 + 16
+    call    _game_limit_scroll
     ld      b,a
-    xor     a
-    sub     b
-    jr      .scroll
-
-.border_left:
-    xor     a
-    jr      .scroll
-
-.border_right:
-    ld      a,(MAP_ROOM_EDGE_RIGHT + 1) - 80 - 16
-
-.scroll:
-    ; TODO need to fix screen shake offset
+    ld      a,[screenScrollX]
+    add     b
     ld      [coreScrollX],a
     ret
 
 game_scroll_y:
     ld      a,[playerY]
-    cp      72
-    jr      c,.border_top
-    cp      (MAP_ROOM_EDGE_BOTTOM + 1) - 72
-    jr      nc,.border_bottom
-    sub     72
+    ld      c,72
+    ld      d,(MAP_ROOM_EDGE_BOTTOM + 1) - 72
+    ld      e,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
+    call    _game_limit_scroll
+    ld      b,a
+    ld      a,[screenScrollY]
+    add     b
+    ld      [coreScrollY],a
+    ret
+
+_game_limit_scroll:; a = scroll value, c = limit, d = compare, e = border -> a = limited value
+    cp      c
+    jr      c,.border_one
+    cp      d
+    jr      nc,.border_two
+    sub     c
     ld      b,a
     xor     a
     sub     b
-    jr      .scroll
+    ret
 
-.border_top:
+.border_one:
     xor     a
-    jr      .scroll
+    ret
 
-.border_bottom:
-    ld      a,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
-
-.scroll:
-    ; TODO need to fix screen shake offset
-    ld      [coreScrollY],a
+.border_two:
+    ld      a,e
     ret
 
 
@@ -192,17 +182,3 @@ game_timer:
 
     ret
 
-
-; Hud -------------------------------------------------------------------------
-;game_draw_hud:
-;    ld      d,$bf - 128
-;    ld      hl,$9800 + 512
-;    ld      bc,20
-;    call    core_vram_set
-;
-;    ld      d,$bf - 128
-;    ld      hl,$9c00 + 512
-;    ld      bc,20
-;    call    core_vram_set
-;    ret
-;

@@ -23,7 +23,7 @@ core_init:
     ld      [$FF4D],a
     stop
 
-    ; flag color mode 
+    ; flag color mode
     ld      [coreColorEnabled],a
     jr      .vars
 
@@ -56,13 +56,13 @@ core_init:
 
     ; Clear RAM, otherwise we will run into problems on real hardware
     ; where it is not going to get initialized
-    ld      a,$00           
+    ld      a,$00
     ld      hl,$c000
     ld      bc,8192
     call    core_mem_set
 
     ; Clear VRam (removing Nintendo Logo left over from boot up)
-    ld      a,$00           
+    ld      a,$00
     ld      hl,$8000
     ld      bc,6144
     call    core_mem_set

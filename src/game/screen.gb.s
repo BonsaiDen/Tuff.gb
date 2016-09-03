@@ -35,15 +35,15 @@ _screen_shake_timer:
     jr      z,.reset
 
     call    _random_screen_offset
-    ld      [coreScrollX],a
+    ld      [screenScrollX],a
 
     call    _random_screen_offset
-    ld      [coreScrollY],a
+    ld      [screenScrollY],a
     ret
 
 .reset:
-    ld      [coreScrollX],a
-    ld      [coreScrollY],a
+    ld      [screenScrollX],a
+    ld      [screenScrollY],a
     ret
 
 

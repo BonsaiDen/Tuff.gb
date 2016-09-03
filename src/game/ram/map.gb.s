@@ -2,11 +2,11 @@ SECTION "MapRam",WRAM0[$CD25]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE              EQU     512
-MAP_ROOM_SIZE               EQU     192
-MAP_ROOM_WIDTH              EQU     16
+MAP_ROOM_WIDTH              EQU     15
 MAP_ROOM_HEIGHT             EQU     12
-MAP_ROOM_EDGE_BOTTOM        EQU     191 ; 127
-MAP_ROOM_EDGE_RIGHT         EQU     255 ; 159
+MAP_ROOM_SIZE               EQU     MAP_ROOM_WIDTH * MAP_ROOM_HEIGHT
+MAP_ROOM_EDGE_BOTTOM        EQU     191
+MAP_ROOM_EDGE_RIGHT         EQU     239
 MAP_ENTITY_SIZE             EQU     8
 MAP_EFFECT_SIZE             EQU     8
 MAP_ROOM_DATA_BANK          EQU     2
@@ -86,7 +86,7 @@ mapAnimationUseMap:         DS TILE_ANIMATION_COUNT
 
 ; RAM Buffers -----------------------------------------------------------------
 SECTION "MapBufferRam",WRAM0[$C100]; must be aligned at 256 bytes for tile buffer
-mapRoomTileBuffer:          DS 768; tile buffer for the current room (8x8 tiles)
+mapRoomTileBuffer:          DS 32 * MAP_ROOM_HEIGHT * 2; tile buffer for the current room (8x8 tiles)
 mapBlockDefinitionBuffer:   DS 1024; buffer for tile definitions of the current room
 mapTileAnimationBuffer:     DS 1024; buffer for tile animation graphics
 

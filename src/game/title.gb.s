@@ -6,6 +6,9 @@ title_init:
     ld      [titleWaitCounter],a
     ld      a,GAME_MODE_INIT
     ld      [gameMode],a
+    xor     a
+    ld      [coreScrollX],a
+    ld      [coreScrollY],a
     ret
 
 title_update:
@@ -259,7 +262,6 @@ _title_draw_room:
     ld      b,15
     ld      c,15
     call    map_load_room
-    call    map_draw_room
 
     ; draw "start" text
     ld      hl,DataTitleLayout
