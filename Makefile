@@ -34,6 +34,7 @@ tiled:
 
 # Video
 record:
+	rm game_raw.mov
 	mednafen -sound.driver sdl -qtrecord "game_raw.mov" -qtrecord.vcodec png -qtrecord.h_double_threshold 144 -qtrecord.w_double_threshold 160 build/game.gb
 
 webm:
