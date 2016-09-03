@@ -199,6 +199,9 @@ _player_update:
 
 .no_direction_change:
 
+    ; update scroll offsets
+    call    player_scroll
+
     ; check for animation changes
     ld      a,[playerAnimationLast]
     ld      b,a
@@ -312,5 +315,52 @@ _player_dissolve:
 
     ld      a,SOUND_EFFECT_GAME_SAVE_RESTORE_FLASH
     call    sound_play_effect_one
+    ret
+
+
+; Screen Scrolling ------------------------------------------------------------
+player_scroll:
+
+    ; Horizontal
+    ld      a,[playerX]
+    ld      c,80
+    ld      d,(MAP_ROOM_EDGE_RIGHT + 1) - 80
+    ld      e,(MAP_ROOM_EDGE_RIGHT + 1) - 80 + 16
+    call    _limit_scrolling
+    ld      b,a
+    ld      a,[screenScrollX]
+    add     b
+    ld      [coreScrollX],a
+
+    ; Vertical
+    ld      a,[playerY]
+    ld      c,72
+    ld      d,(MAP_ROOM_EDGE_BOTTOM + 1) - 72
+    ld      e,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
+    call    _limit_scrolling
+    ld      b,a
+    ld      a,[screenScrollY]
+    add     b
+    ld      [coreScrollY],a
+    ret
+
+; a = scroll value, c = limit, d = compare, e = border -> a = limited value
+_limit_scrolling:
+    cp      c
+    jr      c,.border_one
+    cp      d
+    jr      nc,.border_two
+    sub     c
+    ld      b,a
+    xor     a
+    sub     b
+    ret
+
+.border_one:
+    xor     a
+    ret
+
+.border_two:
+    ld      a,e
     ret
 

@@ -134,8 +134,7 @@ map_load_room: ; b = x, c = y
     call    core_mem_set
 
     ; Force scroll position updates to avoid 1 frame map glitches
-    call    game_scroll_x
-    call    game_scroll_y
+    call    player_scroll
 
     ; update all sprites
     call    sprite_update

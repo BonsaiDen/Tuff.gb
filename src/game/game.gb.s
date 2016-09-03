@@ -111,56 +111,11 @@ game_loop:
 
 .logic:
     call    player_update
-    call    game_scroll_x
-    call    game_scroll_y
     call    entity_update
     call    sprite_update
     call    effect_update
     call    map_check_fallable_blocks
     call    sound_update
-    ret
-
-game_scroll_x:
-    ld      a,[playerX]
-    ld      c,80
-    ld      d,(MAP_ROOM_EDGE_RIGHT + 1) - 80
-    ld      e,(MAP_ROOM_EDGE_RIGHT + 1) - 80 + 16
-    call    _game_limit_scroll
-    ld      b,a
-    ld      a,[screenScrollX]
-    add     b
-    ld      [coreScrollX],a
-    ret
-
-game_scroll_y:
-    ld      a,[playerY]
-    ld      c,72
-    ld      d,(MAP_ROOM_EDGE_BOTTOM + 1) - 72
-    ld      e,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
-    call    _game_limit_scroll
-    ld      b,a
-    ld      a,[screenScrollY]
-    add     b
-    ld      [coreScrollY],a
-    ret
-
-_game_limit_scroll:; a = scroll value, c = limit, d = compare, e = border -> a = limited value
-    cp      c
-    jr      c,.border_one
-    cp      d
-    jr      nc,.border_two
-    sub     c
-    ld      b,a
-    xor     a
-    sub     b
-    ret
-
-.border_one:
-    xor     a
-    ret
-
-.border_two:
-    ld      a,e
     ret
 
 
