@@ -120,7 +120,6 @@ _player_col_check_down:
 
     ld      a,[playerX]
     add     PLAYER_HALF_WIDTH - 3
-    jr      c,.left_half ; check for overflow on the right screen edge
     ld      b,a
     call    map_get_collision
     cp      h
@@ -134,7 +133,6 @@ _player_col_check_down:
 
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 2
-    jr      c,.done ; check for overflow on the left screen edge
     ld      b,a
     call    map_get_collision
     cp      h
@@ -165,8 +163,6 @@ _player_col_left:
 
     ld      a,[playerX]
     sub     h
-    jp      c,_edge_overflow ; check for overflow on the left screen edge
-
     ld      b,a
     call    map_get_collision
     ret     c
@@ -201,8 +197,6 @@ player_collision_left_all:
     ld      c,a
     ld      a,[playerX]
     sub     PLAYER_HALF_WIDTH - 1
-    jp      c,_edge_overflow ; check for overflow on the left screen edge
-
     ld      b,a
     call    map_get_collision
     ret     nc
@@ -250,7 +244,6 @@ _player_col_right:
 
     ld      a,[playerX]
     add     h
-    jr      c,_edge_overflow; check for overflow on the right screen edge
 
     ld      b,a
     call    map_get_collision
@@ -287,8 +280,6 @@ player_collision_right_all:
 
     ld      a,[playerX]
     add     PLAYER_HALF_WIDTH - 2
-    jr      c,_edge_overflow; check for overflow on the right screen edge
-
     ld      b,a
     call    map_get_collision
     ret     nc
@@ -317,9 +308,5 @@ player_collision_right_all:
     add     PLAYER_HALF_WIDTH - 2
     ld      b,a
     call    map_get_collision
-    ret
-
-_edge_overflow:
-    and     a
     ret
 
