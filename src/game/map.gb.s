@@ -163,12 +163,6 @@ map_draw_room:
     call    entity_load
 
     ; update all sprites so entities are placed correctly
-    ; TODO figure out why we need to call this multiple times in order to avoid
-    ; TODO sprite loading delay during room load
-    ; TODO hardware sprites don't seem to be updated at once (only after animation delay?)
-    call    sprite_update
-    call    sprite_update
-    call    sprite_update
     call    sprite_update
 
     ; switch between the two screen buffers to prevent flickering

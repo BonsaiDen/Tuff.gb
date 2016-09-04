@@ -236,10 +236,6 @@ _sprite_update: ; hl = sprite data pointer
     ; restore sprite pointer
     pop     hl
 
-    ; unset the unused row index until the next frame
-    ld      a,$ff
-    ld      [coreSpriteRow],a
-
     ; unset animation changed flag of the sprite
     dec     l
     res     4,c; make sure to reset the flag bit to avoid palette messups
@@ -623,6 +619,14 @@ _sprite_tile_row_set_used:; a = tile row index
     ld      e,a
     ld      a,1
     ld      [de],a; mark as used
+
+    ; find next free sprite row
+    push    hl
+    push    bc
+    call    _sprite_update_tile_rows
+    pop     bc
+    pop     hl
+
     ret
 
 
