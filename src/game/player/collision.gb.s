@@ -204,8 +204,8 @@ player_collision_left_all:
     ; check we leave the upper screen edge
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1; will underflow if we leave the top screen edge
-    cp      128
-    jr      nc,.top_of_screen; playerTop >=128
+    cp      MAP_ROOM_EDGE_BOTTOM + 1
+    jr      nc,.top_of_screen; playerTop >=208
     ld      c,a
 
     ; upper half
@@ -287,8 +287,8 @@ player_collision_right_all:
     ; check we leave the upper screen edge
     ld      a,[playerY]
     sub     a,PLAYER_HEIGHT - 1; will underflow if we leave the top screen edge
-    cp      128
-    jr      nc,.top_of_screen; playerTop >=128
+    cp      MAP_ROOM_EDGE_BOTTOM + 1
+    jr      nc,.top_of_screen; playerTop >=208
     ld      c,a
 
     ; upper half
