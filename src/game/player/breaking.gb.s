@@ -27,7 +27,7 @@ break_horizontal_blocks_on_scroll:; a = side (0 = left, 1 = right)
     ld      b,0
     cp      0
     jr      nz,_break_horizontal_blocks_left
-    ld      b,9
+    ld      b,MAP_ROOM_WIDTH - 1
     jr      _break_horizontal_blocks_right
 
 
@@ -192,6 +192,9 @@ break_vertical_blocks:; a = block x, c = block y
     ld      a,MAP_BLOCK_TILES_TOP
     call    _destroy_breakable_block
 
+    ; no breaking continuation
+    xor     a
+    ld      [playerBreakContinue],a
     ret
 
 .bottom:
@@ -223,6 +226,9 @@ break_vertical_blocks:; a = block x, c = block y
     ld      a,MAP_BLOCK_TILES_BOTTOM
     call    _destroy_breakable_block
 
+    ; no breaking continuation
+    xor     a
+    ld      [playerBreakContinue],a
     ret
 
 .delay:
@@ -403,7 +409,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
 
 .right:
     ld      a,b; ignore blocks > 10
-    cp      20
+    cp      MAP_ROOM_WIDTH * 2
     jr      z,.bottom
     push    bc
     inc     b
@@ -416,7 +422,7 @@ _break_check_surrounding: ; b = tx, c = ty, a = base tile value
 
 .bottom:
     ld      a,c; ignore blocks > 8
-    cp      16
+    cp      MAP_ROOM_HEIGHT * 2
     jr      z,.found_none
     push    bc
     inc     c

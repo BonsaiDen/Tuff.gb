@@ -573,7 +573,6 @@ player_decelerate:
     ; keep full running speed
     ld      a,2
     ld      [playerIsRunning],a
-
     ret
 
 
