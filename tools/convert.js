@@ -20,7 +20,7 @@ Promise.all([
     lib.TileRowMap('entities.ch.png'),
     lib.Tileset('title.ch.png', true),
     lib.Collision('tiles.col.png'),
-    //lib.Sounds('sounds.js'),
+    lib.Sounds('sounds.js'),
     lib.BlockDef('blocks.def.png', 'tiles.bg.png').then(function(defs) {
         return lib.Map('scroll.map.json', defs, 0xf0, 15, 13);
     })

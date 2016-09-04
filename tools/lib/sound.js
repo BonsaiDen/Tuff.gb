@@ -47,11 +47,16 @@ Library.fromEffectList = function(effectList) {
             ]
         };
 
+        var repeat = entry.repeat || 0;
+        for(var i = 0; i < repeat; i++) {
+            pattern.rows.push([note, library.instruments.length]);
+        }
+
         library.instruments.push(instrument);
 
         library.effects.push({
             name: entry.id, // Auto calculate from specified sound length later on
-            tempo: 15, // ~250ms at 60fps
+            tempo: entry.tempo || 15, // ~250ms at 60fps
             pattern: library.patterns.length,
             loop: !!entry.looping
         });
@@ -146,7 +151,7 @@ Library.prototype = {
             return 'sound_pattern_' + p[0] + '_' + index + ':\n' + p[4].map(function(row) {
                 return '  DB ' + row.join(', ');
 
-            }).join('\n') + '\n  DB $FF\n';
+            }).join('\n  DB $FF') + '\n  DB $FF\n';
 
         }).join('\n'));
 

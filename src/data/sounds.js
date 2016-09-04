@@ -261,7 +261,9 @@ module.exports = [{
     "envInitVol": 0x0D,
     "freqRatio": 2,
     "polyStep": 0,
-    "shiftFreq": 6
+    "shiftFreq": 6,
+    "tempo": 3,
+    "repeat": 1
 
 }, {
     "id": "PLAYER_POUND_CANCEL",
@@ -303,7 +305,8 @@ module.exports = [{
     "envStepTime": 1,
     "envStepDir": 0,
     "envInitVol": 0x0F,
-    "frequency": 0x03A0
+    "frequency": 0x03A0,
+    "tempo": 5
 
 }, {
     "id": "GAME_MENU",
