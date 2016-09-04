@@ -35,24 +35,26 @@ core_vblank_handler:
 
 .palette_done:
 
-    ; game specific code ------------------------------------------------------
-
-    ; now copy sprite screen state to OAM
-    call    $ff80
-
     ; check if we need to draw the room data to screen ram
     ld      a,[mapRoomUpdateRequired]
     cp      0
     jr      z,.no_map_update
 
-    ; draw new before updating sprites so the player does not appear in
-    ; the wall of the previous room for one frame
+    ; draw new room into VRAM (updates scrolling, sprites and effects)
     call    map_draw_room
+
+    ; copy sprites AFTER room load so entity sprites are positioned correctly
+    call    $ff80
+    jr      .scrolling
 
 .no_map_update:
 
-    ; update scroll registers (values need to be negated!)
-    ; updated AFTER map is drawn to prevent artifacts
+    ; just copy sprites in case no room update was required
+    call    $ff80
+
+.scrolling:
+
+    ; update scroll registers (values need to be negated)
     ld      a,[coreScrollX]
     dec     a
     cpl

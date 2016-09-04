@@ -183,6 +183,7 @@ module.exports = {
                 }),
                 entityData = map.layers[1].data,
                 effectData = map.layers[2].data,
+                controlData = map.layers[3].data,
                 mapBytes = [],
                 roomOffsets = [],
                 w = map.width,
@@ -194,7 +195,7 @@ module.exports = {
             for(var y = 0; y < ry; y++) {
                 for(var x = 0; x < rx; x++) {
                     Map.parseRoom(
-                        data, entityData, effectData,
+                        data, entityData, effectData, controlData,
                         x, y, w, h,
                         roomOffsets, mapBytes,
                         blockDefinitions, animationOffset,

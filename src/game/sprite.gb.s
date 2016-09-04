@@ -20,7 +20,6 @@ sprite_update:
     call    _sprite_update
     inc     l
     call    _sprite_update
-
     ret
 
 
@@ -674,9 +673,16 @@ _load_sprite_row: ; load a compressed tile row into vram
     add     hl,bc
 
     ; decode with end marker in stream
+    ld      a,[coreVBlankDone]
+    jr      nz,.during_vblank
+
+    ; when not in vblank, disable interrupts to avoid sprite row corruption
     di
     call    core_decode_eom
     ei
+    ret
 
+.during_vblank:
+    call    core_decode_eom
     ret
 

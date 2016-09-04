@@ -110,8 +110,9 @@ game_loop:
     ret
 
 .logic:
-    call    player_update
     call    entity_update
+    call    player_move_platform
+    call    player_update
     call    sprite_update
     call    effect_update
     call    map_check_fallable_blocks

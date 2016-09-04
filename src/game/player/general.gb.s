@@ -136,9 +136,9 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,MAP_ROOM_EDGE_RIGHT - 2
     ld      [playerX],a
     call    map_scroll_left
+
     xor     a
     call    break_horizontal_blocks_on_scroll
-
     jr      .scrolled
 
 
@@ -151,9 +151,9 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ld      a,3
     ld      [playerX],a
     call    map_scroll_right
+
     ld      a,1
     call    break_horizontal_blocks_on_scroll
-
     jr      .scrolled
 
 
@@ -225,6 +225,8 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
     ret
 
 .scrolled:
+
+    ; Hide player sprite during screen transition
     ld      b,0
     ld      c,0
     ld      a,PLAYER_SPRITE_INDEX

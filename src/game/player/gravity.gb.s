@@ -108,6 +108,7 @@ player_gravity:
 
 
 player_platform:
+    ret
 
     ; allow jumping off of platform
     ld      a,[playerJumpForce]
@@ -121,6 +122,8 @@ player_platform:
     ret      z
     and     %0000_0010
     ret      z
+
+    ; TODO if collision upwards drop through platform
 
     ; load platform position
     ld      a,[playerPlatformY]

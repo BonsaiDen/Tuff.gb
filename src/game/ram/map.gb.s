@@ -1,12 +1,12 @@
-SECTION "MapRam",WRAM0[$CD25]
+SECTION "MapRam",WRAMX[$DE00]
 
 ; Constants -------------------------------------------------------------------
 MAP_INDEX_SIZE              EQU     512
 MAP_ROOM_WIDTH              EQU     15
-MAP_ROOM_HEIGHT             EQU     12
+MAP_ROOM_HEIGHT             EQU     13
 MAP_ROOM_SIZE               EQU     MAP_ROOM_WIDTH * MAP_ROOM_HEIGHT
-MAP_ROOM_EDGE_BOTTOM        EQU     191
-MAP_ROOM_EDGE_RIGHT         EQU     239
+MAP_ROOM_EDGE_BOTTOM        EQU     (MAP_ROOM_HEIGHT * 16) - 1
+MAP_ROOM_EDGE_RIGHT         EQU     (MAP_ROOM_WIDTH * 16) - 1
 MAP_ENTITY_SIZE             EQU     8
 MAP_EFFECT_SIZE             EQU     8
 MAP_ROOM_DATA_BANK          EQU     2
@@ -49,6 +49,8 @@ MAP_FALLING_TILE_LIGHT      EQU     $30
 MAP_FALLING_TILE_DARK       EQU     $38
 MAP_FALLABLE_BLOCK_DELAY    EQU     2
 
+MAP_SCROLL_LOCK_VERTICAL    EQU     1
+MAP_SCROLL_LOCK_HORIZOTNAL  EQU     2
 
 
 ; Room drawing ----------------------------------------------------------------
@@ -67,6 +69,7 @@ mapRoomX:                   DB ; current x index on the map
 mapRoomY:                   DB ; current y index on the map
 mapRoomLastX:               DB ; last x index on the map
 mapRoomLastY:               DB ; last y index on the map
+mapScrollFlags:             DB ; horizontal / vertical scroll lock
 mapCollisionFlag:           DB ; flag that gets set by the map collision check
                                ; used by game logic to trigger special behavior
 mapHazardFlag:              DB ; flag that gets once per game loop when a hazard
@@ -86,7 +89,7 @@ mapAnimationUseMap:         DS TILE_ANIMATION_COUNT
 
 ; RAM Buffers -----------------------------------------------------------------
 SECTION "MapBufferRam",WRAM0[$C100]; must be aligned at 256 bytes for tile buffer
-mapRoomTileBuffer:          DS 32 * MAP_ROOM_HEIGHT * 2; tile buffer for the current room (8x8 tiles)
 mapBlockDefinitionBuffer:   DS 1024; buffer for tile definitions of the current room
 mapTileAnimationBuffer:     DS 1024; buffer for tile animation graphics
+mapRoomTileBuffer:          DS 32 * MAP_ROOM_HEIGHT * 2; tile buffer for the current room (8x8 tiles)
 

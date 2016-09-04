@@ -79,12 +79,21 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     jr      nc,.no_player
 
     ; correct player Y to be exactly on top of platform
+    ld      a,h
+    and     %0000_0010
+    jr      nz,.vertical
+    ld      a,c
+    sub     16
+    ld      [playerY],a
+    jr      .direction
+
+.vertical:
     ld      a,c
     sub     16
     ld      [playerPlatformY],a
-    ld      [playerY],a
 
     ; store plaform direction
+.direction:
     ld      a,h
     ld      [playerPlatformDirection],a
     ld      l,1
@@ -155,7 +164,6 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     inc     de
     ld      a,b
     ld      [de],a
-
     ret
 
 .switch_to_right:
@@ -191,5 +199,7 @@ entity_handler_update_platform: ; generic, b = entity index, c = sprite index, d
     ; if so apply new direction to avoid notches when platform toggles direction
     ld      a,b
     ld      [playerPlatformDirection],a
+    xor     a
+    ld      [playerPlatformSpeed],a
     ret
 

@@ -6,7 +6,7 @@ var lz4 = require('./lz4');
 var Map = {
 
     parseRoom: function(
-        data, entityData, effectData,
+        data, entityData, effectData, controlData,
         x, y, w, h,
         roomOffsets, mapBytes, blockDefinitions, animationOffset,
         roomWidth, roomHeight
@@ -15,9 +15,11 @@ var Map = {
         var tileBytes = [],
             entityBytes = [],
             effectBytes = [],
+            controlBytes = [],
             entities,
             effects,
             animations,
+            controls,
             tiles,
             header = 0,
             i;
@@ -27,6 +29,7 @@ var Map = {
             tileBytes.push.apply(tileBytes, data.slice(offset, offset + roomWidth));
             entityBytes.push.apply(entityBytes, entityData.slice(offset, offset + roomWidth));
             effectBytes.push.apply(effectBytes, effectData.slice(offset, offset + roomWidth));
+            controlBytes.push.apply(controlBytes, controlData.slice(offset, offset + roomWidth));
         }
 
         // Record mapped tile blocks
@@ -58,6 +61,7 @@ var Map = {
         entities = Map.parseEntities(entityBytes, x, y, roomWidth);
         effects = Map.parseEffects(effectBytes, x, y, roomWidth);
         animations = Map.parseAnimations(tileBytes, blockDefinitions, animationOffset);
+        controls = Map.parseControls(controlBytes, x, y, roomWidth);
 
         // Convert tile bytes into mapping space of current screen
         var customTileMapping = [1, 3, 7, 15].indexOf(blockMappingByte) === -1;
@@ -81,8 +85,11 @@ var Map = {
         }
 
         if (effects.used) {
-            header |= (effects.count << 2); // 000x_xx00
+            header |= 4; // 0000_0x00
         }
+
+        // 000x_x000 vertical / horizontal scroll lock
+        header |= (controls << 3);
 
         if (entities.used) {
             header |= (entities.count << 5); // xxx0_0000
@@ -90,6 +97,10 @@ var Map = {
 
         // Write Room Header Byte
         roomBytes.push(header);
+
+        if (effects.used) {
+            roomBytes.push(effects.count);
+        }
 
         // Write Animation Attribute Byte
         if (animations.used) {
@@ -230,6 +241,33 @@ var Map = {
             count: effectCount,
             used: effectIndex !== -1
         };
+
+    },
+
+    parseControls: function(controlBytes, x, y) {
+
+        var controls = 0;
+        controlBytes.map(function(value) {
+
+            if (value >= 385) {
+                var control = value - 384;
+                if (control === 1) {
+                    controls |= 1; // Vertical Scroll Lock
+
+                } else if (control === 2) {
+                    controls |= 2; // Horizontal Scroll Lock
+
+                } else {
+                    throw new TypeError('Invalid control ' + value + ' in map room ' + x + 'x' + y);
+                }
+
+            } else if (value > 0) {
+                throw new TypeError('Invalid control ' + value + ' in map room ' + x + 'x' + y);
+            }
+
+        });
+
+        return controls;
 
     }
 

@@ -1,4 +1,4 @@
-SECTION "ScriptRam",WRAM0[$CCBF]
+SECTION "ScriptRam",WRAM0[$CE45]
 
 
 ; Scripting Triggers ----------------------------------------------------------

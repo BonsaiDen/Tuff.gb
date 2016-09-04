@@ -321,6 +321,11 @@ _player_dissolve:
 ; Screen Scrolling ------------------------------------------------------------
 player_scroll:
 
+    ; Check if horizontal scrolling is locked
+    ld      a,[mapScrollFlags]
+    and     MAP_SCROLL_LOCK_HORIZOTNAL
+    jr      nz,.vertical
+
     ; Horizontal
     ld      a,[playerX]
     ld      c,80
@@ -331,12 +336,20 @@ player_scroll:
     ld      a,[screenScrollX]
     add     b
     ld      [coreScrollX],a
+    jr      .vertical
+
+.vertical:
+
+    ; Check if vertical scrolling is locked
+    ld      a,[mapScrollFlags]
+    and     MAP_SCROLL_LOCK_VERTICAL
+    ret     nz
 
     ; Vertical
     ld      a,[playerY]
     ld      c,72
     ld      d,(MAP_ROOM_EDGE_BOTTOM + 1) - 72
-    ld      e,(MAP_ROOM_EDGE_BOTTOM + 1) + 16
+    ld      e,(MAP_ROOM_EDGE_BOTTOM + 1) - 16
     call    _limit_scrolling
     ld      b,a
     ld      a,[screenScrollY]

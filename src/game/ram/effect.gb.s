@@ -1,4 +1,4 @@
-SECTION "EffectRam",WRAM0[$CC60]; must be aligned at 32 bytes for effectState
+SECTION "EffectRam",WRAM0[$CD30]; must be aligned at 32 bytes for effectState
 
 EFFECT_MAX_COUNT              EQU 8
 EFFECT_BG_SPRITE_INDEX        EQU 0; start index to use for effect sprites that are in the background
@@ -30,7 +30,7 @@ EFFECT_MAP_DEFINITION_OFFSET  EQU 16
 
 
 ; RAM storage for effect positions / states -----------------------------------
-effectScreenState:      DS  EFFECT_MAX_COUNT * EFFECT_BYTES ; 9 bytes per effect
+effectScreenState:      DS EFFECT_MAX_COUNT * EFFECT_BYTES ; 9 bytes per effect
                                ; flags: [active][-][-][fg/bg] 0-2: [palette]
                                ; [ypos][dy]
                                ; [xpos]

@@ -11,32 +11,6 @@ player_move:
     cp      0
     jp      nz,.landing
 
-    ; moving on a platform?
-    ld      a,[playerPlatformDirection]
-    cp      $ff
-    jr      z,.not_on_platform
-
-    ; check if still touching ground and ignore platform movement
-    call    player_collision_down
-    jr      c,.not_on_platform
-
-    ; check platform speed
-    ld      a,[playerPlatformSpeed]
-    cp      0
-    jr      z,.not_on_platform
-
-    ; store platform speed
-    ld      e,a
-
-    ; convert platform direction into player direction
-    ld      a,[playerPlatformDirection]
-    bit     1,a; check for vertical platforms
-    ret     nz
-    inc     a; platform 0/1 -> player 1/2
-    ld      d,a
-    call    _player_move
-    ret
-
     ; are we moving at all?
 .not_on_platform:
     ld      a,[playerSpeedLeft]
@@ -193,6 +167,36 @@ player_move:
 .breaking_delayed:
     dec     a
     ld      [playerMovementDelay],a
+    ret
+
+
+player_move_platform:
+
+    ; moving on a platform?
+    ld      a,[playerPlatformDirection]
+    cp      $ff
+    ret     z
+
+    ; check if touching ground and if so ignore platform movement
+    call    player_collision_down
+    ret     c
+
+    ; check platform speed
+    ld      a,[playerPlatformSpeed]
+    cp      0
+    ret     z
+
+    ; store platform speed
+    ld      e,a
+
+    ; convert platform direction into player direction
+    ld      a,[playerPlatformDirection]
+    bit     1,a; check for vertical platforms
+    ret     nz
+
+    inc     a; platform 0/1 -> player 1/2
+    ld      d,a
+    call    _player_move
     ret
 
 

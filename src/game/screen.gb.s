@@ -49,7 +49,7 @@ _screen_shake_timer:
 
 _random_screen_offset:
     call    math_random
-    bit     3,a
+    bit     5,a
     jr      z,.negative
 
 .positive:

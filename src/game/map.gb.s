@@ -86,9 +86,20 @@ map_load_room: ; b = x, c = y
     call    _map_load_room_pointer
     inc     hl; skip length byte
 
+    ; Udpate scroll position before new scroll locks
+    xor     a
+    ld      [mapScrollFlags],a
+    call    player_scroll
+
     ; store room flags here for later use
     ld      a,[hli]
     ld      [mapRoomHeaderFlags],a
+
+    ; store scroll flags for later use
+    and     %0001_1000
+    sla     a
+    swap    a
+    ld      [mapScrollFlags],a
 
     call    _map_load_animations
     call    _map_load_tile_map
@@ -133,11 +144,9 @@ map_load_room: ; b = x, c = y
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
 
-    ; Force scroll position updates to avoid 1 frame map glitches
+    ; Force scroll position update to avoid 1 frame position glitches
     call    player_scroll
 
-    ; update all sprites
-    call    sprite_update
     ei
 
     pop     bc
@@ -152,6 +161,15 @@ map_draw_room:
 
     ; load new entities
     call    entity_load
+
+    ; update all sprites so entities are placed correctly
+    ; TODO figure out why we need to call this multiple times in order to avoid
+    ; TODO sprite loading delay during room load
+    ; TODO hardware sprites don't seem to be updated at once (only after animation delay?)
+    call    sprite_update
+    call    sprite_update
+    call    sprite_update
+    call    sprite_update
 
     ; switch between the two screen buffers to prevent flickering
     ld      a,[mapCurrentScreenBuffer]
@@ -1004,11 +1022,13 @@ _map_load_tile_block: ; a = origin block, b = target block
 
 _map_load_effects:
 
-    ; check number of effects used in room
+    ; check if effects are used in this room
     ld      a,[mapRoomHeaderFlags]
-    srl     a
-    srl     a
-    and     %00000111
+    and     %00000100
+    jr      z,.no_effects
+
+    ; load effect count if
+    ld      a,[hli]
 
     ; copy effect data after room tile buffer and entity data buffer
     ld      [mapRoomEffectCount],a
@@ -1019,6 +1039,10 @@ _map_load_effects:
     call    core_mem_cpy
     ret
 
+.no_effects:
+    xor a
+    ld      [mapRoomEffectCount],a
+    ret
 
 _map_create_effects:
 

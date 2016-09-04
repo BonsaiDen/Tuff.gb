@@ -5,13 +5,13 @@ spriteOam:      DS 160  ; Sprite data to be later copied into OAM during vblank
 
 
 ; Sprite Meta Data-------------------------------------------------------------
-SECTION "SpriteRamData", WRAM0[$CC00]; must be aligned at 256 bytes for spriteData
+SECTION "SpriteRamData", WRAM0[$CE00]; must be aligned at 256 bytes for spriteData
 
 SPRITE_MAX_TILE_ROWS EQU 6
 SPRITE_MAX           EQU 7
 
 spriteData:     DS SPRITE_MAX * 9
-spriteRowsUsed: DS SPRITE_MAX_TILE_ROWS 
+spriteRowsUsed: DS SPRITE_MAX_TILE_ROWS
 
 ; 0: flags 7:enabled, 6:wasEnabled, 5:mirrored, 4:animationChanged, 3:transparent, 2-0:palette
 ; 1: tileRow

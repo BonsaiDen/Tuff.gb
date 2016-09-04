@@ -29,7 +29,7 @@ clean:
 	find . -name "*.bin" -print0 | xargs -0 rm -rf
 	
 tiled:
-	~/dev/tiled/bin/tiled src/data/main.map.json &
+	~/dev/tiled/bin/tiled src/data/scroll.map.json &
 
 
 # Video
