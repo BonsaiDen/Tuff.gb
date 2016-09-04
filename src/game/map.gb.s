@@ -601,8 +601,8 @@ map_check_fallable_blocks:
     jr      z,.found_x
     jr      .active
 
-    ; load block y coordinate
 .found_x:
+    ; load block y coordinate
     ld      c,[hl]
 
     ; check the block 2 pixel under the player
@@ -1135,7 +1135,6 @@ _map_load_entities:
 
 
 _map_load_room_data:
-
     xor     a
     ld      [mapRoomUpdateRequired],a
     ld      [mapFallableBlockCount],a
@@ -1244,10 +1243,10 @@ _map_load_room_data:
     ld      [hli],a
 
     ; store x and y coordinates
-    ld      a,9
+    ld      a,MAP_ROOM_WIDTH - 1
     sub     c
     ld      [hli],a; x / col
-    ld      a,7
+    ld      a,MAP_ROOM_HEIGHT - 1
     sub     b
     ld      [hli],a; y / row
 
