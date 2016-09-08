@@ -130,7 +130,7 @@ player_scroll_map:; -> a 1 if scrolled 0 if not
 
     ; left ------------------------------
     ld      a,[playerX]
-    cp      2 ; < 1
+    cp      2 ; < 1 TODO this might fail and fall through if running at full speed
     jr      nc,.check_right
 
     ld      a,MAP_ROOM_EDGE_RIGHT - 2

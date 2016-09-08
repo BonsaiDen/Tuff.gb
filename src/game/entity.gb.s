@@ -230,7 +230,7 @@ _entity_load: ; c = type
     push    hl
     push    de
     push    bc
-    call    _entity_get_current_room_id
+    call    map_get_current_room_id
     call    _entity_find_bucket ; c is the room id, b is the entity id, return bucket pointer in hl
     jr      nc,.load_defaults
 
@@ -343,7 +343,7 @@ entity_store:
     ; find a bucket to store this entity in, either the bucket which already
     ; stores it, or a unused one
     push    de
-    call    _entity_get_last_room_id
+    call    map_get_last_room_id
     call    _entity_get_store_bucket
     pop     de
 
@@ -663,34 +663,6 @@ _entity_definition_pointer:; a = entity type -> hl = pointer
 
 ; Entity Storage Bucket Handling ----------------------------------------------
 ; -----------------------------------------------------------------------------
-_entity_get_current_room_id:; c -> room id (0-255)
-    ; mapRoomY * 16 + mapRoomX
-    ld      a,[mapRoomY]
-    add     a; multiply by 16
-    add     a
-    add     a
-    add     a
-    ld      c,a
-    ld      a,[mapRoomX]
-    add     c ; add column
-    inc     a
-    ld      c,a
-    ret
-
-
-_entity_get_last_room_id: ; c -> room id
-    ; mapRoomLastY * 16 + mapRoomLastX
-    ld      a,[mapRoomLastY]
-    add     a; multiply by 16
-    add     a
-    add     a
-    add     a
-    ld      c,a
-    ld      a,[mapRoomLastX]
-    add     c ; add column
-    inc     a
-    ld      c,a
-    ret
 
 
 _entity_get_store_bucket: ; c = room id (0-255), b = entity id (0-3) -> scf = found bucket, hl = bucket pointer

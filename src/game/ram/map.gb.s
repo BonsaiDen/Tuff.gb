@@ -52,6 +52,8 @@ MAP_FALLABLE_BLOCK_DELAY    EQU     2
 MAP_SCROLL_LOCK_VERTICAL    EQU     1
 MAP_SCROLL_LOCK_HORIZOTNAL  EQU     2
 
+MAP_MAX_OVERRIDE_BLOCKS     EQU     10 * 4
+
 
 ; Room drawing ----------------------------------------------------------------
 mapRoomBlockBuffer:         DS MAP_ROOM_SIZE + MAP_ENTITY_SIZE + MAP_EFFECT_SIZE ; buffer for the decompressed room data
@@ -85,6 +87,10 @@ mapFallableBlockCount:      DB
 mapAnimationIndexes:        DS TILE_ANIMATION_COUNT
 mapAnimationDelay:          DS TILE_ANIMATION_COUNT
 mapAnimationUseMap:         DS TILE_ANIMATION_COUNT
+
+
+; Breakable Blocks ------------------------------------------------------------
+mapOverridenBlocks:         DS MAP_MAX_OVERRIDE_BLOCKS * 4; [roomId][x][y][tileValue]
 
 
 ; RAM Buffers -----------------------------------------------------------------

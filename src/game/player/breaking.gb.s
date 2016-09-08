@@ -9,6 +9,10 @@ break_horizontal_blocks_on_scroll:; a = side (0 = left, 1 = right)
     call    player_is_running
     ret     nz
 
+    ; make sure to continue breaking blocks when switching rooms
+    ld      a,4
+    ld      [playerBreakContinue],a
+
     ; divide player y by 16 to get block
     ld      a,[playerY]
     sub     7
@@ -362,6 +366,7 @@ _destroy_breakable_block:; a = block group to break
 
 .next:
     inc     hl; skip the padding
+    call    map_store_block_override; store override
     call    map_set_tile_value; set background tile
     dec     d
     jr      nz,.loop

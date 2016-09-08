@@ -21,6 +21,36 @@ map_init: ; a = base value for background tiles
     ret
 
 
+map_get_current_room_id:; c -> room id (1-256)
+    ; mapRoomY * 16 + mapRoomX
+    ld      a,[mapRoomY]
+    add     a; multiply by 16
+    add     a
+    add     a
+    add     a
+    ld      c,a
+    ld      a,[mapRoomX]
+    add     c ; add column
+    inc     a
+    ld      c,a
+    ret
+
+
+map_get_last_room_id: ; c -> room id (1-256)
+    ; mapRoomLastY * 16 + mapRoomLastX
+    ld      a,[mapRoomLastY]
+    add     a; multiply by 16
+    add     a
+    add     a
+    add     a
+    ld      c,a
+    ld      a,[mapRoomLastX]
+    add     c ; add column
+    inc     a
+    ld      c,a
+    ret
+
+
 ; Scrolling -------------------------------------------------------------------
 map_scroll_left:
     ld      bc,$FF00
@@ -143,6 +173,9 @@ map_load_room: ; b = x, c = y
     ld      [mapCollisionFlag],a
     ld      bc,TILE_ANIMATION_COUNT
     call    core_mem_set
+
+    ; load overriden blocks
+    call    _map_load_overriden_blocks
 
     ; Force scroll position update to avoid 1 frame position glitches
     call    player_scroll
@@ -787,6 +820,173 @@ MapFallableBlockTable:
     DB     MAP_FALLING_TILE_LIGHT
     DB     MAP_BACKGROUND_TILE_LIGHT
     DB     MAP_BACKGROUND_TILE_LIGHT
+
+
+_map_load_overriden_blocks:
+
+    ; get current player quadrant
+    ld      a,[playerX]
+    ld      b,a
+    ld      a,[playerY]
+    ld      c,a
+    call    _map_quadrant
+
+    ; b = current room id
+    call    map_get_current_room_id
+    ld      b,c
+
+    ; c = previous room id
+    call    map_get_last_room_id
+
+    ; go through all overridden blocks
+    ld      d,MAP_MAX_OVERRIDE_BLOCKS
+    ld      hl,mapOverridenBlocks
+
+.loop:
+    ; check if the block is part of the last room
+    ld      a,[hli]
+    cp      c
+    jr      z,.skip; if so skip it
+
+    ; check if the block is part of the current room
+    cp      b
+    jr      nz,.clear_room; if not, clear it
+
+    ; if the block is part of the current room, load and apply the override
+    push    bc
+    ld      a,[hli]; load x
+    ld      b,a
+    ld      a,[hli]; load y
+    ld      c,a
+
+    ; calculate quadrant of the block
+    push    bc
+    push    de
+    call    _map_block_quadrant
+    pop     de
+    pop     bc
+
+    ; compare block and player quadrant
+    cp      e
+    jr      nz,.clear_quadrant
+
+    ; load tile value
+    ld      a,[hli]
+    call    map_set_tile_value
+    pop     bc
+    jr      .next
+
+.clear_quadrant:
+    pop     bc
+    dec     hl
+    dec     hl
+
+.clear_room:
+    ; mark override bucket as unused
+    dec     hl
+    xor     a
+    ld      [hli],a
+
+.skip:
+    inc     hl
+    inc     hl
+    inc     hl
+
+.next:
+    dec     d
+    jr      nz,.loop
+    ret
+
+
+map_store_block_override:; a = block value, b = xpos, c = ypos
+
+    ; check if block is already stored
+    push    af
+    push    bc
+    push    de
+    push    hl
+
+    ; store block value
+    ld      e,a
+
+    ; go through all override blocks buckets
+    ld      d,MAP_MAX_OVERRIDE_BLOCKS
+    ld      hl,mapOverridenBlocks
+
+.loop:
+    ; check if override  bucket is currently unused
+    ld      a,[hl]
+    cp      0
+    jr      nz,.skip; if not skip it
+
+    push    bc; store x / y
+
+    ; store current room id
+    call    map_get_current_room_id
+    ld      [hl],c
+    inc     hl
+
+    pop     bc; restore x / y
+
+    ; store x / y
+    ld      [hl],b
+    inc     hl
+    ld      [hl],c
+    inc     hl
+    ld      [hl],e
+    inc     hl
+    jr      .done
+
+.skip:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+
+.next:
+    dec     d
+    jr      nz,.loop
+
+.done:
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+    ret
+
+
+_map_block_quadrant:
+    sla     b
+    sla     b
+    sla     b
+    sla     c
+    sla     c
+    sla     c
+
+_map_quadrant:; b = xpos, c = ypos
+    ld      e,0
+
+    ; check xpos
+    ld      a,b
+    cp      (MAP_ROOM_WIDTH * 16) / 2
+    jr      c,.ypos
+
+    ; right half
+    inc     e
+
+    ; check ypos
+.ypos:
+    ld      a,c
+    cp      (MAP_ROOM_HEIGHT * 16) / 2
+    jr      c,.done
+
+    ; down half
+    inc     e
+    inc     e
+
+.done:
+    ld      a,e
+    ret
 
 
 ; Helpers ---------------------------------------------------------------------
