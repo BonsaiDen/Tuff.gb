@@ -177,11 +177,7 @@ map_load_room: ; b = x, c = y
     ; load overriden blocks
     call    _map_load_overriden_blocks
 
-    ; Force scroll position update to avoid 1 frame position glitches
-    call    player_scroll
-
     ei
-
     pop     bc
     pop     de
     pop     hl
@@ -192,11 +188,11 @@ map_load_room: ; b = x, c = y
 ; Core Map Draw Routine -------------------------------------------------------
 map_draw_room:
 
+    ld      a,2
+    ld      [mapRoomUpdateRequired],a
+
     ; load new entities
     call    entity_load
-
-    ; update all sprites so entities are placed correctly
-    call    sprite_update
 
     ; switch between the two screen buffers to prevent flickering
     ld      a,[mapCurrentScreenBuffer]
@@ -214,6 +210,12 @@ map_draw_room:
     ld      hl,mapRoomTileBuffer
     ld      bc,32 * MAP_ROOM_HEIGHT
     call    core_vram_cpy
+
+    ; Update scroll position
+    call    player_scroll
+
+    ; update all sprites so entities are placed correctly
+    call    sprite_update
 
     ; flip background buffer (we double buffer to avoid tear)
     ld      a,[mapCurrentScreenBuffer]

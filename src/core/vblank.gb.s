@@ -37,22 +37,18 @@ core_vblank_handler:
 
     ; check if we need to draw the room data to screen ram
     ld      a,[mapRoomUpdateRequired]
+    cp      2
+    jr      z,.done
     cp      0
-    jr      z,.no_map_update
+    jr      z,.update_screen
 
     ; draw new room into VRAM (updates scrolling, sprites and effects)
     call    map_draw_room
 
-    ; copy sprites AFTER room load so entity sprites are positioned correctly
-    call    $ff80
-    jr      .scrolling
-
-.no_map_update:
+.update_screen:
 
     ; just copy sprites in case no room update was required
     call    $ff80
-
-.scrolling:
 
     ; update scroll registers (values need to be negated)
     ld      a,[coreScrollX]
@@ -66,6 +62,7 @@ core_vblank_handler:
     ld      [rSCY],a
 
     ; Set vblank flag, this will cause the core loop to run the game loop once
+.done:
     ld      a,1
     ld      [coreVBlankDone],a
 
