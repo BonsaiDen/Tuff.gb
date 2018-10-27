@@ -41,5 +41,11 @@ webm:
 	ffmpeg -i game_raw.mov -vf scale=320:288 -sws_flags neighbor -c:v libvpx -crf 20 -b:v 1M -c:a libvorbis game.webm
 
 render:
-	ffmpeg -i game_raw.mov -vf scale=480:432 -sws_flags neighbor -acodec libmp3lame -ac 1 -ab 64000 -ar 22050 -vcodec mpeg4 -flags +mv4+gmc -mbd bits -trellis 2 -b 8000k game.avi
+	ffmpeg -i game_raw.mov -vf scale=480:432 -sws_flags neighbor -c:a libmp3lame -ac 1 -ab 64000 -ar 22050 -vcodec mpeg4 -flags +mv4+gmc -mbd bits -trellis 2 -b 8000k game.avi
+
+mp4:
+	ffmpeg -i game_raw.mov -vf scale=320:288 -sws_flags neighbor -c:v libx264 -crf 20 -c:a aac -ab 96k game.mp4
+
+lossless:
+	ffmpeg -i game_raw.mov -c:v libx264 -preset veryslow -crf 0 -c:a flac -compression_level 12 game_raw.mkv
 

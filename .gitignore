@@ -4,7 +4,9 @@ src/data/bin
 build
 vis
 *.avi
+*.mkv
 *.mov
+*.mp4
 *.webm
 branch.js
 overlay.png
